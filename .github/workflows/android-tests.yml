@@ -11,6 +11,10 @@ on:
   pull_request:
     branches:
       - main
+  # Validate feature branches without running this workflow on every main push.
+  push:
+    branches-ignore:
+      - main
 
 jobs:
   unit-tests:
