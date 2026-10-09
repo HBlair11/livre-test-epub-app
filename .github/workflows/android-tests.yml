@@ -8,10 +8,7 @@ on:
         required: true
         default: false
         type: boolean
-  pull_request:
-    branches:
-      - main
-  # Validate feature branches without running this workflow on every main push.
+  # Validate feature branches on pushes (commits), not pull request synchronization.
   push:
     branches-ignore:
       - main
@@ -51,7 +48,7 @@ jobs:
 
   instrumentation-tests:
     name: Android Instrumentation Tests
-    if: ${{ github.event_name == 'pull_request' || inputs.run_instrumentation }}
+    if: ${{ github.event_name == 'push' || inputs.run_instrumentation }}
     runs-on: ubuntu-latest
 
     steps:
@@ -59,7 +56,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+      uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: "17"
