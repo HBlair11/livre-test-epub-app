@@ -12,10 +12,12 @@ class HomeOrderingTest {
     private fun applySort(list: List<BookEntity>, sort: String, asc: Boolean): List<BookEntity> {
         val sorted = when (sort) {
             PrefsManager.SortOption.RECENTLY_ADDED ->
+                // The UI's "newer first" choice is represented by asc=true for
+                // this legacy sort key, so Modified uses an explicit direction here.
                 if (asc) {
-                    list.sortedWith(compareBy<BookEntity> { it.sourceLastModified }.thenBy { it.id })
-                } else {
                     list.sortedWith(compareByDescending<BookEntity> { it.sourceLastModified }.thenByDescending { it.id })
+                } else {
+                    list.sortedWith(compareBy<BookEntity> { it.sourceLastModified }.thenBy { it.id })
                 }
             else -> list.sortedWith(compareBy<BookEntity> { it.sortTitle })
         }
