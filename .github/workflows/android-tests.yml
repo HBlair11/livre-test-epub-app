@@ -8,6 +8,9 @@ on:
         required: true
         default: false
         type: boolean
+  pull_request:
+    branches:
+      - main
 
 jobs:
   unit-tests:
@@ -44,7 +47,7 @@ jobs:
 
   instrumentation-tests:
     name: Android Instrumentation Tests
-    if: ${{ inputs.run_instrumentation }}
+    if: ${{ github.event_name == 'pull_request' || inputs.run_instrumentation }}
     runs-on: ubuntu-latest
 
     steps:
@@ -59,6 +62,10 @@ jobs:
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          # The old "tools" package is no longer published by Google.
+          # Install only packages still supported by the Android SDK.
+          packages: platform-tools emulator
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
