@@ -42,6 +42,9 @@ data class BookEntity(
     @ColumnInfo(name = "chapter_count") val chapterCount: Int = 0,
     @ColumnInfo(name = "chapter_index") val chapterIndex: Int = 0,
     @ColumnInfo(name = "scroll_ratio") val scrollRatio: Float = 0f,
+    /** Semantic text quote of the last reading position. Used to restore the
+     *  same passage after typography or viewport changes. Nullable for legacy rows. */
+    @ColumnInfo(name = "location_quote") val locationQuote: String? = null,
     @ColumnInfo(name = "checksum") val checksum: String,
     @ColumnInfo(name = "sort_title") val sortTitle: String = title,
     @ColumnInfo(name = "sort_author") val sortAuthor: String = author,
