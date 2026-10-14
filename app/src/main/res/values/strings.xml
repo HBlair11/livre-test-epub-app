@@ -176,7 +176,7 @@
     <string name="details_saved">Book details saved</string>
 
     <string name="reader_hint_tap">Tap center for menu · tap sides to turn pages</string>
-    <string name="reader_chapter">Chapter</string>
+    <string name="reader_chapter">Chapter %1$d</string>
     <string name="page_x_of_y">Chapter %1$d of %2$d</string>
     <string name="no_toc">No contents</string>
     <string name="reader_contents">Contents</string>
@@ -364,4 +364,21 @@
     <string name="tts_stop_confirm">Stop</string>
 
     <string name="selection_move_toolbar">Move selection toolbar</string>
+
+    <string name="settings_section_daily_goal">Daily Reading Goal</string>
+    <string name="settings_section_daily_goal_subtitle">Set a gentle daily reading milestone to celebrate your reading habit without high-pressure streaks.</string>
+    <string name="settings_target_minutes">Target Minutes per Day</string>
+    <string name="settings_show_goal_stats">Show Goal on Stats Dashboard</string>
+    <string name="settings_show_goal_stats_summary">Displays your daily goal ring and progress</string>
+
+    <string name="settings_section_color_theme">Reader Color Theme</string>
+    <string name="settings_section_typography">Typography &amp; Sizing</string>
+    <string name="settings_section_tts">Read Aloud TTS Voice &amp; Speed</string>
+    <string name="settings_section_backup">Full Backup and Restore</string>
+    <string name="settings_section_backup_summary">Export your reading database, bookmarks, highlights, and preferences to a secure file, or restore from a previous backup.</string>
+    <string name="settings_export_backup">Export Backup</string>
+    <string name="settings_import_backup">Import Backup</string>
+
+    <string name="settings_section_privacy">Privacy Guaranteed &amp; Architecture</string>
+    <string name="settings_privacy_summary">The Livre Magicae is strictly offline-first. All reading history, bookmarks, highlights, and dictionary history stay locally on your device in an encrypted Room database. The app declares zero internet permissions, ensuring absolute data sovereignty and complete privacy.</string>
 </resources>

@@ -53,9 +53,14 @@ class HomeBookAdapter(
             }
 
             val progress = book.progress.coerceIn(0f, 1f)
+            val pct = (progress * 100).toInt()
+            val authorStr = book.author.ifBlank { itemView.context.getString(R.string.unknown_author) }
+            val statusDesc = if (progress >= 0.90f) "finished" else if (pct > 0) "$pct percent read" else "unread"
+            binding.root.contentDescription = "${book.title}, $authorStr, $statusDesc"
+
             if (progress >= 0.90f) {
                 binding.progressBadge.visibility = View.VISIBLE
-                binding.progressBadge.text = if (progress >= 0.90f) "✓" else "${(progress * 100).toInt()}%"
+                binding.progressBadge.text = if (progress >= 0.90f) "✓" else "$pct%"
             } else {
                 binding.progressBadge.visibility = View.GONE
             }

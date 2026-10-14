@@ -10,7 +10,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 @Database(
     entities = [BookEntity::class, BookmarkEntity::class, HighlightEntity::class, CollectionEntity::class, BookCollectionRef::class, ReadingSessionEntity::class, DictionaryHistoryEntity::class, TtsSettingsEntity::class],
     version = 16,
-    exportSchema = false,
+    exportSchema = true,
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun bookDao(): BookDao
@@ -31,7 +31,7 @@ abstract class AppDatabase : RoomDatabase() {
         @Volatile
         private var INSTANCE: AppDatabase? = null
 
-        private val MIGRATION_1_2 =
+        internal val MIGRATION_1_2 =
             object : Migration(1, 2) {
                 override fun migrate(database: SupportSQLiteDatabase) {
                     database.execSQL("ALTER TABLE books ADD COLUMN is_favorite INTEGER NOT NULL DEFAULT 0")
@@ -39,7 +39,7 @@ abstract class AppDatabase : RoomDatabase() {
                 }
             }
 
-        private val MIGRATION_2_3 =
+        internal val MIGRATION_2_3 =
             object : Migration(2, 3) {
                 override fun migrate(database: SupportSQLiteDatabase) {
                     // source_last_modified: cached mtime of the original file, used to
@@ -48,7 +48,7 @@ abstract class AppDatabase : RoomDatabase() {
                 }
             }
 
-        private val MIGRATION_3_4 =
+        internal val MIGRATION_3_4 =
             object : Migration(3, 4) {
                 override fun migrate(database: SupportSQLiteDatabase) {
                     // page_map_csv: legacy ADE byte-map retained for backward compatibility.
@@ -56,7 +56,7 @@ abstract class AppDatabase : RoomDatabase() {
                 }
             }
 
-        private val MIGRATION_4_5 =
+        internal val MIGRATION_4_5 =
             object : Migration(4, 5) {
                 override fun migrate(database: SupportSQLiteDatabase) {
                     database.execSQL("ALTER TABLE books ADD COLUMN is_currently_reading INTEGER NOT NULL DEFAULT 0".trimIndent())
@@ -65,7 +65,7 @@ abstract class AppDatabase : RoomDatabase() {
             }
 
 
-        private val MIGRATION_5_6 =
+        internal val MIGRATION_5_6 =
             object : Migration(5, 6) {
                 override fun migrate(database: SupportSQLiteDatabase) {
                     database.execSQL("ALTER TABLE books ADD COLUMN source_uri TEXT")
@@ -74,7 +74,7 @@ abstract class AppDatabase : RoomDatabase() {
             }
 
 
-        private val MIGRATION_6_7 =
+        internal val MIGRATION_6_7 =
             object : Migration(6, 7) {
                 override fun migrate(database: SupportSQLiteDatabase) {
                     // Screen-accurate page counts are tied to the reader viewport
@@ -85,7 +85,7 @@ abstract class AppDatabase : RoomDatabase() {
                 }
             }
 
-        private val MIGRATION_7_8 =
+        internal val MIGRATION_7_8 =
             object : Migration(7, 8) {
                 override fun migrate(database: SupportSQLiteDatabase) {
                     database.execSQL("ALTER TABLE books ADD COLUMN publish_year INTEGER")
@@ -94,7 +94,7 @@ abstract class AppDatabase : RoomDatabase() {
                 }
             }
 
-        private val MIGRATION_8_9 =
+        internal val MIGRATION_8_9 =
             object : Migration(8, 9) {
                 override fun migrate(database: SupportSQLiteDatabase) {
                     database.execSQL("ALTER TABLE books ADD COLUMN spine_count INTEGER NOT NULL DEFAULT 0")
@@ -102,7 +102,7 @@ abstract class AppDatabase : RoomDatabase() {
             }
 
 
-        private val MIGRATION_9_10 =
+        internal val MIGRATION_9_10 =
             object : Migration(9, 10) {
                 override fun migrate(database: SupportSQLiteDatabase) {
                     database.execSQL("ALTER TABLE books ADD COLUMN chapter_count INTEGER NOT NULL DEFAULT 0")
@@ -110,7 +110,7 @@ abstract class AppDatabase : RoomDatabase() {
                 }
             }
 
-        private val MIGRATION_10_11 =
+        internal val MIGRATION_10_11 =
             object : Migration(10, 11) {
                 override fun migrate(database: SupportSQLiteDatabase) {
                     database.execSQL("""
@@ -138,7 +138,7 @@ abstract class AppDatabase : RoomDatabase() {
                 }
             }
 
-        private val MIGRATION_11_12 =
+        internal val MIGRATION_11_12 =
             object : Migration(11, 12) {
                 override fun migrate(database: SupportSQLiteDatabase) {
                     database.execSQL("ALTER TABLE books ADD COLUMN current_location TEXT")
@@ -146,7 +146,7 @@ abstract class AppDatabase : RoomDatabase() {
             }
 
 
-        private val MIGRATION_12_13 =
+        internal val MIGRATION_12_13 =
             object : Migration(12, 13) {
                 override fun migrate(database: SupportSQLiteDatabase) {
                     database.execSQL("""
@@ -165,7 +165,7 @@ abstract class AppDatabase : RoomDatabase() {
                 }
             }
 
-        private val MIGRATION_13_14 =
+        internal val MIGRATION_13_14 =
             object : Migration(13, 14) {
                 override fun migrate(database: SupportSQLiteDatabase) {
                     // Patch v37: dictionary lookup history (vocabulary builder)
@@ -195,7 +195,7 @@ abstract class AppDatabase : RoomDatabase() {
                 }
             }
 
-        private val MIGRATION_14_15 =
+        internal val MIGRATION_14_15 =
             object : Migration(14, 15) {
                 override fun migrate(database: SupportSQLiteDatabase) {
                     // Store the rendered reader page captured when a bookmark is created.
@@ -204,7 +204,7 @@ abstract class AppDatabase : RoomDatabase() {
                 }
             }
 
-        private val MIGRATION_15_16 =
+        internal val MIGRATION_15_16 =
             object : Migration(15, 16) {
                 override fun migrate(database: SupportSQLiteDatabase) {
                     database.execSQL("ALTER TABLE bookmarks ADD COLUMN bookmark_type INTEGER NOT NULL DEFAULT 0")

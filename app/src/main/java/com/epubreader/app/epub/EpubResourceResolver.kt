@@ -1,9 +1,9 @@
 package com.epubreader.app.epub
 
-import android.util.Log
 import android.net.Uri
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
+import com.epubreader.app.util.DebugLogger
 import org.xmlpull.v1.XmlPullParser
 import java.io.ByteArrayInputStream
 import java.io.File
@@ -61,22 +61,43 @@ class EpubResourceResolver(
     private fun resolveBytes(entryPath: String): ByteArray? {
         return try {
             val zipFile = ensureOpen()
-            // Patch 16 (Issue #1): normalize the requested path so that relative
-            // font URLs resolved by the WebView against the CSS file's URL
-            // (e.g. ../Fonts/foo.otf) collapse ./ and ../ segments and match the
-            // real ZIP entry name.
             val normalized = EpubPaths.normalize(entryPath)
             val zipEntry = zipFile.getEntry(normalized)
                 ?: zipFile.getEntry(entryPath)
                 ?: return null
 
+            val declaredSize = zipEntry.size
+            if (declaredSize > MAX_RESOURCE_SIZE || declaredSize < 0) {
+                DebugLogger.w(TAG, "Rejected resource with invalid/excessive size: $entryPath ($declaredSize bytes)")
+                return null
+            }
+            if (zipEntry.method == java.util.zip.ZipEntry.DEFLATED && zipEntry.compressedSize > 0) {
+                val ratio = declaredSize.toDouble() / zipEntry.compressedSize.toDouble()
+                if (ratio > 50.0 && declaredSize > 1024 * 1024) {
+                    DebugLogger.w(TAG, "Rejected resource due to suspicious compression ratio (zip bomb risk): $entryPath")
+                    return null
+                }
+            }
+
             val raw = zipFile.getInputStream(zipEntry).use { stream ->
-                stream.readBytes()
+                val buffer = java.io.ByteArrayOutputStream()
+                val data = ByteArray(8192)
+                var totalBytesRead = 0L
+                var n: Int
+                while (stream.read(data).also { n = it } != -1) {
+                    totalBytesRead += n
+                    if (totalBytesRead > MAX_RESOURCE_SIZE) {
+                        DebugLogger.w(TAG, "Exceeded max resource size limit: $entryPath")
+                        return null
+                    }
+                    buffer.write(data, 0, n)
+                }
+                buffer.toByteArray()
             }
 
             deobfuscateIfNeeded(normalized, raw) ?: raw
         } catch (e: Exception) {
-            Log.w(TAG, "resolve failed for $entryPath: ${e.message}")
+            DebugLogger.w(TAG, "resolve failed for $entryPath: ${e.message}")
             null
         }
     }
@@ -92,7 +113,7 @@ class EpubResourceResolver(
         return try {
             deobfuscate(bytes, algorithm, key)
         } catch (e: Exception) {
-            Log.w(TAG, "font deobfuscation failed for $entryPath (${e.message})")
+            DebugLogger.w(TAG, "font deobfuscation failed for $entryPath (${e.message})")
             null
         }
     }
@@ -158,7 +179,7 @@ class EpubResourceResolver(
             obfuscationMap = map
             uniqueIdentifier = uid ?: readUniqueIdentifier()
         } catch (e: Exception) {
-            Log.w(TAG, "encryption.xml parse failed: ${e.message}")
+            DebugLogger.w(TAG, "encryption.xml parse failed: ${e.message}")
         }
     }
 
@@ -266,7 +287,7 @@ class EpubResourceResolver(
                 null
             }
         } catch (e: Exception) {
-            Log.w(TAG, "unique-identifier parse failed: ${e.message}")
+            DebugLogger.w(TAG, "unique-identifier parse failed: ${e.message}")
             null
         }
     }
@@ -374,7 +395,7 @@ class EpubResourceResolver(
         try {
             zip?.close()
         } catch (e: Exception) {
-            Log.w(TAG, "close failed: ${e.message}")
+            DebugLogger.w(TAG, "close failed: ${e.message}")
         } finally {
             zip = null
             mimeCache.clear()
@@ -386,6 +407,7 @@ class EpubResourceResolver(
     companion object {
         const val VIRTUAL_HOST = "epub.local"
         private const val TAG = "EpubResourceResolver"
+        private const val MAX_RESOURCE_SIZE = 20 * 1024 * 1024L // 20 MB per resource limit
 
         private const val ALGO_IDPF = "http://www.idpf.org/2008/embedding"
         private const val ALGO_ADOBE = "http://ns.adobe.com/pdf/enc#RC"

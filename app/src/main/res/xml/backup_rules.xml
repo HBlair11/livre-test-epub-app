@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<full-backup-content xmlns:tools="http://schemas.android.com/tools" tools:ignore="FullBackupContent">
+    <include domain="database" path="epub.db" />
+    <include domain="database" path="epub.db-shm" />
+    <include domain="database" path="epub.db-wal" />
+    <include domain="sharedpref" path="com.epubreader.app_preferences.xml" />
+    <exclude domain="file" path="books/" />
+    <exclude domain="external" path="." />
+</full-backup-content>

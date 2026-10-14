@@ -180,6 +180,18 @@ class PrefsManager(
             prefs.edit().putBoolean(KEY_TTS_BACKGROUND, value).apply()
         }
 
+    var dailyGoalMinutes: Int
+        get() = prefs.getInt(KEY_DAILY_GOAL, 30)
+        set(value) {
+            prefs.edit().putInt(KEY_DAILY_GOAL, value).apply()
+        }
+
+    var showGoalOnDashboard: Boolean
+        get() = prefs.getBoolean(KEY_SHOW_GOAL_DASHBOARD, true)
+        set(value) {
+            prefs.edit().putBoolean(KEY_SHOW_GOAL_DASHBOARD, value).apply()
+        }
+
     companion object {
         const val KEY_GRID = "view_grid"
         const val KEY_GRID_COLS = "grid_columns"
@@ -203,6 +215,8 @@ class PrefsManager(
         const val KEY_TTS_SPEED = "tts_speed"
         const val KEY_TTS_PITCH = "tts_pitch"
         const val KEY_TTS_BACKGROUND = "tts_background"
+        const val KEY_DAILY_GOAL = "daily_goal_minutes"
+        const val KEY_SHOW_GOAL_DASHBOARD = "show_goal_dashboard"
 
         // Patch v37 slider scales: progress N maps to 0.5 + N * 0.05 engine
         // units. Speed 0..50 -> 0.5x..3.0x (default 8 = 0.9x); pitch 0..30 ->

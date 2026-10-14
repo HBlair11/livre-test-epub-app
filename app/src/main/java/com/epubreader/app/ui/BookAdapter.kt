@@ -55,16 +55,18 @@ class BookAdapter(
 
         fun bind(book: BookEntity) {
             b.title.text = book.title
-            b.author.text =
-                book.author.ifBlank {
-                    itemView.context.getString(com.epubreader.app.R.string.unknown_author)
-                }
+            val authorStr = book.author.ifBlank {
+                itemView.context.getString(com.epubreader.app.R.string.unknown_author)
+            }
+            b.author.text = authorStr
 
             loadCover(book, b.cover)
 
             // Clamp progress to a safe 0.0 - 1.0 range.
             val progress = book.progress.coerceIn(0f, 1f)
             val pct = (progress * 100).toInt()
+            val statusDesc = if (progress >= 0.90f) "finished" else if (pct > 0) "$pct percent read" else "unread"
+            b.root.contentDescription = "${book.title}, $authorStr, $statusDesc"
 
             // Progress badge
             if (progress >= 0.90f) {
@@ -123,8 +125,8 @@ class BookAdapter(
 
         fun bind(book: BookEntity) {
             b.title.text = book.title
-            b.author.text =
-                book.author.ifBlank { itemView.context.getString(com.epubreader.app.R.string.unknown_author) }
+            val authorStr = book.author.ifBlank { itemView.context.getString(com.epubreader.app.R.string.unknown_author) }
+            b.author.text = authorStr
             if (!book.series.isNullOrBlank()) {
                 b.series.visibility = View.VISIBLE
                 b.series.text = book.seriesIndex?.let { index ->
@@ -139,9 +141,13 @@ class BookAdapter(
             } else {
                 b.series.visibility = View.GONE
             }
-            val pct = (book.progress * 100).toInt()
+            val progress = book.progress.coerceIn(0f, 1f)
+            val pct = (progress * 100).toInt()
+            val statusDesc = if (progress >= 0.90f) "finished" else if (pct > 0) "$pct percent read" else "unread"
+            b.root.contentDescription = "${book.title}, $authorStr, $statusDesc"
+
             b.progressBar.progress = pct
-            if (book.progress >= 0.90f) {
+            if (progress >= 0.90f) {
                 b.completedBadge.visibility = View.VISIBLE
                 b.progressPct.visibility = View.GONE
                 b.progressBar.visibility = View.GONE

@@ -38,6 +38,8 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.activity.viewModels
+import androidx.activity.OnBackPressedCallback
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.asLiveData
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -57,6 +59,8 @@ import com.epubreader.app.epub.EpubResourceResolver
 import com.epubreader.app.epub.EpubSearchEngine
 import com.epubreader.app.epub.ReaderPageMapping
 import com.epubreader.app.epub.ReaderTtsController
+import com.epubreader.app.reader.state.ReaderViewModel
+import com.epubreader.app.reader.web.ReaderWebController
 import com.epubreader.app.tts.ReaderTtsService
 import com.epubreader.app.ui.BookmarkAdapter
 import com.epubreader.app.ui.HighlightListAdapter
@@ -114,7 +118,8 @@ class ReaderActivity : AppCompatActivity() {
     // Patch 11 "Screen On" controller — keeps the screen awake for 10 minutes
     // beyond the system timeout while the reader is in the foreground.
     private lateinit var keepScreenOnController: com.epubreader.app.util.KeepScreenOnController
-    private lateinit var db: AppDatabase
+    private val readerViewModel: ReaderViewModel by viewModels()
+    private lateinit var webController: ReaderWebController
 
     private var bookId: Long = -1L
     private var bookEntity: BookEntity? = null
@@ -266,7 +271,6 @@ class ReaderActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         prefs = PrefsManager(applicationContext)
         keepScreenOnController = com.epubreader.app.util.KeepScreenOnController(this, prefs)
-        db = AppDatabase.get(applicationContext)
         super.onCreate(savedInstanceState)
         binding = ActivityReaderBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -284,8 +288,12 @@ class ReaderActivity : AppCompatActivity() {
             finish(); return
         }
 
+        readerViewModel.initBook(bookId)
+        webController = ReaderWebController(binding.webView)
+        setupBackPressDispatcher()
+
         lifecycleScope.launch(Dispatchers.IO) {
-            db.bookDao().markOpened(bookId, System.currentTimeMillis())
+            readerViewModel.persistence.markOpened(bookId, System.currentTimeMillis())
         }
 
         setupWebView()
@@ -716,7 +724,7 @@ class ReaderActivity : AppCompatActivity() {
         if (counts.isEmpty() || counts.any { it < 1 }) return
         val csv = counts.joinToString(",")
         lifecycleScope.launch(Dispatchers.IO) {
-            db.bookDao().updateScreenPageMap(bookId, csv, key)
+            readerViewModel.persistence.updateScreenPageMap(bookId, csv, key)
         }
     }
 
@@ -1257,6 +1265,8 @@ class ReaderActivity : AppCompatActivity() {
 
     private fun setupChrome() {
         binding.btnBack.setOnClickListener { finish() }
+        binding.btnPrevPage.setOnClickListener { turnPage(false) }
+        binding.btnNextPage.setOnClickListener { turnPage(true) }
         binding.btnToc.setOnClickListener { showTocBookmarks() }
         binding.btnBookmarks.setOnClickListener { showTocBookmarks(selectBookmarks = true) }
         binding.btnHighlights.setOnClickListener { showTocBookmarks(selectHighlights = true) }
@@ -1687,7 +1697,7 @@ class ReaderActivity : AppCompatActivity() {
     // ---------------------------------------------------------------- load book
     private fun loadBook() {
         lifecycleScope.launch(Dispatchers.IO) {
-            val entity = db.bookDao().getById(bookId) ?: return@launch
+            val entity = readerViewModel.persistence.getBook(bookId) ?: return@launch
             bookEntity = entity
             val file = File(entity.path)
             if (!file.exists()) return@launch
@@ -1701,7 +1711,7 @@ class ReaderActivity : AppCompatActivity() {
             // Keep the legacy spine count synchronized for reader compatibility.
             // Home uses the embedded navigation TOC location instead of a chapter count.
             if (entity.spineCount != parsed.spine.size) {
-                db.bookDao().updateSpineCount(bookId, parsed.spine.size)
+                readerViewModel.persistence.updateSpineCount(bookId, parsed.spine.size)
             }
             resolver = EpubResourceResolver(file)
             buildTocSectionMap(parsed)
@@ -1893,7 +1903,7 @@ class ReaderActivity : AppCompatActivity() {
             ?: tocSections.lastOrNull { it.first <= spineIndex }?.second
             ?: return
         lifecycleScope.launch(Dispatchers.IO) {
-            db.bookDao().updateCurrentLocation(bookId, location)
+            readerViewModel.persistence.updateCurrentLocation(bookId, location)
         }
     }
 
@@ -3223,7 +3233,7 @@ body *:not(mark.livre-highlight):not(.livre-tts-word):not(.livre-tts-sentence) {
         lastPersistedRatio = ratio
         lastProgressPersistAt = now
         lifecycleScope.launch(Dispatchers.IO) {
-            db.bookDao().updateProgress(bookId, progress, spine, ratio, now)
+            readerViewModel.persistence.updateProgress(bookId, progress, spine, ratio, now)
         }
     }
 
@@ -3343,13 +3353,13 @@ body *:not(mark.livre-highlight):not(.livre-tts-word):not(.livre-tts-sentence) {
             bookmarkAdapter = BookmarkAdapter(
                 onDelete = { bookmark ->
                     lifecycleScope.launch(Dispatchers.IO) {
-                        db.bookmarkDao().delete(bookmark)
+                        readerViewModel.persistence.deleteBookmark(bookmark)
                         withContext(Dispatchers.Main) {
                             Snackbar
                                 .make(binding.root, R.string.bookmark_deleted, Snackbar.LENGTH_LONG)
                                 .setAction(R.string.undo) {
                                     lifecycleScope.launch(Dispatchers.IO) {
-                                        db.bookmarkDao().insert(bookmark)
+                                        readerViewModel.persistence.addBookmark(bookmark)
                                     }
                                 }
                                 .show()
@@ -3372,14 +3382,14 @@ body *:not(mark.livre-highlight):not(.livre-tts-word):not(.livre-tts-sentence) {
                 },
                 onDelete = { h ->
                     lifecycleScope.launch(Dispatchers.IO) {
-                        db.highlightDao().delete(h)
+                        readerViewModel.persistence.deleteHighlight(h)
                         withContext(Dispatchers.Main) {
                             removeHighlightDecorationsFromWebView(h.id)
                             Snackbar
                                 .make(binding.root, R.string.highlight_deleted, Snackbar.LENGTH_LONG)
                                 .setAction(R.string.undo) {
                                     lifecycleScope.launch(Dispatchers.IO) {
-                                        db.highlightDao().insert(h)
+                                        readerViewModel.persistence.addHighlight(h)
                                         withContext(Dispatchers.Main) {
                                             val currentHref = epub?.spine?.getOrNull(spineIndex)?.href
                                             if (currentHref == h.spineHref) {
@@ -3415,14 +3425,14 @@ body *:not(mark.livre-highlight):not(.livre-tts-word):not(.livre-tts-sentence) {
 
         if (!bookmarkObserverStarted) {
             bookmarkObserverStarted = true
-            db.bookmarkDao().observeForBook(bookId).asLiveData().observe(this) { list ->
+            readerViewModel.persistence.observeBookmarks(bookId).asLiveData().observe(this) { list ->
                 (bookmarkRv?.adapter as? BookmarkAdapter)?.submitList(list)
                 refreshBookmarkList()
             }
         }
         if (!highlightObserverStarted) {
             highlightObserverStarted = true
-            db.highlightDao().observeForBook(bookId).asLiveData().observe(this) { list ->
+            readerViewModel.persistence.observeHighlights(bookId).asLiveData().observe(this) { list ->
                 (highlightRv?.adapter as? HighlightListAdapter)?.submitList(list)
                 if (activeOverlayTab == binding.btnTabHighlights.id) {
                     highlightEmpty?.visibility = if (list.isEmpty()) View.VISIBLE else View.GONE
@@ -3640,8 +3650,8 @@ body *:not(mark.livre-highlight):not(.livre-tts-word):not(.livre-tts-sentence) {
             val ratio = json?.optDouble("ratio", currentScrollRatio.toDouble())?.toFloat()?.coerceIn(0f, 1f) ?: currentScrollRatio
             val snippet = json?.optString("snippet").orEmpty().trim()
             lifecycleScope.launch(Dispatchers.IO) {
-                val existing = db.bookmarkDao().findWholePageBySnippet(bookId, idx, snippet).let { semantic ->
-                    semantic ?: db.bookmarkDao().findWholePage(bookId, idx, page, ratio)
+                val existing = readerViewModel.persistence.findBookmarkWholePageBySnippet(bookId, idx, snippet).let { semantic ->
+                    semantic ?: readerViewModel.persistence.findBookmarkWholePage(bookId, idx, page, ratio)
                 }
                 if (existing != null) {
                     withContext(Dispatchers.Main) {
@@ -3649,13 +3659,13 @@ body *:not(mark.livre-highlight):not(.livre-tts-word):not(.livre-tts-sentence) {
                             .make(binding.root, R.string.bookmark_exists, Snackbar.LENGTH_LONG)
                             .setAction(R.string.delete) {
                                 lifecycleScope.launch(Dispatchers.IO) {
-                                    db.bookmarkDao().delete(existing)
+                                    readerViewModel.persistence.deleteBookmark(existing)
                                     withContext(Dispatchers.Main) {
                                         Snackbar
                                             .make(binding.root, R.string.bookmark_deleted, Snackbar.LENGTH_LONG)
                                             .setAction(R.string.undo) {
                                                 lifecycleScope.launch(Dispatchers.IO) {
-                                                    db.bookmarkDao().insert(existing)
+                                                    readerViewModel.persistence.addBookmark(existing)
                                                 }
                                             }
                                             .show()
@@ -3666,7 +3676,7 @@ body *:not(mark.livre-highlight):not(.livre-tts-word):not(.livre-tts-sentence) {
                     }
                     return@launch
                 }
-                db.bookmarkDao().insert(
+                readerViewModel.persistence.addBookmark(
                     BookmarkEntity(
                         bookId = bookId,
                         spineIndex = idx,
@@ -3706,8 +3716,8 @@ body *:not(mark.livre-highlight):not(.livre-tts-word):not(.livre-tts-sentence) {
             val page = values?.getOrNull(0)?.toIntOrNull()?.coerceAtLeast(0) ?: currentPageInChapter
             val ratio = values?.getOrNull(1)?.toFloatOrNull()?.coerceIn(0f, 1f) ?: currentScrollRatio
             lifecycleScope.launch(Dispatchers.IO) {
-                val existing = db.bookmarkDao().findTextBySnippet(bookId, idx, selectionAnchor).let { semantic ->
-                    semantic ?: db.bookmarkDao().findText(bookId, idx, page, selectionAnchor)
+                val existing = readerViewModel.persistence.findBookmarkTextBySnippet(bookId, idx, selectionAnchor).let { semantic ->
+                    semantic ?: readerViewModel.persistence.findBookmarkText(bookId, idx, page, selectionAnchor)
                 }
                 if (existing != null) {
                     withContext(Dispatchers.Main) {
@@ -3715,13 +3725,13 @@ body *:not(mark.livre-highlight):not(.livre-tts-word):not(.livre-tts-sentence) {
                             .make(binding.root, R.string.bookmark_exists, Snackbar.LENGTH_LONG)
                             .setAction(R.string.delete) {
                                 lifecycleScope.launch(Dispatchers.IO) {
-                                    db.bookmarkDao().delete(existing)
+                                    readerViewModel.persistence.deleteBookmark(existing)
                                     withContext(Dispatchers.Main) {
                                         Snackbar
                                             .make(binding.root, R.string.bookmark_deleted, Snackbar.LENGTH_LONG)
                                             .setAction(R.string.undo) {
                                                 lifecycleScope.launch(Dispatchers.IO) {
-                                                    db.bookmarkDao().insert(existing)
+                                                    readerViewModel.persistence.addBookmark(existing)
                                                 }
                                             }
                                             .show()
@@ -3732,7 +3742,7 @@ body *:not(mark.livre-highlight):not(.livre-tts-word):not(.livre-tts-sentence) {
                     }
                     return@launch
                 }
-                db.bookmarkDao().insert(
+                readerViewModel.persistence.addBookmark(
                     BookmarkEntity(
                         bookId = bookId,
                         spineIndex = idx,
@@ -3783,24 +3793,23 @@ body *:not(mark.livre-highlight):not(.livre-tts-word):not(.livre-tts-sentence) {
         binding.searchOverlay.setOnClickListener { }
     }
 
-    @Deprecated("Use the OnBackPressedDispatcher.", ReplaceWith("onBackPressedDispatcher.onBackPressed()"))
-    override fun onBackPressed() {
-        if (binding.searchOverlay.visibility == View.VISIBLE) {
-            hideOverlays(); return
-        }
-        if (binding.tocBookmarkOverlay.visibility == View.VISIBLE) {
-            hideOverlays(); return
-        }
-        // Patch v37: if the Read Aloud overlay is open, back minimizes it
-        // (playback keeps going — Stop is the button that ends read-aloud).
-        if (binding.ttsOverlay.visibility == View.VISIBLE) {
-            hideTtsOverlay(); return
-        }
-        if (chromeVisible) {
-            toggleChrome(); return
-        }
-        @Suppress("DEPRECATION")
-        super.onBackPressed()
+    private fun setupBackPressDispatcher() {
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (binding.searchOverlay.visibility == View.VISIBLE) {
+                    hideOverlays()
+                } else if (binding.tocBookmarkOverlay.visibility == View.VISIBLE) {
+                    hideOverlays()
+                } else if (binding.ttsOverlay.visibility == View.VISIBLE) {
+                    hideTtsOverlay()
+                } else if (chromeVisible) {
+                    toggleChrome()
+                } else {
+                    isEnabled = false
+                    onBackPressedDispatcher.onBackPressed()
+                }
+            }
+        })
     }
 
     // ---------------------------------------------------------------- settings
@@ -4001,7 +4010,7 @@ body *:not(mark.livre-highlight):not(.livre-tts-word):not(.livre-tts-sentence) {
                 chaptersAdvanced = kotlin.math.abs(spineIndex - readingSessionStartSpine),
                 pagesAdvanced = kotlin.math.abs(currentPageInChapter - readingSessionStartPage),
             )
-            lifecycleScope.launch(Dispatchers.IO) { db.readingSessionDao().insert(session) }
+            lifecycleScope.launch(Dispatchers.IO) { readerViewModel.persistence.insertReadingSession(session) }
         }
         readingSessionStartedAt = null
         readingSessionLastInteractionAt = 0L
@@ -4461,16 +4470,15 @@ body *:not(mark.livre-highlight):not(.livre-tts-word):not(.livre-tts-sentence) {
         if (result.entries.isNotEmpty()) {
             val bookId = bookId
             lifecycleScope.launch(Dispatchers.IO) {
-                val db = AppDatabase.get(applicationContext)
                 val definition = result.entries.firstOrNull()?.definition
                 val partOfSpeech = result.entries.firstOrNull()?.partOfSpeech
                 // Prefer the dictionary's normalized match so punctuation
                 // variants don't create odd history entries.
                 val word = (result.matchedWord ?: raw).trim().lowercase(java.util.Locale.US)
                 if (word.isBlank()) return@launch
-                val existing = db.dictionaryHistoryDao().find(word)
+                val existing = readerViewModel.persistence.findDictionaryHistory(word)
                 if (existing == null) {
-                    db.dictionaryHistoryDao().insert(
+                    readerViewModel.persistence.insertDictionaryHistory(
                         DictionaryHistoryEntity(
                             word = word,
                             definition = definition,
@@ -4481,7 +4489,7 @@ body *:not(mark.livre-highlight):not(.livre-tts-word):not(.livre-tts-sentence) {
                     )
                 } else {
                     // Re-lookups move the word back to the top of the list.
-                    db.dictionaryHistoryDao().refresh(
+                    readerViewModel.persistence.refreshDictionaryHistory(
                         existing.id, definition, partOfSpeech, bookId, System.currentTimeMillis(),
                     )
                 }

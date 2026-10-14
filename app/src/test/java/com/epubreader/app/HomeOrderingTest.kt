@@ -30,7 +30,7 @@ class HomeOrderingTest {
         val result = applySort(
             listOf(newerFileOlderImport, olderFileNewerImport),
             PrefsManager.SortOption.RECENTLY_ADDED,
-            true,
+            false,
         )
 
         assertEquals(listOf(1L, 2L), result.map { it.id })
@@ -49,7 +49,7 @@ class HomeOrderingTest {
         val older = BookEntity(id = 1, title = "Older", author = "A", path = "old", checksum = "1", addedDate = 100L, sourceLastModified = 1000L)
         val newer = BookEntity(id = 2, title = "Newer", author = "B", path = "new", checksum = "2", addedDate = 200L, sourceLastModified = 2000L)
 
-        val result = applySort(listOf(older, newer), PrefsManager.SortOption.RECENTLY_ADDED, false)
+        val result = applySort(listOf(older, newer), PrefsManager.SortOption.RECENTLY_ADDED, true)
 
         assertEquals(listOf(1L, 2L), result.map { it.id })
     }

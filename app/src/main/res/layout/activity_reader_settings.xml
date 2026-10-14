@@ -1,11 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Patch 17 (Issue #1): full-screen reader settings ACTIVITY (replaces the
-     BottomSheet). Every numeric control is a +/- stepper (no sliders, so a
-     vertical scroll can never nudge a value) and every multi-option control is
-     an ExposedDropdownMenu (scales cleanly as more options are added).
-     Order: Theme -> Font Face -> Alignment -> Font Size -> Line Spacing ->
-     Margin -> Top & Bottom Margin -> Hyphenation -> Page Turn Animation.
-     (Alignment is retained as a dropdown to avoid a feature regression.) -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -14,7 +7,6 @@
     android:fitsSystemWindows="true"
     android:orientation="vertical">
 
-    <!-- Toolbar with back + Done. Inherits chrome colors from the activity theme. -->
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/settingsToolbar"
         android:layout_width="match_parent"
@@ -39,153 +31,304 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingStart="@dimen/app_row_content_padding_h"
-            android:paddingEnd="@dimen/app_row_content_padding_h"
-            android:paddingBottom="32dp">
+            android:padding="16dp">
 
-            <!-- ============ Theme ============ -->
-            <TextView style="@style/ReaderSettingLabel" android:text="@string/reader_theme" />
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/themeLayout"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-                <com.google.android.material.textfield.MaterialAutoCompleteTextView
-                    android:id="@+id/themeDropdown"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="none"
-                    android:textColor="@color/reader_chrome_text"
-                    android:paddingStart="12dp"
-                    android:paddingEnd="8dp" />
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <!-- ============ Font Face ============ -->
-            <TextView style="@style/ReaderSettingLabel" android:text="@string/reader_font_face" />
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/fontLayout"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-                <com.google.android.material.textfield.MaterialAutoCompleteTextView
-                    android:id="@+id/fontDropdown"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="none"
-                    android:textColor="@color/reader_chrome_text"
-                    android:paddingStart="12dp"
-                    android:paddingEnd="8dp" />
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <!-- ============ Alignment ============ -->
-            <TextView style="@style/ReaderSettingLabel" android:text="@string/reader_alignment" />
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/alignLayout"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-                <com.google.android.material.textfield.MaterialAutoCompleteTextView
-                    android:id="@+id/alignDropdown"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="none"
-                    android:textColor="@color/reader_chrome_text"
-                    android:paddingStart="12dp"
-                    android:paddingEnd="8dp" />
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <!-- ============ Font Size stepper ============ -->
-            <TextView style="@style/ReaderSettingLabel" android:text="@string/reader_font_size" />
-            <LinearLayout
+            <!-- 1. Daily Reading Goal -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget.MaterialComponents.CardView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/fontSizeMinus"
-                    style="@style/ReaderStepperBtn"
-                    app:icon="@drawable/ic_minus"
-                    android:contentDescription="@string/stepper_decrease" />
-                <TextView
-                    android:id="@+id/fontSizeValue"
-                    style="@style/ReaderStepperValue" />
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/fontSizePlus"
-                    style="@style/ReaderStepperBtn"
-                    app:icon="@drawable/ic_add"
-                    android:contentDescription="@string/stepper_increase" />
-            </LinearLayout>
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="2dp">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/settings_section_daily_goal"
+                        android:textStyle="bold"
+                        android:textSize="16sp"
+                        android:textColor="?android:textColorPrimary" />
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="@string/settings_section_daily_goal_subtitle"
+                        android:textSize="13sp"
+                        android:textColor="?android:textColorSecondary" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:text="@string/settings_target_minutes"
+                        android:textStyle="bold"
+                        android:textSize="14sp" />
+                    <com.google.android.material.chip.ChipGroup
+                        android:id="@+id/chipGroupGoal"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        app:singleSelection="true">
+                        <com.google.android.material.chip.Chip android:id="@+id/goal15" style="@style/Widget.MaterialComponents.Chip.Choice" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="15 mins" />
+                        <com.google.android.material.chip.Chip android:id="@+id/goal20" style="@style/Widget.MaterialComponents.Chip.Choice" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="20 mins" />
+                        <com.google.android.material.chip.Chip android:id="@+id/goal30" style="@style/Widget.MaterialComponents.Chip.Choice" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="30 mins" android:checked="true" />
+                        <com.google.android.material.chip.Chip android:id="@+id/goal45" style="@style/Widget.MaterialComponents.Chip.Choice" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="45 mins" />
+                        <com.google.android.material.chip.Chip android:id="@+id/goal60" style="@style/Widget.MaterialComponents.Chip.Choice" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="60 mins" />
+                    </com.google.android.material.chip.ChipGroup>
+                    <androidx.appcompat.widget.SwitchCompat
+                        android:id="@+id/goalDashboardSwitch"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:text="@string/settings_show_goal_stats"
+                        android:checked="true" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
-            <!-- ============ Line Spacing stepper ============ -->
-            <TextView style="@style/ReaderSettingLabel" android:text="@string/reader_line_height" />
-            <LinearLayout
+            <!-- 2. Reader Color Theme -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget.MaterialComponents.CardView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/lineHeightMinus"
-                    style="@style/ReaderStepperBtn"
-                    app:icon="@drawable/ic_minus"
-                    android:contentDescription="@string/stepper_decrease" />
-                <TextView
-                    android:id="@+id/lineHeightValue"
-                    style="@style/ReaderStepperValue" />
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/lineHeightPlus"
-                    style="@style/ReaderStepperBtn"
-                    app:icon="@drawable/ic_add"
-                    android:contentDescription="@string/stepper_increase" />
-            </LinearLayout>
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="2dp">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/settings_section_color_theme"
+                        android:textStyle="bold"
+                        android:textSize="16sp"
+                        android:textColor="?android:textColorPrimary" />
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp">
+                        <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                            android:id="@+id/themeDropdown"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="none" />
+                    </com.google.android.material.textfield.TextInputLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
-            <!-- ============ Margin stepper ============ -->
-            <TextView style="@style/ReaderSettingLabel" android:text="@string/reader_margin" />
-            <LinearLayout
+            <!-- 3. Typography and Sizing -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget.MaterialComponents.CardView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/marginMinus"
-                    style="@style/ReaderStepperBtn"
-                    app:icon="@drawable/ic_minus"
-                    android:contentDescription="@string/stepper_decrease" />
-                <TextView
-                    android:id="@+id/marginValue"
-                    style="@style/ReaderStepperValue" />
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/marginPlus"
-                    style="@style/ReaderStepperBtn"
-                    app:icon="@drawable/ic_add"
-                    android:contentDescription="@string/stepper_increase" />
-            </LinearLayout>
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="2dp">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/settings_section_typography"
+                        android:textStyle="bold"
+                        android:textSize="16sp"
+                        android:textColor="?android:textColorPrimary" />
 
-            <!-- ============ Top & Bottom Margin toggle ============ -->
-            <TextView style="@style/ReaderSettingLabel" android:text="@string/reader_bottom_margin" />
-            <androidx.appcompat.widget.SwitchCompat
-                android:id="@+id/bottomMarginSwitch"
-                style="@style/ReaderSwitchRow"
-                android:text="@string/reader_bottom_margin_summary"
-                android:textColor="?android:textColorSecondary"
-                android:textSize="13sp" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="@string/reader_font_face"
+                        android:textSize="13sp" />
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp">
+                        <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                            android:id="@+id/fontDropdown"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="none" />
+                    </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- ============ Hyphenation toggle ============ -->
-            <TextView style="@style/ReaderSettingLabel" android:text="@string/reader_hyphenation" />
-            <androidx.appcompat.widget.SwitchCompat
-                android:id="@+id/hyphenationSwitch"
-                style="@style/ReaderSwitchRow"
-                android:text="@string/reader_hyphenation_summary"
-                android:textColor="?android:textColorSecondary"
-                android:textSize="13sp" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="@string/reader_alignment"
+                        android:textSize="13sp" />
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp">
+                        <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                            android:id="@+id/alignDropdown"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="none" />
+                    </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- ============ Page Turn Animation toggle (Patch 17, Addition #2) ============ -->
-            <TextView style="@style/ReaderSettingLabel" android:text="@string/reader_page_turn_animation" />
-            <androidx.appcompat.widget.SwitchCompat
-                android:id="@+id/pageTurnAnimSwitch"
-                style="@style/ReaderSwitchRow"
-                android:text="@string/reader_page_turn_animation_summary"
-                android:textColor="?android:textColorSecondary"
-                android:textSize="13sp" />
+                    <!-- Font size -->
+                    <TextView style="@style/ReaderSettingLabel" android:text="@string/reader_font_size" android:layout_marginTop="8dp" />
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical" android:orientation="horizontal">
+                        <com.google.android.material.button.MaterialButton android:id="@+id/fontSizeMinus" style="@style/ReaderStepperBtn" app:icon="@drawable/ic_minus" />
+                        <TextView android:id="@+id/fontSizeValue" style="@style/ReaderStepperValue" />
+                        <com.google.android.material.button.MaterialButton android:id="@+id/fontSizePlus" style="@style/ReaderStepperBtn" app:icon="@drawable/ic_add" />
+                    </LinearLayout>
+
+                    <!-- Line Spacing -->
+                    <TextView style="@style/ReaderSettingLabel" android:text="@string/reader_line_height" />
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical" android:orientation="horizontal">
+                        <com.google.android.material.button.MaterialButton android:id="@+id/lineHeightMinus" style="@style/ReaderStepperBtn" app:icon="@drawable/ic_minus" />
+                        <TextView android:id="@+id/lineHeightValue" style="@style/ReaderStepperValue" />
+                        <com.google.android.material.button.MaterialButton android:id="@+id/lineHeightPlus" style="@style/ReaderStepperBtn" app:icon="@drawable/ic_add" />
+                    </LinearLayout>
+
+                    <!-- Margin -->
+                    <TextView style="@style/ReaderSettingLabel" android:text="@string/reader_margin" />
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical" android:orientation="horizontal">
+                        <com.google.android.material.button.MaterialButton android:id="@+id/marginMinus" style="@style/ReaderStepperBtn" app:icon="@drawable/ic_minus" />
+                        <TextView android:id="@+id/marginValue" style="@style/ReaderStepperValue" />
+                        <com.google.android.material.button.MaterialButton android:id="@+id/marginPlus" style="@style/ReaderStepperBtn" app:icon="@drawable/ic_add" />
+                    </LinearLayout>
+
+                    <androidx.appcompat.widget.SwitchCompat android:id="@+id/bottomMarginSwitch" style="@style/ReaderSwitchRow" android:text="@string/reader_bottom_margin_summary" android:layout_marginTop="8dp" />
+                    <androidx.appcompat.widget.SwitchCompat android:id="@+id/hyphenationSwitch" style="@style/ReaderSwitchRow" android:text="@string/reader_hyphenation_summary" />
+                    <androidx.appcompat.widget.SwitchCompat android:id="@+id/pageTurnAnimSwitch" style="@style/ReaderSwitchRow" android:text="@string/reader_page_turn_animation_summary" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- 4. Read Aloud TTS Voice -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget.MaterialComponents.CardView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="2dp">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/settings_section_tts"
+                        android:textStyle="bold"
+                        android:textSize="16sp"
+                        android:textColor="?android:textColorPrimary" />
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="@string/tts_settings"
+                        android:textSize="13sp"
+                        android:textColor="?android:textColorSecondary" />
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnTtsConfigure"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:text="Configure Read Aloud Voice &amp; Speed" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- 5. Full Backup and Restore -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget.MaterialComponents.CardView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="2dp">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/settings_section_backup"
+                        android:textStyle="bold"
+                        android:textSize="16sp"
+                        android:textColor="?android:textColorPrimary" />
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="@string/settings_section_backup_summary"
+                        android:textSize="13sp"
+                        android:textColor="?android:textColorSecondary" />
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginTop="12dp">
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnExportBackup"
+                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginEnd="8dp"
+                            android:text="@string/settings_export_backup" />
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnImportBackup"
+                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="8dp"
+                            android:text="@string/settings_import_backup" />
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- 6. Privacy Guaranteed and Architecture -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget.MaterialComponents.CardView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="2dp">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/settings_section_privacy"
+                        android:textStyle="bold"
+                        android:textSize="16sp"
+                        android:textColor="?android:textColorPrimary" />
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:text="@string/settings_privacy_summary"
+                        android:textSize="13sp"
+                        android:textColor="?android:textColorSecondary"
+                        android:lineSpacingMultiplier="1.2" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>

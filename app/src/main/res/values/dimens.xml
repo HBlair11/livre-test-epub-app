@@ -54,9 +54,9 @@
     <dimen name="app_card_padding">16dp</dimen>
 
     <!-- Icon button touch target size (reader top bar, overlays). -->
-    <dimen name="app_icon_button_size">44dp</dimen>
+    <dimen name="app_icon_button_size">48dp</dimen>
     <!-- Seeker prev/next button touch target size. -->
-    <dimen name="app_seeker_button_size">40dp</dimen>
+    <dimen name="app_seeker_button_size">48dp</dimen>
 
     <!-- Small text-row horizontal padding (title/author next to a back button). -->
     <dimen name="app_text_row_padding_h">6dp</dimen>

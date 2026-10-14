@@ -13,12 +13,12 @@
     android:paddingEnd="@dimen/app_grid_edge_h"
     android:paddingBottom="16dp">
 
-    <ImageView
+    <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/icon"
         android:layout_width="22dp"
         android:layout_height="22dp"
         android:contentDescription="@string/app_name"
-        android:tint="@color/secondary"
+        app:tint="@color/secondary"
         app:srcCompat="@drawable/ic_person" />
 
     <LinearLayout
@@ -62,11 +62,11 @@
         android:textSize="12sp"
         android:textStyle="bold" />
 
-    <ImageView
+    <androidx.appcompat.widget.AppCompatImageView
         android:layout_width="16dp"
         android:layout_height="16dp"
         android:layout_marginStart="6dp"
         android:contentDescription="@null"
-        android:tint="@color/secondary"
+        app:tint="@color/secondary"
         app:srcCompat="@drawable/ic_chevron_right" />
 </LinearLayout>

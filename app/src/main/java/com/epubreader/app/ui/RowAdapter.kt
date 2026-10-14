@@ -16,7 +16,7 @@ class RowAdapter(
     private val onLongClick: ((Pair<String, Long?>) -> Boolean)? = null
 ) : ListAdapter<Any, RowAdapter.RowVH>(DIFF) {
 
-    class RowVd(val name: String, val id: Long?, val count: Int)
+    data class RowVd(val name: String, val id: Long?, val count: Int)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RowVH {
         val b = ItemAuthorSeriesBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -58,7 +58,13 @@ class RowAdapter(
                 else -> o === n
             }
 
-            override fun areContentsTheSame(o: Any, n: Any): Boolean = o == n
+            @Suppress("DiffUtilEquals")
+            override fun areContentsTheSame(o: Any, n: Any): Boolean = when {
+                o is GroupedRow && n is GroupedRow -> o == n
+                o is CollectionEntity && n is CollectionEntity -> o == n
+                o is RowVd && n is RowVd -> o == n
+                else -> o === n
+            }
         }
     }
 }

@@ -8,12 +8,12 @@ plugins {
 
 android {
     namespace = "com.epubreader.app"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.epubreader.app"
         minSdk = 24
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 37
         versionName = "1.36"
         vectorDrawables { useSupportLibrary = true }
@@ -29,8 +29,6 @@ android {
             keyPassword = "android"
         }
 
-        // Production release signing is opt-in and comes from the local
-        // keystore.properties file. Never commit that file or the keystore.
         if (productionSigningProperties.exists()) {
             val releaseProperties = Properties().apply {
                 productionSigningProperties.inputStream().use { load(it) }
@@ -44,22 +42,32 @@ android {
         }
     }
 
+    val isReleaseRequested = gradle.startParameter.taskNames.any { 
+        it.contains("Release", ignoreCase = true) || 
+        it.contains("bundle", ignoreCase = true) || 
+        it == "build" 
+    }
+
     buildTypes {
         debug {
             isMinifyEnabled = false
             signingConfig = signingConfigs.getByName("permanentDebug")
         }
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             if (productionSigningProperties.exists()) {
                 signingConfig = signingConfigs.getByName("productionRelease")
+            } else if (isReleaseRequested) {
+                throw GradleException("FATAL: Production signing is mandatory for release builds. keystore.properties file is missing.")
             }
         }
     }
 
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
 
     compileOptions {
@@ -128,5 +136,6 @@ dependencies {
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test:runner:1.6.2")
     androidTestImplementation("androidx.test:core:1.6.1")
+    androidTestImplementation("androidx.test.espresso:espresso-accessibility:3.6.1")
     androidTestImplementation("androidx.room:room-testing:2.6.1")
 }

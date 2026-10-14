@@ -42,13 +42,6 @@ jobs:
 
       # ----------------------------------------------------------
       # Android SDK
-      #
-      # IMPORTANT:
-      # Do NOT add android-actions/setup-android here.
-      # Do NOT run sdkmanager --licenses.
-      #
-      # ubuntu-latest already provides the Android SDK.
-      # Your project requires API 35.
       # ----------------------------------------------------------
 
       - name: Verify Android SDK
@@ -85,26 +78,25 @@ jobs:
             -printf '%f\n' 2>/dev/null | sort -V || true
 
           echo ""
-          echo "Checking Android API 35..."
+          echo "Checking Android API 36..."
 
-          if [ ! -d "$ANDROID_HOME/platforms/android-35" ]; then
-            echo "::error::Android SDK Platform 35 was not found."
-            echo "::error::This project uses compileSdk = 35."
+          if [ ! -d "$ANDROID_HOME/platforms/android-36" ]; then
+            echo "::error::Android SDK Platform 36 was not found."
+            echo "::error::This project uses compileSdk = 36."
             exit 1
           fi
 
-          echo "Android API 35 found."
+          echo "Android API 36 found."
 
           echo ""
           echo "Checking Android Build Tools..."
 
-          if [ ! -d "$ANDROID_HOME/build-tools/35.0.0" ] &&
-             [ ! -d "$ANDROID_HOME/build-tools/35.0.1" ]; then
-            echo "::error::Android Build Tools 35.x were not found."
+          if [ ! -d "$ANDROID_HOME/build-tools/36.0.0" ]; then
+            echo "::error::Android Build Tools 36.0.0 was not found."
             exit 1
           fi
 
-          echo "Android Build Tools 35.x found."
+          echo "Android Build Tools 36.0.0 found."
 
       # ----------------------------------------------------------
       # Gradle Wrapper
@@ -122,6 +114,9 @@ jobs:
 
       - name: Resource check
         run: ./gradlew mergeDebugResources --console=plain --no-daemon --stacktrace
+
+      - name: Lint check
+        run: ./gradlew lintDebug --console=plain --no-daemon --stacktrace
 
       # ----------------------------------------------------------
       # Inject Permanent Debug Keystore
@@ -210,23 +205,6 @@ jobs:
 
           echo ""
           echo "OK: APK does not declare INTERNET permission."
-
-      - name: Inspect APK badging
-        shell: bash
-        run: |
-          set -e
-
-          APK="app/build/outputs/apk/debug/the-livre-magicae.apk"
-
-          AAPT2="$(find "$ANDROID_HOME/build-tools" \
-            -type f \
-            -name aapt2 \
-            -print 2>/dev/null |
-            sort -V |
-            tail -n 1)"
-
-          "$AAPT2" dump badging "$APK" |
-            grep -E "package:|sdkVersion|targetSdkVersion|application-label:"
 
       # ----------------------------------------------------------
       # Upload APK
