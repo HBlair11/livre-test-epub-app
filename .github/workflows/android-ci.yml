@@ -40,38 +40,6 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Set GRADLE_OPTS to override org.gradle.java.home
-        shell: bash
-        run: |
-          # Ensure Gradle uses the runner's JAVA_HOME instead of the Windows path committed in gradle.properties
-          echo "GRADLE_OPTS=-Dorg.gradle.java.home=$JAVA_HOME" >> $GITHUB_ENV
-
-      - name: Install Android command-line tools and SDK components
-        shell: bash
-        run: |
-          set -e
-          # Use a local SDK root that persists between steps via $GITHUB_ENV
-          ANDROID_SDK_ROOT="$HOME/Android/Sdk"
-          mkdir -p "$ANDROID_SDK_ROOT"
-
-          # Download and install the Android command-line tools
-          curl -sS https://dl.google.com/android/repository/commandlinetools-linux-latest.zip -o /tmp/cmdline-tools.zip
-          unzip -q /tmp/cmdline-tools.zip -d "$ANDROID_SDK_ROOT/cmdline-tools"
-          mkdir -p "$ANDROID_SDK_ROOT/cmdline-tools/latest"
-          mv "$ANDROID_SDK_ROOT/cmdline-tools"/cmdline-tools/* "$ANDROID_SDK_ROOT/cmdline-tools/latest/" || true
-
-          # Persist Android SDK environment variables for subsequent steps
-          echo "ANDROID_HOME=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
-          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
-          echo "PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools:$PATH" >> $GITHUB_ENV
-
-          # Make sdkmanager available for this step
-          export PATH="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH"
-
-          # Accept licenses and install required components
-          yes | sdkmanager --sdk_root="$ANDROID_SDK_ROOT" --licenses
-          sdkmanager --sdk_root="$ANDROID_SDK_ROOT" "platform-tools" "platforms;android-36" "build-tools;36.0.0"
-
       # ----------------------------------------------------------
       # Android SDK
       # ----------------------------------------------------------
