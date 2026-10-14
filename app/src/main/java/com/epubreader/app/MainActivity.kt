@@ -510,20 +510,8 @@ class MainActivity : AppCompatActivity() {
     private fun setupHomeShelves() {
         val specs = listOf(
             R.id.homeRecentlyAdded to binding.homeContent.homeRecentlyAdded,
-            R.id.homeFavorites to binding.homeContent.homeFavorites,
-            R.id.homeAuthorBooks1 to binding.homeContent.homeAuthorBooks1,
-            R.id.homeAuthorBooks2 to binding.homeContent.homeAuthorBooks2,
-            R.id.homeAuthorBooks3 to binding.homeContent.homeAuthorBooks3,
-            R.id.homeSeriesBooks1 to binding.homeContent.homeSeriesBooks1,
-            R.id.homeSeriesBooks2 to binding.homeContent.homeSeriesBooks2,
-            R.id.homeSeriesBooks3 to binding.homeContent.homeSeriesBooks3,
+            R.id.homeFavorites to binding.homeContent.homeFavorites
         )
-        specs.forEach { (key, recycler) ->
-            val adapter = HomeBookAdapter(::openBook, ::showBookOptions)
-            recycler.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
-            recycler.adapter = adapter
-            homeAdapters[key] = adapter
-        }
     }
 
     private fun renderHome(content: HomeContent) {
@@ -538,7 +526,6 @@ class MainActivity : AppCompatActivity() {
 
         content.continueReading?.let { book ->
             binding.homeContent.homeContinueTitle.text = book.title
-            binding.homeContent.homeContinueAuthor.text = book.author.ifBlank { getString(R.string.unknown_author) }
 
             val seriesText = book.series
                 ?.trim()
@@ -552,8 +539,6 @@ class MainActivity : AppCompatActivity() {
                         getString(R.string.home_continue_series, series)
                     }
                 }
-            binding.homeContent.homeContinueSeries.text = seriesText
-            binding.homeContent.homeContinueSeries.visibility = if (seriesText.isNullOrBlank()) View.GONE else View.VISIBLE
 
             val location = book.currentLocation?.trim().orEmpty()
             binding.homeContent.homeContinueLocation.text = if (location.isBlank()) {
@@ -569,30 +554,15 @@ class MainActivity : AppCompatActivity() {
                 getString(R.string.home_progress_percent, (book.progress * 100).toInt())
             }
             loadHomeCover(book, binding.homeContent.homeContinueCover)
-            binding.homeContent.homeContinueButton.setOnClickListener { openBook(book) }
             binding.homeContent.homeContinueCard.setOnClickListener { openBook(book) }
         }
 
         submitHomeShelf(R.id.homeRecentlyAdded, content.recentlyAdded)
         binding.homeContent.homeFavoritesSection.visibility = if (content.favorites.isEmpty()) View.GONE else View.VISIBLE
         submitHomeShelf(R.id.homeFavorites, content.favorites)
-        bindHomeGroups(
-            listOf(
-                Triple(binding.homeContent.homeAuthorGroup1, binding.homeContent.homeAuthorTitle1, binding.homeContent.homeAuthorBooks1),
-                Triple(binding.homeContent.homeAuthorGroup2, binding.homeContent.homeAuthorTitle2, binding.homeContent.homeAuthorBooks2),
-                Triple(binding.homeContent.homeAuthorGroup3, binding.homeContent.homeAuthorTitle3, binding.homeContent.homeAuthorBooks3),
-            ),
-            content.topAuthors,
-        )
+        
         binding.homeContent.homeAuthorsSection.visibility = if (content.topAuthors.isEmpty()) View.GONE else View.VISIBLE
-        bindHomeGroups(
-            listOf(
-                Triple(binding.homeContent.homeSeriesGroup1, binding.homeContent.homeSeriesTitle1, binding.homeContent.homeSeriesBooks1),
-                Triple(binding.homeContent.homeSeriesGroup2, binding.homeContent.homeSeriesTitle2, binding.homeContent.homeSeriesBooks2),
-                Triple(binding.homeContent.homeSeriesGroup3, binding.homeContent.homeSeriesTitle3, binding.homeContent.homeSeriesBooks3),
-            ),
-            content.topSeries,
-        )
+        
         binding.homeContent.homeSeriesSection.visibility = if (content.topSeries.isEmpty()) View.GONE else View.VISIBLE
     }
 

@@ -65,19 +65,16 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <LinearLayout
+            <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/app_row_content_padding_h"
                 android:layout_marginTop="26dp"
-                android:layout_marginEnd="@dimen/app_row_content_padding_h"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
+                android:layout_marginEnd="@dimen/app_row_content_padding_h">
 
                 <TextView
-                    android:layout_width="0dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
                     android:text="@string/home_continue_heading"
                     android:textColor="?android:textColorPrimary"
                     android:textSize="20sp"
@@ -87,13 +84,15 @@
                     android:id="@+id/homeContinueViewAll"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
                     android:clickable="true"
                     android:focusable="true"
                     android:text="View All &gt;"
                     android:textColor="?attr/colorPrimary"
                     android:textSize="14sp"
                     android:textStyle="bold" />
-            </LinearLayout>
+            </RelativeLayout>
 
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/homeContinueCard"
@@ -201,7 +200,8 @@
                         style="?android:attr/progressBarStyleHorizontal"
                         android:layout_width="match_parent"
                         android:layout_height="6dp"
-                        android:layout_marginTop="6dp" />
+                        android:layout_marginTop="6dp"
+                        android:max="100" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -216,7 +216,8 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:layout_marginEnd="8dp"
-                            android:text="Resume Reading" />
+                            android:text="Resume Reading"
+                            app:icon="@drawable/ic_menu_book" />
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/homeContinueDetailsBtn"
@@ -238,19 +239,16 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <LinearLayout
+            <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/app_row_content_padding_h"
                 android:layout_marginTop="28dp"
-                android:layout_marginEnd="@dimen/app_row_content_padding_h"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
+                android:layout_marginEnd="@dimen/app_row_content_padding_h">
 
                 <TextView
-                    android:layout_width="0dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
                     android:text="@string/home_recently_added"
                     android:textColor="?android:textColorPrimary"
                     android:textSize="18sp"
@@ -260,13 +258,15 @@
                     android:id="@+id/homeRecentlyAddedViewAll"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
                     android:clickable="true"
                     android:focusable="true"
                     android:text="View All &gt;"
                     android:textColor="?attr/colorPrimary"
                     android:textSize="14sp"
                     android:textStyle="bold" />
-            </LinearLayout>
+            </RelativeLayout>
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/homeRecentlyAdded"
@@ -288,19 +288,16 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <LinearLayout
+            <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/app_row_content_padding_h"
                 android:layout_marginTop="28dp"
-                android:layout_marginEnd="@dimen/app_row_content_padding_h"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
+                android:layout_marginEnd="@dimen/app_row_content_padding_h">
 
                 <TextView
-                    android:layout_width="0dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
                     android:text="@string/home_favorites"
                     android:textColor="?android:textColorPrimary"
                     android:textSize="18sp"
@@ -310,13 +307,15 @@
                     android:id="@+id/homeFavoritesViewAll"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
                     android:clickable="true"
                     android:focusable="true"
                     android:text="View All &gt;"
                     android:textColor="?attr/colorPrimary"
                     android:textSize="14sp"
                     android:textStyle="bold" />
-            </LinearLayout>
+            </RelativeLayout>
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/homeFavorites"
@@ -355,17 +354,14 @@
                     android:orientation="vertical"
                     android:padding="16dp">
 
-                    <LinearLayout
+                    <RelativeLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="12dp"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal">
+                        android:layout_marginBottom="12dp">
 
                         <TextView
-                            android:layout_width="0dp"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
                             android:text="BROWSE BY AUTHOR"
                             android:textColor="?android:textColorPrimary"
                             android:textSize="15sp"
@@ -375,13 +371,15 @@
                             android:id="@+id/homeAllAuthorsBtn"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:layout_alignParentEnd="true"
+                            android:layout_centerVertical="true"
                             android:clickable="true"
                             android:focusable="true"
                             android:text="All Authors"
                             android:textColor="?attr/colorPrimary"
                             android:textSize="14sp"
                             android:textStyle="bold" />
-                    </LinearLayout>
+                    </RelativeLayout>
 
                     <LinearLayout
                         android:id="@+id/homeAuthorRowsContainer"
@@ -416,17 +414,14 @@
                     android:orientation="vertical"
                     android:padding="16dp">
 
-                    <LinearLayout
+                    <RelativeLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="12dp"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal">
+                        android:layout_marginBottom="12dp">
 
                         <TextView
-                            android:layout_width="0dp"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
                             android:text="BROWSE BY SERIES"
                             android:textColor="?android:textColorPrimary"
                             android:textSize="15sp"
@@ -436,13 +431,15 @@
                             android:id="@+id/homeAllSeriesBtn"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:layout_alignParentEnd="true"
+                            android:layout_centerVertical="true"
                             android:clickable="true"
                             android:focusable="true"
                             android:text="All Series"
                             android:textColor="?attr/colorPrimary"
                             android:textSize="14sp"
                             android:textStyle="bold" />
-                    </LinearLayout>
+                    </RelativeLayout>
 
                     <LinearLayout
                         android:id="@+id/homeSeriesRowsContainer"
