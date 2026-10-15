@@ -43,7 +43,7 @@
                 android:paddingTop="2dp"
                 android:paddingEnd="6dp"
                 android:paddingBottom="2dp"
-                android:textColor="@color/dark_text"
+                android:textColor="@color/white"
                 android:textSize="10sp"
                 android:textStyle="bold"
                 android:visibility="gone"

@@ -4,7 +4,6 @@ import com.epubreader.app.util.SystemBarController
 
 import android.os.Bundle
 import android.widget.ArrayAdapter
-import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -19,6 +18,7 @@ import com.epubreader.app.data.PrefsManager.Companion.MIN_LINE_HEIGHT
 import com.epubreader.app.data.PrefsManager.Companion.MIN_MARGIN
 import com.epubreader.app.data.PrefsManager.Companion.STEP_MARGIN
 import com.epubreader.app.databinding.ActivityReaderSettingsBinding
+import com.epubreader.app.ui.ReaderTheme
 import com.google.android.material.textfield.MaterialAutoCompleteTextView
 
 class ReaderSettingsActivity : AppCompatActivity() {
@@ -69,7 +69,6 @@ class ReaderSettingsActivity : AppCompatActivity() {
             }
         })
 
-        setupDailyGoal()
         setupThemeDropdown()
         setupFontDropdown()
         setupAlignDropdown()
@@ -79,56 +78,11 @@ class ReaderSettingsActivity : AppCompatActivity() {
         setupBottomMarginSwitch()
         setupHyphenationSwitch()
         setupPageTurnAnimSwitch()
-        setupBackupAndTtsActions()
     }
 
     private fun finishWithResult() {
         setResult(if (dirty) RESULT_OK else RESULT_CANCELED)
         finish()
-    }
-
-    private fun setupDailyGoal() {
-        val minutes = prefs.dailyGoalMinutes
-        when (minutes) {
-            15 -> binding.goal15.isChecked = true
-            20 -> binding.goal20.isChecked = true
-            30 -> binding.goal30.isChecked = true
-            45 -> binding.goal45.isChecked = true
-            60 -> binding.goal60.isChecked = true
-            else -> binding.goal30.isChecked = true
-        }
-        binding.chipGroupGoal.setOnCheckedChangeListener { _, checkedId ->
-            val mins = when (checkedId) {
-                R.id.goal15 -> 15
-                R.id.goal20 -> 20
-                R.id.goal30 -> 30
-                R.id.goal45 -> 45
-                R.id.goal60 -> 60
-                else -> 30
-            }
-            if (mins != prefs.dailyGoalMinutes) {
-                prefs.dailyGoalMinutes = mins; dirty = true
-            }
-        }
-
-        binding.goalDashboardSwitch.isChecked = prefs.showGoalOnDashboard
-        binding.goalDashboardSwitch.setOnCheckedChangeListener { _, checked ->
-            if (checked != prefs.showGoalOnDashboard) {
-                prefs.showGoalOnDashboard = checked; dirty = true
-            }
-        }
-    }
-
-    private fun setupBackupAndTtsActions() {
-        binding.btnTtsConfigure.setOnClickListener {
-            Toast.makeText(this, getString(R.string.tts_settings), Toast.LENGTH_SHORT).show()
-        }
-        binding.btnExportBackup.setOnClickListener {
-            Toast.makeText(this, "Backup exported successfully (local encrypted DB & preferences).", Toast.LENGTH_LONG).show()
-        }
-        binding.btnImportBackup.setOnClickListener {
-            Toast.makeText(this, "Backup imported successfully.", Toast.LENGTH_LONG).show()
-        }
     }
 
     private fun setupThemeDropdown() {

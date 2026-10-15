@@ -1265,8 +1265,6 @@ class ReaderActivity : AppCompatActivity() {
 
     private fun setupChrome() {
         binding.btnBack.setOnClickListener { finish() }
-        binding.btnPrevPage.setOnClickListener { turnPage(false) }
-        binding.btnNextPage.setOnClickListener { turnPage(true) }
         binding.btnToc.setOnClickListener { showTocBookmarks() }
         binding.btnBookmarks.setOnClickListener { showTocBookmarks(selectBookmarks = true) }
         binding.btnHighlights.setOnClickListener { showTocBookmarks(selectHighlights = true) }

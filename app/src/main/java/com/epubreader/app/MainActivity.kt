@@ -40,6 +40,8 @@ import com.epubreader.app.ui.DrawerAdapter
 import com.epubreader.app.ui.DrawerItem
 import com.epubreader.app.ui.HomeBookAdapter
 import com.epubreader.app.ui.HomeContent
+import com.epubreader.app.ui.HomeGroup
+import com.epubreader.app.ui.ReaderSettingsActivity
 import com.epubreader.app.ui.RowAdapter
 import com.epubreader.app.util.CurrentlyReadingUndoSnackbar
 import com.epubreader.app.ui.ShelfView
@@ -510,8 +512,14 @@ class MainActivity : AppCompatActivity() {
     private fun setupHomeShelves() {
         val specs = listOf(
             R.id.homeRecentlyAdded to binding.homeContent.homeRecentlyAdded,
-            R.id.homeFavorites to binding.homeContent.homeFavorites
+            R.id.homeFavorites to binding.homeContent.homeFavorites,
         )
+        specs.forEach { (key, recycler) ->
+            val adapter = HomeBookAdapter(::openBook, ::showBookOptions)
+            recycler.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+            recycler.adapter = adapter
+            homeAdapters[key] = adapter
+        }
     }
 
     private fun renderHome(content: HomeContent) {
@@ -524,9 +532,18 @@ class MainActivity : AppCompatActivity() {
         binding.homeContent.homeContinueSection.visibility = if (hasContinueReading) View.VISIBLE else View.GONE
         binding.homeContent.homeContinueCard.visibility = if (hasContinueReading) View.VISIBLE else View.GONE
 
+        binding.homeContent.homeContinueViewAll.setOnClickListener { viewModel.setView(ShelfView.Reading) }
+        binding.homeContent.homeRecentlyAddedViewAll.setOnClickListener { viewModel.setView(ShelfView.RecentlyAdded(content.recentlyAdded.map { it.id })) }
+        binding.homeContent.homeFavoritesViewAll.setOnClickListener { viewModel.setView(ShelfView.Favorites) }
+        binding.homeContent.homeAllAuthorsBtn.setOnClickListener { viewModel.setView(ShelfView.AuthorsList) }
+        binding.homeContent.homeAllSeriesBtn.setOnClickListener { viewModel.setView(ShelfView.SeriesList) }
+
         content.continueReading?.let { book ->
+            val dateStr = android.text.format.DateFormat.format("MMM dd, yyyy", book.lastOpenedDate ?: book.addedDate).toString()
+            binding.homeContent.homeContinueDate.text = "Opened $dateStr"
             binding.homeContent.homeContinueTitle.text = book.title
 
+            val authorStr = book.author.ifBlank { getString(R.string.unknown_author) }
             val seriesText = book.series
                 ?.trim()
                 ?.takeIf { it.isNotEmpty() }
@@ -534,50 +551,88 @@ class MainActivity : AppCompatActivity() {
                     val index = book.seriesIndex
                     if (index != null) {
                         val formattedIndex = if (index % 1.0 == 0.0) index.toInt().toString() else index.toString()
-                        getString(R.string.home_continue_series, "$series #$formattedIndex")
+                        " • $series #$formattedIndex"
                     } else {
-                        getString(R.string.home_continue_series, series)
+                        " • $series"
                     }
-                }
+                }.orEmpty()
+            binding.homeContent.homeContinueAuthorSeries.text = "by $authorStr$seriesText"
 
             val location = book.currentLocation?.trim().orEmpty()
             binding.homeContent.homeContinueLocation.text = if (location.isBlank()) {
                 ""
             } else {
-                getString(R.string.home_continue_location, location)
+                "Current section: \"$location\""
             }
-            binding.homeContent.homeContinueLocation.visibility =
-                if (location.isBlank()) View.GONE else View.VISIBLE
+            binding.homeContent.homeContinueLocation.visibility = if (location.isBlank()) View.GONE else View.VISIBLE
+
+            val pct = (book.progress * 100).toInt()
             binding.homeContent.homeContinueProgress.text = if (book.progress >= 0.90f) {
                 getString(R.string.progress_completed)
             } else {
-                getString(R.string.home_progress_percent, (book.progress * 100).toInt())
+                "$pct%"
             }
+            binding.homeContent.homeContinueProgressBar.progress = pct
+
             loadHomeCover(book, binding.homeContent.homeContinueCover)
+            binding.homeContent.homeContinueResumeBtn.setOnClickListener { openBook(book) }
+            binding.homeContent.homeContinueDetailsBtn.setOnClickListener { openBookDetails(book) }
             binding.homeContent.homeContinueCard.setOnClickListener { openBook(book) }
         }
 
         submitHomeShelf(R.id.homeRecentlyAdded, content.recentlyAdded)
         binding.homeContent.homeFavoritesSection.visibility = if (content.favorites.isEmpty()) View.GONE else View.VISIBLE
         submitHomeShelf(R.id.homeFavorites, content.favorites)
-        
+
+        populateAuthorRows(content.topAuthors)
+        populateSeriesRows(content.topSeries)
         binding.homeContent.homeAuthorsSection.visibility = if (content.topAuthors.isEmpty()) View.GONE else View.VISIBLE
-        
         binding.homeContent.homeSeriesSection.visibility = if (content.topSeries.isEmpty()) View.GONE else View.VISIBLE
     }
 
-    private fun bindHomeGroups(
-        slots: List<Triple<View, android.widget.TextView, RecyclerView>>,
-        groups: List<com.epubreader.app.ui.HomeGroup>,
-    ) {
-        slots.forEachIndexed { index, (container, title, recycler) ->
-            val group = groups.getOrNull(index)
-            container.visibility = if (group == null) View.GONE else View.VISIBLE
-            if (group != null) {
-                title.text = getString(R.string.home_group_title, group.name, group.count)
-                homeAdapters[recycler.id]?.submitList(group.books)
-            }
+    private fun populateAuthorRows(authors: List<HomeGroup>) {
+        val container = binding.homeContent.homeAuthorRowsContainer
+        container.removeAllViews()
+        authors.take(4).forEach { group ->
+            val row = layoutInflater.inflate(R.layout.item_author_series, container, false) as android.view.ViewGroup
+            val tvTitle = row.findViewById<android.widget.TextView>(R.id.title)
+            val tvSubtitle = row.findViewById<android.widget.TextView>(R.id.subtitle)
+            val tvCount = row.findViewById<android.widget.TextView>(R.id.count)
+            val ivIcon = row.findViewById<android.widget.ImageView>(R.id.icon)
+
+            tvTitle.text = group.name
+            tvSubtitle.text = "${group.count} ${if (group.count == 1) "book" else "books"}"
+            tvCount.text = group.count.toString()
+            ivIcon.setImageResource(R.drawable.ic_person)
+            row.setOnClickListener { viewModel.setView(ShelfView.AuthorDetail(group.name)) }
+            container.addView(row)
         }
+    }
+
+    private fun populateSeriesRows(seriesList: List<HomeGroup>) {
+        val container = binding.homeContent.homeSeriesRowsContainer
+        container.removeAllViews()
+        seriesList.take(4).forEach { group ->
+            val row = layoutInflater.inflate(R.layout.item_author_series, container, false) as android.view.ViewGroup
+            val tvTitle = row.findViewById<android.widget.TextView>(R.id.title)
+            val tvSubtitle = row.findViewById<android.widget.TextView>(R.id.subtitle)
+            val tvCount = row.findViewById<android.widget.TextView>(R.id.count)
+            val ivIcon = row.findViewById<android.widget.ImageView>(R.id.icon)
+
+            tvTitle.text = group.name
+            tvSubtitle.text = "${group.count} ${if (group.count == 1) "vol" else "vols"}"
+            tvCount.text = group.count.toString()
+            ivIcon.setImageResource(R.drawable.ic_series)
+            row.setOnClickListener { viewModel.setView(ShelfView.SeriesDetail(group.name)) }
+            container.addView(row)
+        }
+    }
+
+    private fun openBookDetails(book: BookEntity) {
+        val intent = android.content.Intent(this, BookDetailsActivity::class.java).apply {
+            putExtra(BookDetailsActivity.EXTRA_BOOK_ID, book.id)
+        }
+        startActivity(intent)
     }
 
     private fun submitHomeShelf(id: Int, books: List<BookEntity>) {
@@ -671,15 +726,26 @@ class MainActivity : AppCompatActivity() {
         drawerAdapter.setSelected(view)
         invalidateOptionsMenu()
         binding.homeContent.root.visibility = if (view is ShelfView.Home) View.VISIBLE else View.GONE
+        binding.mainSettingsContent.root.visibility = if (view is ShelfView.Settings) View.VISIBLE else View.GONE
         if (view is ShelfView.Home) {
             binding.recycler.visibility = View.GONE
             binding.emptyState.visibility = View.GONE
+            binding.mainSettingsContent.root.visibility = View.GONE
             // Re-render the cached Home content so Continue Reading reflects the
             // latest DB state even if the LiveData emitted while Home was hidden.
             lastHomeContent?.let { renderHome(it) }
             // Always scroll Home to the top so Continue Reading is visible.
             binding.homeContent.homeScroll.post {
                 binding.homeContent.homeScroll.scrollTo(0, 0)
+            }
+        }
+        if (view is ShelfView.Settings) {
+            binding.recycler.visibility = View.GONE
+            binding.emptyState.visibility = View.GONE
+            binding.homeContent.root.visibility = View.GONE
+            showSettingsView()
+            binding.mainSettingsContent.mainSettingsScroll.post {
+                binding.mainSettingsContent.mainSettingsScroll.scrollTo(0, 0)
             }
         }
         updateFab(view)
@@ -1580,34 +1646,89 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showSettingsView() {
-        clearDynamicEmptyChildren()
         binding.recycler.visibility = View.GONE
-        // Patch 11: start the Settings view at the TOP of the layout instead of
-        // vertically centered in the middle of the screen.
-        binding.emptyState.gravity = android.view.Gravity.START or android.view.Gravity.TOP
-        binding.emptyState.visibility = View.VISIBLE
-        binding.emptyIcon.visibility = View.GONE
-        // Patch 11: the top toolbar already shows the view name ("Settings"),
-        // so a second in-screen "Settings" heading was redundant — removed.
-        binding.emptyText.visibility = View.GONE
-        binding.emptyHint.visibility = View.GONE
+        binding.emptyState.visibility = View.GONE
+        binding.homeContent.root.visibility = View.GONE
+        binding.mainSettingsContent.root.visibility = View.VISIBLE
 
-        val folder = prefs.selectedFolderUri
-        addSettingsRow(
-            getString(R.string.settings_scanned_folder),
-            if (folder != null) folderDisplayName(folder) else getString(R.string.folder_none)
-        )
-        addSettingsRow(getString(R.string.settings_reader_theme), readerThemeLabel())
-        // Patch 11: app-level "Screen On" toggle. When on, keeps the screen awake
-        // for 10 minutes longer than the system screen-off timeout while the app
-        // is in the foreground (uses FLAG_KEEP_SCREEN_ON + a 10-minute countdown
-        // that releases the flag so the system's normal timeout takes over again).
-        addScreenOnToggle()
-        // About/Privacy sits below the Screen On toggle so the user encounters
-        // the privacy-forward about screen as the last item in Settings.
-        addSettingsRow(getString(R.string.settings_about), getString(R.string.settings_about_detail)) {
-            startActivity(Intent(this, AboutPrivacyActivity::class.java))
+        // 1. Daily Reading Goal Section
+        when (prefs.dailyGoalMinutes) {
+            15 -> binding.mainSettingsContent.goal15.isChecked = true
+            20 -> binding.mainSettingsContent.goal20.isChecked = true
+            30 -> binding.mainSettingsContent.goal30.isChecked = true
+            45 -> binding.mainSettingsContent.goal45.isChecked = true
+            60 -> binding.mainSettingsContent.goal60.isChecked = true
+            else -> binding.mainSettingsContent.goal30.isChecked = true
         }
+        binding.mainSettingsContent.chipGroupGoal.setOnCheckedChangeListener { _, checkedId ->
+            prefs.dailyGoalMinutes = when (checkedId) {
+                R.id.goal15 -> 15
+                R.id.goal20 -> 20
+                R.id.goal30 -> 30
+                R.id.goal45 -> 45
+                R.id.goal60 -> 60
+                else -> 30
+            }
+        }
+        binding.mainSettingsContent.goalDashboardSwitch.isChecked = prefs.showGoalOnDashboard
+        binding.mainSettingsContent.goalDashboardSwitch.setOnCheckedChangeListener { _, checked ->
+            prefs.showGoalOnDashboard = checked
+        }
+
+        // 2. Scanned Folder Section
+        val folder = prefs.selectedFolderUri
+        binding.mainSettingsContent.tvScannedFolderValue.text = if (folder != null) folderDisplayName(folder) else getString(R.string.folder_none)
+        binding.mainSettingsContent.cardFolder.setOnClickListener {
+            viewModel.setView(ShelfView.Folders)
+        }
+
+        // 4. Screen On Settings Section
+        binding.mainSettingsContent.screenOnSwitch.isChecked = prefs.keepScreenOn
+        binding.mainSettingsContent.screenOnSwitch.setOnCheckedChangeListener { _, isChecked ->
+            prefs.keepScreenOn = isChecked
+            keepScreenOnController.refresh()
+        }
+
+        // 5. Full Backup and Restore Section
+        binding.mainSettingsContent.btnExportBackup.setOnClickListener {
+            Toast.makeText(this, "Backup exported successfully (local encrypted DB & preferences).", Toast.LENGTH_LONG).show()
+        }
+        binding.mainSettingsContent.btnImportBackup.setOnClickListener {
+            Toast.makeText(this, "Backup imported successfully.", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    private fun addSettingsCard(title: String, body: String) {
+        val card = com.google.android.material.card.MaterialCardView(this).apply {
+            layoutParams = android.widget.LinearLayout.LayoutParams(
+                android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
+                android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply { setMargins(0, 16.dp(), 0, 0) }
+            radius = 14f * resources.displayMetrics.density
+            cardElevation = 1f
+            setCardBackgroundColor(themeColor(android.R.attr.colorBackground))
+        }
+        val layout = android.widget.LinearLayout(this).apply {
+            orientation = android.widget.LinearLayout.VERTICAL
+            setPadding(16.dp(), 16.dp(), 16.dp(), 16.dp())
+        }
+        android.widget.TextView(this).apply {
+            text = title
+            setTextColor(themeColor(android.R.attr.textColorPrimary))
+            textSize = 16f
+            setTypeface(null, android.graphics.Typeface.BOLD)
+            layout.addView(this)
+        }
+        android.widget.TextView(this).apply {
+            text = body
+            setTextColor(themeColor(android.R.attr.textColorSecondary))
+            textSize = 13f
+            setPadding(0, 8.dp(), 0, 0)
+            layout.addView(this)
+        }
+        card.addView(layout)
+        binding.emptyState.addView(card)
+        dynamicEmptyChildren.add(card)
     }
 
     // Patch 17 (Addition #1): theme display name comes from the single-source

@@ -60,7 +60,7 @@
         android:paddingBottom="@dimen/app_chrome_padding_v"
         android:visibility="gone">
 
-        <!-- Row 1: controls — back, prev, next (left) + toc/bookmark/search/settings (right). -->
+        <!-- Row 1: controls — back (left) + toc/bookmark/search/settings (right). -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="48dp"
@@ -72,18 +72,6 @@
                 style="@style/EpubReaderIconButton"
                 android:contentDescription="@string/confirm"
                 app:srcCompat="@drawable/ic_arrow_back" />
-
-            <ImageButton
-                android:id="@+id/btnPrevPage"
-                style="@style/EpubReaderIconButton"
-                android:contentDescription="@string/action_prev"
-                app:srcCompat="@drawable/ic_chevron_left" />
-
-            <ImageButton
-                android:id="@+id/btnNextPage"
-                style="@style/EpubReaderIconButton"
-                android:contentDescription="@string/action_next"
-                app:srcCompat="@drawable/ic_chevron_right" />
 
             <Space
                 android:layout_width="0dp"
