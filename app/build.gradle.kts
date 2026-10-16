@@ -91,8 +91,17 @@ android {
             )
         }
     }
-}
 
+    // Rename every APK output (debug + release) to a single canonical name.
+    // The user installs the APK named "the-livre-magicae.apk".
+    applicationVariants.configureEach {
+        val variant = this
+        variant.outputs.configureEach {
+            // output is com.android.build.gradle.internal.api.ApkVariantOutputImpl
+            (this as? com.android.build.gradle.internal.api.ApkVariantOutputImpl)?.outputFileName = "the-livre-magicae.apk"
+        }
+    }
+}
 
 dependencies {
     implementation("androidx.core:core-ktx:1.13.1")
