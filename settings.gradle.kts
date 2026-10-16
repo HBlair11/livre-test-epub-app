@@ -19,5 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "EpubReader"
+rootProject.name = "The Livre Magicae"
 include(":app")

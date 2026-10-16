@@ -16,7 +16,7 @@
         <item name="colorOnSurface">@color/dark_text</item>
         <item name="android:textColorPrimary">@color/dark_text</item>
         <item name="android:textColorSecondary">@color/dark_text_muted</item>
-        <item name="colorControlNormal">@color/white</item>
+        <item name="colorControlNormal">?android:textColorPrimary</item>
         <item name="toolbarStyle">@style/Widget.EpubReader.Toolbar</item>
         <item name="drawerArrowStyle">@style/Widget.EpubReader.DrawerArrowToggle</item>
     </style>

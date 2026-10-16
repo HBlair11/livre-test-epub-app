@@ -22,8 +22,8 @@ android {
     val productionSigningProperties = rootProject.file("keystore.properties")
 
     signingConfigs {
-        create("permanentDebug") {
-            storeFile = file(System.getProperty("user.home") + "/.android/debug.keystore")
+        create("debugConfig") {
+            storeFile = file("${rootDir}/debug.keystore")
             storePassword = "android"
             keyAlias = "androiddebugkey"
             keyPassword = "android"
@@ -51,7 +51,7 @@ android {
     buildTypes {
         debug {
             isMinifyEnabled = false
-            signingConfig = signingConfigs.getByName("permanentDebug")
+            signingConfig = signingConfigs.getByName("debugConfig")
         }
         release {
             isMinifyEnabled = true
@@ -89,16 +89,6 @@ android {
                 "META-INF/NOTICE",
                 "META-INF/NOTICE.txt"
             )
-        }
-    }
-
-    // Rename every APK output (debug + release) to a single canonical name.
-    // The user installs the APK named "the-livre-magicae.apk".
-    applicationVariants.configureEach {
-        val variant = this
-        variant.outputs.configureEach {
-            // output is com.android.build.gradle.internal.api.ApkVariantOutputImpl
-            (this as? com.android.build.gradle.internal.api.ApkVariantOutputImpl)?.outputFileName = "the-livre-magicae.apk"
         }
     }
 }

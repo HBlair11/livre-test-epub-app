@@ -113,7 +113,8 @@
         <item name="android:focusable">true</item>
     </style>
 
-    <!-- Semantic Toolbar style: automatically tints navigation icons, menu actions, and titles -->
+    <!-- Semantic Toolbar: All titles, subtitles, navigation icons, and menu action icons
+         automatically tint to the active theme's primary text color -->
     <style name="Widget.EpubReader.Toolbar" parent="Widget.MaterialComponents.Toolbar">
         <item name="titleTextColor">?android:textColorPrimary</item>
         <item name="subtitleTextColor">?android:textColorSecondary</item>
@@ -121,7 +122,7 @@
         <item name="actionMenuTextColor">?android:textColorPrimary</item>
     </style>
 
-    <!-- Semantic Hamburger / Back-Arrow toggle style -->
+    <!-- Semantic Hamburger / Back-Arrow: Dynamically matches ?android:textColorPrimary -->
     <style name="Widget.EpubReader.DrawerArrowToggle" parent="Widget.AppCompat.DrawerArrowToggle">
         <item name="color">?android:textColorPrimary</item>
     </style>
