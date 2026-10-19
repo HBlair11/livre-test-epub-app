@@ -67,6 +67,8 @@
          used asymmetric start/end values (e.g. 20dp/8dp, 18dp/14dp); they now
          all share this single value. -->
     <dimen name="app_row_content_padding_h">20dp</dimen>
+    <dimen name="app_screen_start_below_header">30dp</dimen>
+    <dimen name="app_screen_end_padding">80dp</dimen>
 
     <!-- Patch v37: spacing scale additions used by the stats/about screens,
          the definition popup card, and the vocabulary list. -->

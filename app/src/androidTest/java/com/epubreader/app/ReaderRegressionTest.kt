@@ -5,6 +5,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.epubreader.app.data.AppDatabase
 import com.epubreader.app.data.BookEntity
+import com.epubreader.app.data.BookRepository
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertNotNull
@@ -39,8 +40,8 @@ class ReaderRegressionTest {
 
     @After
     fun tearDown() = runBlocking {
-        val db = AppDatabase.get(context)
-        db.bookDao().deleteBook(db.bookDao().getBook(testBookId) ?: return@runBlocking)
+        val repo = BookRepository(context)
+        repo.deleteBook(repo.getBook(testBookId) ?: return@runBlocking)
     }
 
     @Test
@@ -56,8 +57,8 @@ class ReaderRegressionTest {
 
         // Verify state persistence in Room database
         runBlocking {
-            val db = AppDatabase.get(context)
-            val updated = db.bookDao().getBook(testBookId)
+            val repo = BookRepository(context)
+            val updated = repo.getBook(testBookId)
             assertNotNull(updated)
             assertNotNull(updated?.currentLocation)
         }

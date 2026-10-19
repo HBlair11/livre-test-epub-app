@@ -17,7 +17,7 @@
         android:layout_height="wrap_content"
         android:ellipsize="end"
         android:maxLines="2"
-        android:textColor="?android:textColorPrimary"
+        android:textColor="@color/palette_mint"
         android:textSize="14sp" />
 
     <TextView

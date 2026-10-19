@@ -66,8 +66,8 @@ class ReaderPersistenceUseCase(context: Context) {
 
     suspend fun insertDictionaryHistory(entity: DictionaryHistoryEntity) = dictionaryHistoryDao.insert(entity)
 
-    suspend fun refreshDictionaryHistory(id: Long, definition: String?, partOfSpeech: String?, bookId: Long?, lookedUpAt: Long) =
-        dictionaryHistoryDao.refresh(id, definition, partOfSpeech, bookId, lookedUpAt)
+    suspend fun refreshDictionaryHistory(id: Long, definition: String?, partOfSpeech: String?, example: String?, bookTitle: String?, bookId: Long?, lookedUpAt: Long, phonetic: String?) =
+        dictionaryHistoryDao.refresh(id, definition, partOfSpeech, example, bookTitle, bookId, lookedUpAt, phonetic)
 
     suspend fun getTtsSettings(bookId: Long): TtsSettingsEntity? = ttsSettingsDao.getForBook(bookId)
 

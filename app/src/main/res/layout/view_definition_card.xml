@@ -1,14 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Patch v37: contextual dictionary card shown near the text selection.
-     Anchored above/below the selection with smart screen-boundary
-     positioning (see ReaderActivity.showDefinitionCard). -->
+     Anchored above/below the selection with smart screen-boundary positioning. -->
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_margin="@dimen/app_popup_screen_margin"
     app:cardBackgroundColor="?attr/colorSurface"
-    app:cardCornerRadius="@dimen/app_card_corner"
+    app:cardCornerRadius="16dp"
     app:cardElevation="@dimen/app_definition_card_elevation"
     app:contentPadding="@dimen/app_card_padding">
 
@@ -28,13 +27,45 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-                <TextView
-                    android:id="@+id/dictWord"
+                <!-- Header Row: Word + Badge + Audio Pronunciation -->
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textColor="?android:textColorPrimary"
-                    android:textSize="18sp"
-                    android:textStyle="bold" />
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/dictWord"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:textColor="@color/palette_mint"
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/dictPartOfSpeech"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:background="@drawable/rounded_square_bg"
+                        android:paddingHorizontal="8dp"
+                        android:paddingVertical="2dp"
+                        android:textColor="@color/accent_pop"
+                        android:textSize="11sp"
+                        android:textStyle="italic|bold"
+                        android:visibility="gone" />
+
+                    <ImageButton
+                        android:id="@+id/dictPronounceBtn"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:layout_marginStart="8dp"
+                        android:background="@drawable/item_background_borderless_material"
+                        android:contentDescription="@string/tts_play"
+                        android:src="@drawable/ic_volume"
+                        app:tint="@color/palette_mint" />
+                </LinearLayout>
 
                 <TextView
                     android:id="@+id/dictNoResult"
@@ -42,7 +73,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/app_definition_row_spacing"
                     android:text="@string/dictionary_not_found"
-                    android:textColor="?android:textColorSecondary"
+                    android:textColor="@color/palette_slate"
                     android:textSize="14sp"
                     android:visibility="gone" />
 
@@ -53,13 +84,33 @@
                     android:layout_marginTop="@dimen/app_definition_row_spacing"
                     android:orientation="vertical" />
 
+                <!-- Indented Context Quote Box -->
+                <LinearLayout
+                    android:id="@+id/dictQuoteBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/rounded_square_bg"
+                    android:orientation="vertical"
+                    android:padding="10dp"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:id="@+id/dictContextQuote"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/palette_mint"
+                        android:textSize="13sp"
+                        android:textStyle="italic" />
+                </LinearLayout>
+
                 <TextView
                     android:id="@+id/dictSuggestionsLabel"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/app_definition_row_spacing"
                     android:text="@string/dictionary_did_you_mean"
-                    android:textColor="?android:textColorSecondary"
+                    android:textColor="@color/palette_slate"
                     android:textSize="12sp"
                     android:textStyle="italic"
                     android:visibility="gone" />
@@ -68,15 +119,29 @@
                     android:id="@+id/dictSuggestions"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:layout_marginTop="@dimen/app_definition_row_spacing" />
+                    android:layout_marginTop="@dimen/app_definition_row_spacing"
+                    android:orientation="vertical" />
+
+                <!-- Action Button: Save to Vocabulary Sanctuary -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/dictSaveBtn"
+                    style="@style/Widget.MaterialComponents.Button"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="@string/vocabulary_save_to_sanctuary"
+                    android:textColor="@color/black"
+                    app:backgroundTint="@color/accent_pop"
+                    app:cornerRadius="10dp"
+                    app:icon="@drawable/ic_check"
+                    app:iconTint="@color/black" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/dictExternalButton"
                     style="@style/Widget.MaterialComponents.Button.TextButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/app_definition_row_spacing"
+                    android:layout_marginTop="4dp"
                     android:text="@string/dictionary_lookup_external"
                     android:visibility="gone" />
             </LinearLayout>

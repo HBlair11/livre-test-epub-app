@@ -4409,6 +4409,11 @@ body *:not(mark.livre-highlight):not(.livre-tts-word):not(.livre-tts-sentence) {
         val parent = binding.root as ViewGroup
         val card = layoutInflater.inflate(R.layout.view_definition_card, parent, false)
         val wordView = card.findViewById<TextView>(R.id.dictWord)
+        val partOfSpeechView = card.findViewById<TextView>(R.id.dictPartOfSpeech)
+        val pronounceBtn = card.findViewById<ImageButton>(R.id.dictPronounceBtn)
+        val quoteBox = card.findViewById<View>(R.id.dictQuoteBox)
+        val quoteView = card.findViewById<TextView>(R.id.dictContextQuote)
+        val saveBtn = card.findViewById<com.google.android.material.button.MaterialButton>(R.id.dictSaveBtn)
         val noResult = card.findViewById<TextView>(R.id.dictNoResult)
         val entriesBox = card.findViewById<LinearLayout>(R.id.dictEntries)
         val suggestionsLabel = card.findViewById<TextView>(R.id.dictSuggestionsLabel)
@@ -4419,10 +4424,71 @@ body *:not(mark.livre-highlight):not(.livre-tts-word):not(.livre-tts-sentence) {
         val primary = themeColor(android.R.attr.textColorPrimary)
         val accent = themeColor(com.google.android.material.R.attr.colorPrimary)
 
+        val firstEntry = result.entries.firstOrNull()
+        if (firstEntry != null && !firstEntry.partOfSpeech.isNullOrBlank()) {
+            partOfSpeechView.visibility = View.VISIBLE
+            partOfSpeechView.text = firstEntry.partOfSpeech.lowercase(java.util.Locale.US)
+        } else {
+            partOfSpeechView.visibility = View.GONE
+        }
+
+        pronounceBtn?.setOnClickListener {
+            val wordToSpeak = raw.trim()
+            var tts: android.speech.tts.TextToSpeech? = null
+            tts = android.speech.tts.TextToSpeech(applicationContext) { status ->
+                if (status == android.speech.tts.TextToSpeech.SUCCESS) {
+                    tts?.speak(wordToSpeak, android.speech.tts.TextToSpeech.QUEUE_FLUSH, null, "vocab_pronounce")
+                }
+            }
+        }
+
+        val contextText = if (selection != null) "${selection.prefix} ${selection.text} ${selection.suffix}".trim() else raw.trim()
+        val contextSentence = com.epubreader.app.epub.VocabularyBuilderEngine.extractContextSentence(contextText, raw.trim())
+        if (contextSentence.isNotBlank() && contextSentence != "Example usage from active reading session.") {
+            quoteBox?.visibility = View.VISIBLE
+            quoteView?.text = "\"$contextSentence\""
+        } else {
+            quoteBox?.visibility = View.GONE
+        }
+
+        val wordClean = (result.matchedWord ?: raw).trim().lowercase(java.util.Locale.US)
+        val bookTitle = bookEntity?.title ?: ""
+
+        saveBtn?.setOnClickListener {
+            val definition = firstEntry?.definition
+            val pos = firstEntry?.partOfSpeech
+            lifecycleScope.launch(Dispatchers.IO) {
+                val existing = readerViewModel.persistence.findDictionaryHistory(wordClean)
+                if (existing == null) {
+                    readerViewModel.persistence.insertDictionaryHistory(
+                        DictionaryHistoryEntity(
+                            word = wordClean,
+                            definition = definition,
+                            partOfSpeech = pos,
+                            example = contextSentence,
+                            bookTitle = bookTitle,
+                            bookId = bookId,
+                            lookedUpAt = System.currentTimeMillis(),
+                        )
+                    )
+                } else {
+                    readerViewModel.persistence.refreshDictionaryHistory(
+                        existing.id, definition, pos, contextSentence, bookTitle, bookId, System.currentTimeMillis(), null
+                    )
+                }
+                withContext(Dispatchers.Main) {
+                    saveBtn.text = getString(R.string.vocabulary_saved_to_sanctuary)
+                    saveBtn.isEnabled = false
+                }
+            }
+        }
+
         if (result.entries.isEmpty()) {
             noResult.visibility = View.VISIBLE
+            saveBtn.visibility = View.GONE
         } else {
             noResult.visibility = View.GONE
+            saveBtn.visibility = View.VISIBLE
             result.entries.forEach { entry ->
                 val line = android.text.SpannableString("${entry.partOfSpeech}  ${entry.definition}")
                 line.setSpan(android.text.style.StyleSpan(android.graphics.Typeface.BOLD), 0, entry.partOfSpeech.length, 0)
@@ -4466,29 +4532,26 @@ body *:not(mark.livre-highlight):not(.livre-tts-word):not(.livre-tts-sentence) {
 
         // Persist the lookup in the offline vocabulary history (IO thread).
         if (result.entries.isNotEmpty()) {
-            val bookId = bookId
+            val currentBookId = bookId
             lifecycleScope.launch(Dispatchers.IO) {
                 val definition = result.entries.firstOrNull()?.definition
                 val partOfSpeech = result.entries.firstOrNull()?.partOfSpeech
-                // Prefer the dictionary's normalized match so punctuation
-                // variants don't create odd history entries.
-                val word = (result.matchedWord ?: raw).trim().lowercase(java.util.Locale.US)
-                if (word.isBlank()) return@launch
-                val existing = readerViewModel.persistence.findDictionaryHistory(word)
+                val existing = readerViewModel.persistence.findDictionaryHistory(wordClean)
                 if (existing == null) {
                     readerViewModel.persistence.insertDictionaryHistory(
                         DictionaryHistoryEntity(
-                            word = word,
+                            word = wordClean,
                             definition = definition,
                             partOfSpeech = partOfSpeech,
-                            bookId = bookId,
+                            example = contextSentence,
+                            bookTitle = bookTitle,
+                            bookId = currentBookId,
                             lookedUpAt = System.currentTimeMillis(),
                         )
                     )
                 } else {
-                    // Re-lookups move the word back to the top of the list.
                     readerViewModel.persistence.refreshDictionaryHistory(
-                        existing.id, definition, partOfSpeech, bookId, System.currentTimeMillis(),
+                        existing.id, definition, partOfSpeech, contextSentence, bookTitle, currentBookId, System.currentTimeMillis(), null
                     )
                 }
             }

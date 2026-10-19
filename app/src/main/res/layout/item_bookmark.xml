@@ -33,14 +33,14 @@
             android:layout_height="wrap_content"
             android:ellipsize="end"
             android:maxLines="2"
-            android:textColor="?android:textColorPrimary"
+            android:textColor="@color/palette_mint"
             android:textSize="14sp" />
 
         <TextView
             android:id="@+id/subtitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="?android:textColorSecondary"
+            android:textColor="@color/palette_slate"
             android:textSize="11sp" />
     </LinearLayout>
 
@@ -51,5 +51,5 @@
         android:layout_height="36dp"
         android:contentDescription="@string/delete"
         app:srcCompat="@drawable/ic_delete"
-        app:tint="?android:textColorSecondary" />
+        app:tint="@color/palette_slate" />
 </LinearLayout>

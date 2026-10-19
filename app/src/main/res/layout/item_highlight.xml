@@ -37,7 +37,7 @@
             android:layout_height="wrap_content"
             android:ellipsize="end"
             android:maxLines="3"
-            android:textColor="?android:textColorPrimary"
+            android:textColor="@color/palette_mint"
             android:textSize="14sp" />
 
         <TextView
@@ -47,7 +47,7 @@
             android:ellipsize="end"
             android:maxLines="2"
             android:paddingTop="4dp"
-            android:textColor="?android:textColorSecondary"
+            android:textColor="@color/palette_slate"
             android:textSize="12sp"
             android:visibility="gone" />
     </LinearLayout>

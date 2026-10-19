@@ -124,7 +124,7 @@
             android:maxLines="1"
             android:paddingStart="@dimen/app_reader_icon_inset"
             android:paddingEnd="@dimen/app_reader_icon_inset"
-            android:textColor="?android:textColorPrimary"
+            android:textColor="@color/palette_mint"
             android:textSize="17sp"
             android:textStyle="bold" />
 
@@ -137,7 +137,7 @@
             android:maxLines="1"
             android:paddingStart="@dimen/app_reader_icon_inset"
             android:paddingEnd="@dimen/app_reader_icon_inset"
-            android:textColor="?android:textColorSecondary"
+            android:textColor="@color/palette_slate"
             android:textSize="13sp" />
 
         <!-- Row 4: current TOC section name + page X/Y within that section. -->
@@ -149,7 +149,7 @@
             android:maxLines="1"
             android:paddingStart="@dimen/app_reader_icon_inset"
             android:paddingEnd="@dimen/app_reader_icon_inset"
-            android:textColor="?android:textColorSecondary"
+            android:textColor="@color/palette_slate"
             android:textSize="13sp" />
     </LinearLayout>
 
@@ -249,7 +249,7 @@
             android:paddingStart="@dimen/app_row_content_padding_h"
             android:paddingEnd="@dimen/app_row_content_padding_h"
             android:paddingBottom="@dimen/app_chrome_padding_v"
-            android:textColor="?android:textColorPrimary"
+            android:textColor="@color/palette_mint"
             android:textSize="14sp"
             android:textStyle="bold" />
 
@@ -277,7 +277,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:paddingStart="@dimen/app_row_content_padding_h"
-                android:textColor="?android:textColorPrimary"
+                android:textColor="@color/palette_mint"
                 android:textSize="14sp" />
 
             <TextView
@@ -336,7 +336,7 @@
                     android:maxLines="1"
                     android:paddingStart="@dimen/app_reader_icon_inset"
                     android:paddingEnd="@dimen/app_reader_icon_inset"
-                    android:textColor="?android:textColorPrimary"
+                    android:textColor="@color/palette_mint"
                     android:textSize="16sp"
                     android:textStyle="bold" />
 

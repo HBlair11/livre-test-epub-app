@@ -7,6 +7,6 @@
     android:paddingEnd="@dimen/app_grid_edge_h"
     android:paddingBottom="6dp"
     android:textAllCaps="true"
-    android:textColor="?android:textColorSecondary"
+    android:textColor="@color/palette_slate"
     android:textSize="12sp"
     android:textStyle="bold" />

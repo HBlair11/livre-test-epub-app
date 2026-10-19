@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    app:cardBackgroundColor="@color/dark_surface"
+    app:cardCornerRadius="14dp"
+    app:cardElevation="2dp"
+    app:strokeColor="@color/dark_border"
+    app:strokeWidth="1dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:baselineAligned="false"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Header Row: Left group (Word + POS badge + Audio) vs Right group (Mastery + Delete) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:baselineAligned="false"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <!-- Left Group -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:baselineAligned="false"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/vocabWordText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/white"
+                    android:textSize="17sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/vocabPosBadge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:background="@drawable/oval_rounded_bg"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="3dp"
+                    android:textColor="@color/accent_pop"
+                    android:textSize="12sp"
+                    android:textStyle="bold|italic"
+                    android:visibility="gone" />
+
+                <ImageButton
+                    android:id="@+id/vocabAudioBtn"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_marginStart="4dp"
+                    android:background="@drawable/item_background_borderless_material"
+                    android:contentDescription="@string/tts_play"
+                    android:padding="6dp"
+                    android:src="@drawable/ic_volume"
+                    app:tint="@color/palette_mint" />
+            </LinearLayout>
+
+            <!-- Right Group -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:baselineAligned="false"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/vocabMasteryPill"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:background="@drawable/rounded_square_bg"
+                    android:paddingHorizontal="12dp"
+                    android:paddingVertical="5dp"
+                    android:textColor="@color/white"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <ImageButton
+                    android:id="@+id/vocabDeleteBtn"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:background="@drawable/item_background_borderless_material"
+                    android:contentDescription="@string/vocabulary_delete_word"
+                    android:padding="6dp"
+                    android:src="@drawable/ic_delete" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Definition -->
+        <TextView
+            android:id="@+id/vocabDefinitionText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:maxLines="4"
+            android:textColor="@color/dark_text"
+            android:textSize="14sp" />
+
+        <!-- Context Quote -->
+        <TextView
+            android:id="@+id/vocabQuoteText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:textColor="@color/palette_mint"
+            android:textSize="13sp"
+            android:textStyle="italic"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:visibility="gone" />
+
+        <!-- Source Attribution -->
+        <TextView
+            android:id="@+id/vocabSourceText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:textColor="@color/dark_text_muted"
+            android:textSize="12sp"
+            android:visibility="gone" />
+
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

@@ -113,8 +113,7 @@
         <item name="android:focusable">true</item>
     </style>
 
-    <!-- Semantic Toolbar: All titles, subtitles, navigation icons, and menu action icons
-         automatically tint to the active theme's primary text color -->
+    <!-- Semantic Toolbar style: automatically tints navigation icons, menu actions, and titles -->
     <style name="Widget.EpubReader.Toolbar" parent="Widget.MaterialComponents.Toolbar">
         <item name="titleTextColor">?android:textColorPrimary</item>
         <item name="subtitleTextColor">?android:textColorSecondary</item>
@@ -122,8 +121,45 @@
         <item name="actionMenuTextColor">?android:textColorPrimary</item>
     </style>
 
-    <!-- Semantic Hamburger / Back-Arrow: Dynamically matches ?android:textColorPrimary -->
+    <!-- Semantic Hamburger / Back-Arrow toggle style -->
     <style name="Widget.EpubReader.DrawerArrowToggle" parent="Widget.AppCompat.DrawerArrowToggle">
         <item name="color">?android:textColorPrimary</item>
+    </style>
+
+    <!-- Individual Folder Action Button Styles -->
+    <style name="Widget.EpubReader.FolderButton.ScanNow" parent="Widget.MaterialComponents.Button">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">16dp</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/black</item>
+        <item name="backgroundTint">@color/accent_pop</item>
+    </style>
+
+    <style name="Widget.EpubReader.FolderButton.RefreshMetadata" parent="Widget.MaterialComponents.Button">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">8dp</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="backgroundTint">@color/dark_bg</item>
+    </style>
+
+    <style name="Widget.EpubReader.FolderButton.SelectFolder" parent="Widget.MaterialComponents.Button">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">8dp</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="backgroundTint">@color/dark_bg</item>
+    </style>
+
+    <style name="Widget.EpubReader.FolderButton.RemoveFolder" parent="Widget.MaterialComponents.Button.OutlinedButton">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">8dp</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="backgroundTint">@color/dark_bg</item>
     </style>
 </resources>

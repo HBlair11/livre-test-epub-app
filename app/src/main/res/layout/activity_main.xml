@@ -19,14 +19,10 @@
             android:background="?android:colorBackground"
             app:elevation="0dp">
 
-            <com.google.android.material.appbar.MaterialToolbar
-                android:id="@+id/toolbar"
+            <FrameLayout
+                android:id="@+id/headerContainer"
                 android:layout_width="match_parent"
-                android:layout_height="?attr/actionBarSize"
-                app:title="@string/app_name"
-                app:titleCentered="false"
-                app:titleTextColor="?android:textColorPrimary"
-                app:navigationIconTint="?android:textColorPrimary" />
+                android:layout_height="wrap_content" />
         </com.google.android.material.appbar.AppBarLayout>
 
         <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
@@ -53,13 +49,32 @@
                     android:layout_height="match_parent"
                     android:visibility="gone" />
 
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/recycler"
+                <include
+                    android:id="@+id/mainFoldersContent"
+                    layout="@layout/view_main_folders"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:clipToPadding="false"
-                    android:paddingBottom="72dp"
-                    android:overScrollMode="never" />
+                    android:visibility="gone" />
+
+                <include
+                    android:id="@+id/mainStatsContent"
+                    layout="@layout/view_main_stats"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:visibility="gone" />
+
+                <include
+                    android:id="@+id/mainVocabularyContent"
+                    layout="@layout/view_main_vocabulary"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:visibility="gone" />
+
+                <FrameLayout
+                    android:id="@+id/shelfContainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:visibility="gone" />
 
                 <LinearLayout
                     android:id="@+id/emptyState"
@@ -74,7 +89,7 @@
                         android:id="@+id/emptyIcon"
                         android:layout_width="96dp"
                         android:layout_height="96dp"
-                        android:src="@drawable/ic_library"
+                        android:src="@drawable/ic_bookshelf"
                         android:alpha="0.35"
                         android:contentDescription="@string/app_name" />
 
@@ -86,7 +101,7 @@
                         android:text="@string/empty_library"
                         android:textSize="18sp"
                         android:textStyle="bold"
-                        android:textColor="?android:textColorPrimary" />
+                        android:textColor="@color/palette_mint" />
 
                     <TextView
                         android:id="@+id/emptyHint"
@@ -95,7 +110,7 @@
                         android:layout_marginTop="4dp"
                         android:gravity="center"
                         android:text="@string/empty_library_hint"
-                        android:textColor="?android:textColorSecondary" />
+                        android:textColor="@color/palette_slate" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/emptyAction"
@@ -107,17 +122,6 @@
                 </LinearLayout>
             </FrameLayout>
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
-
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fabScan"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|end"
-            android:layout_margin="16dp"
-            android:contentDescription="@string/action_scan_folder"
-            app:backgroundTint="@color/accent"
-            app:srcCompat="@drawable/ic_folder"
-            app:tint="@color/white" />
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
     <!-- Navigation drawer (3/5 width, set programmatically) -->
@@ -126,7 +130,7 @@
         android:layout_width="300dp"
         android:layout_height="match_parent"
         android:layout_gravity="start"
-        android:background="@color/palette_plum"
+        android:background="@color/palette_eggplant"
         android:orientation="vertical"
         android:fitsSystemWindows="true">
 
@@ -135,7 +139,7 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:background="?attr/colorPrimary"
+            android:background="@color/palette_plum"
             android:paddingStart="@dimen/app_row_content_padding_h"
             android:paddingTop="28dp"
             android:paddingEnd="@dimen/app_row_content_padding_h"

@@ -7,8 +7,8 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.provider.Settings as SystemSettings
-import android.view.Menu
+import android.widget.ProgressBar
+import android.widget.TextView
 import android.widget.Toast
 import android.view.MenuItem
 import android.view.View
@@ -27,6 +27,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.epubreader.app.data.BookEntity
 import com.bumptech.glide.Glide
 import com.epubreader.app.data.BookRepository
+import com.epubreader.app.data.AppDatabase
 import com.epubreader.app.data.PrefsManager
 import com.epubreader.app.databinding.ActivityMainBinding
 import com.epubreader.app.epub.BookFileTypes
@@ -41,7 +42,6 @@ import com.epubreader.app.ui.DrawerItem
 import com.epubreader.app.ui.HomeBookAdapter
 import com.epubreader.app.ui.HomeContent
 import com.epubreader.app.ui.HomeGroup
-import com.epubreader.app.ui.ReaderSettingsActivity
 import com.epubreader.app.ui.RowAdapter
 import com.epubreader.app.util.CurrentlyReadingUndoSnackbar
 import com.epubreader.app.ui.ShelfView
@@ -170,8 +170,8 @@ class MainActivity : AppCompatActivity() {
     private fun captureScrollState(clickedBookId: Long? = null) {
         val view = viewModel.view.value ?: return
         if (!isRestoreEligible(view)) return
-        val lm = binding.recycler.layoutManager as? LinearLayoutManager ?: return
-        val adapter = binding.recycler.adapter ?: return
+        val lm = recycler?.layoutManager as? LinearLayoutManager ?: return
+        val adapter = recycler?.adapter ?: return
         if (adapter.itemCount == 0) return
         val pos = lm.findFirstVisibleItemPosition()
         if (pos == RecyclerView.NO_POSITION) return
@@ -205,8 +205,8 @@ class MainActivity : AppCompatActivity() {
         // will consume it.
         val key = pendingRestoreKey ?: return false
         if (viewKey(view) != key) return false
-        val lm = binding.recycler.layoutManager as? LinearLayoutManager ?: return false
-        val adapter = binding.recycler.adapter ?: return false
+        val lm = recycler?.layoutManager as? LinearLayoutManager ?: return false
+        val adapter = recycler?.adapter ?: return false
         if (adapter.itemCount == 0) return false
         val anchor = savedScroll[key] ?: run { pendingRestoreKey = null; return false }
         // Restore strategy: if the clicked book is still at the SAME adapter
@@ -255,35 +255,18 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         SystemBarController.apply(this)
-        setSupportActionBar(binding.toolbar)
 
         restoreViewFromSavedState(savedInstanceState)
         setupDrawer()
         setupRecycler()
         setupObservers()
-        binding.fabScan.setOnClickListener { onFabClicked() }
         binding.homeContent.homeEmptyAction.setOnClickListener {
             openMultiFileLauncher.launch(BookFileTypes.acceptedMimeTypes)
         }
-        updateFab(viewModel.view.value ?: ShelfView.Home)
 
         // Patch 18 (Addition #3): if launched by the system "Open with" for an
         // .epub, import it and jump straight into the reader.
         handleViewIntent(intent)
-
-        // Hamburger button that opens/closes the drawer (renders + animates
-        // itself; works reliably even though the toolbar is the action bar).
-        drawerToggle =
-            ActionBarDrawerToggle(
-                this,
-                binding.drawerRoot,
-                binding.toolbar,
-                R.string.nav_open,
-                R.string.nav_close,
-            ).also { toggle ->
-                binding.drawerRoot.addDrawerListener(toggle)
-                toggle.syncState()
-            }
 
         onBackPressedDispatcher.addCallback(
             this,
@@ -390,10 +373,10 @@ class MainActivity : AppCompatActivity() {
         keepScreenOnController.onResume()
         if (pendingReadingTopReset) {
             pendingReadingTopReset = false
-            binding.recycler.post {
-                (binding.recycler.layoutManager as? LinearLayoutManager)
+            recycler?.post {
+                (recycler?.layoutManager as? LinearLayoutManager)
                     ?.scrollToPositionWithOffset(0, 0)
-                binding.recycler.scrollToPosition(0)
+                recycler?.scrollToPosition(0)
             }
         }
         // Returning from the reader / book-details activity lands here. If a
@@ -401,7 +384,7 @@ class MainActivity : AppCompatActivity() {
         // this point, try once more now (harmless if there is nothing to restore
         // or the adapter is still empty — tryRestoreScroll guards both).
         if (pendingRestoreKey != null) {
-            binding.recycler.post { tryRestoreScroll() }
+            recycler?.post { tryRestoreScroll() }
         }
         binding.root.post {
             CurrentlyReadingUndoSnackbar.showPending(this, binding.root)
@@ -436,8 +419,8 @@ class MainActivity : AppCompatActivity() {
         listOf(
             DrawerItem(getString(R.string.nav_home), R.drawable.ic_home, view = ShelfView.Home),
             DrawerItem(getString(R.string.nav_currently_reading), R.drawable.ic_book, view = ShelfView.Reading),
-            DrawerItem(getString(R.string.nav_library), R.drawable.ic_library, view = ShelfView.Library),
-            DrawerItem(getString(R.string.nav_favorites), R.drawable.ic_favorite, view = ShelfView.Favorites),
+            DrawerItem(getString(R.string.nav_library), R.drawable.ic_bookshelf, view = ShelfView.Library),
+            DrawerItem(getString(R.string.nav_favorites), R.drawable.ic_favorite_border, view = ShelfView.Favorites),
             DrawerItem(getString(R.string.nav_authors), R.drawable.ic_person, view = ShelfView.AuthorsList),
             DrawerItem(getString(R.string.nav_series), R.drawable.ic_series, view = ShelfView.SeriesList),
             DrawerItem(
@@ -451,14 +434,10 @@ class MainActivity : AppCompatActivity() {
                 iconRes = 0,
                 isDivider = true,
             ),
-            DrawerItem(getString(R.string.nav_reading_stats), R.drawable.ic_menu_book, launchActivity = ReadingStatsActivity::class.java),
-            DrawerItem(getString(R.string.nav_vocabulary), R.drawable.ic_vocabulary, launchActivity = com.epubreader.app.ui.VocabularyActivity::class.java),
+            DrawerItem(getString(R.string.nav_reading_stats), R.drawable.ic_stats, view = ShelfView.Stats),
+            DrawerItem(getString(R.string.nav_vocabulary), R.drawable.ic_vocabulary, view = ShelfView.Vocabulary),
             DrawerItem(getString(R.string.nav_folders), R.drawable.ic_folder, view = ShelfView.Folders),
-            DrawerItem(
-                getString(R.string.nav_settings),
-                R.drawable.ic_settings,
-                isPlaceholder = true,
-                view = ShelfView.Settings
+            DrawerItem(getString(R.string.nav_settings), R.drawable.ic_settings, view = ShelfView.Settings
             ),
         )
 
@@ -469,7 +448,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun titleFor(view: ShelfView?): String =
         when (view) {
-            is ShelfView.Home -> getString(R.string.nav_home)
+            is ShelfView.Home -> getString(R.string.app_name)
             is ShelfView.Reading -> getString(R.string.nav_currently_reading)
             is ShelfView.Library -> getString(R.string.nav_library)
             is ShelfView.Favorites -> getString(R.string.nav_favorites)
@@ -483,6 +462,8 @@ class MainActivity : AppCompatActivity() {
             is ShelfView.Collections -> getString(R.string.nav_collections)
             is ShelfView.Folders -> getString(R.string.nav_folders)
             is ShelfView.Settings -> getString(R.string.nav_settings)
+            is ShelfView.Stats -> getString(R.string.nav_reading_stats)
+            is ShelfView.Vocabulary -> getString(R.string.nav_vocabulary)
             null -> getString(R.string.app_name)
         }
 
@@ -594,16 +575,12 @@ class MainActivity : AppCompatActivity() {
         val container = binding.homeContent.homeAuthorRowsContainer
         container.removeAllViews()
         authors.take(4).forEach { group ->
-            val row = layoutInflater.inflate(R.layout.item_author_series, container, false) as android.view.ViewGroup
+            val row = layoutInflater.inflate(R.layout.item_home_author_series, container, false) as android.view.ViewGroup
             val tvTitle = row.findViewById<android.widget.TextView>(R.id.title)
-            val tvSubtitle = row.findViewById<android.widget.TextView>(R.id.subtitle)
             val tvCount = row.findViewById<android.widget.TextView>(R.id.count)
-            val ivIcon = row.findViewById<android.widget.ImageView>(R.id.icon)
 
             tvTitle.text = group.name
-            tvSubtitle.text = "${group.count} ${if (group.count == 1) "book" else "books"}"
-            tvCount.text = group.count.toString()
-            ivIcon.setImageResource(R.drawable.ic_person)
+            tvCount.text = "${group.count} ${if (group.count == 1) "book" else "books"}"
             row.setOnClickListener { viewModel.setView(ShelfView.AuthorDetail(group.name)) }
             container.addView(row)
         }
@@ -613,16 +590,12 @@ class MainActivity : AppCompatActivity() {
         val container = binding.homeContent.homeSeriesRowsContainer
         container.removeAllViews()
         seriesList.take(4).forEach { group ->
-            val row = layoutInflater.inflate(R.layout.item_author_series, container, false) as android.view.ViewGroup
+            val row = layoutInflater.inflate(R.layout.item_home_author_series, container, false) as android.view.ViewGroup
             val tvTitle = row.findViewById<android.widget.TextView>(R.id.title)
-            val tvSubtitle = row.findViewById<android.widget.TextView>(R.id.subtitle)
             val tvCount = row.findViewById<android.widget.TextView>(R.id.count)
-            val ivIcon = row.findViewById<android.widget.ImageView>(R.id.icon)
 
             tvTitle.text = group.name
-            tvSubtitle.text = "${group.count} ${if (group.count == 1) "vol" else "vols"}"
-            tvCount.text = group.count.toString()
-            ivIcon.setImageResource(R.drawable.ic_series)
+            tvCount.text = "${group.count} ${if (group.count == 1) "book" else "books"}"
             row.setOnClickListener { viewModel.setView(ShelfView.SeriesDetail(group.name)) }
             container.addView(row)
         }
@@ -641,16 +614,27 @@ class MainActivity : AppCompatActivity() {
 
     private fun loadHomeCover(book: BookEntity, view: android.widget.ImageView) {
         if (book.coverPath != null) {
-            Glide.with(view).load(File(book.coverPath)).centerCrop().placeholder(R.drawable.cover_frame).into(view)
+            Glide.with(view)
+                .load(File(book.coverPath))
+                .override(300, 450)
+                .centerCrop()
+                .placeholder(R.drawable.cover_frame)
+                .into(view)
         } else {
             Glide.with(view).clear(view)
             view.setImageResource(R.drawable.cover_frame)
         }
     }
 
+    private val recycler: RecyclerView?
+        get() = binding.root.findViewById(R.id.recycler)
+
+    private val refresh: androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        get() = binding.root.findViewById(R.id.refresh) ?: binding.root.findViewById(android.R.id.content)
+
     // ---------------------------------------------------------------- recycler
     private fun setupRecycler() {
-        binding.refresh.setOnRefreshListener { rescanSelectedFolder() }
+        refresh.setOnRefreshListener { rescanSelectedFolder() }
         setupHomeShelves()
     }
 
@@ -660,7 +644,9 @@ class MainActivity : AppCompatActivity() {
                 view !is ShelfView.SeriesList &&
                 view !is ShelfView.Collections &&
                 view !is ShelfView.Folders &&
-                view !is ShelfView.Settings
+                view !is ShelfView.Settings &&
+                view !is ShelfView.Stats &&
+                view !is ShelfView.Vocabulary
 
     private fun isPlaceholder(view: ShelfView) = view is ShelfView.Collections
 
@@ -698,39 +684,143 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun applyView(view: ShelfView) {
-        // Up affordance: top-level views show the hamburger (opens drawer);
-        // detail views (author/series) and the Patch 16 "Recently Added" temp
-        // screen show a back arrow that returns to the previous view — it must
-        // NOT open the drawer. (Bug: previously the toggle intercepted the
-        // back-arrow click and opened the drawer instead.)
+        val isStatsOrVocab = view is ShelfView.Stats || view is ShelfView.Vocabulary
+        val headerLayoutRes = when {
+            isStatsOrVocab || isFoldersView(view) || view is ShelfView.Settings -> R.layout.header_category_1
+            view is ShelfView.Home || view is ShelfView.Reading || view is ShelfView.AuthorsList || view is ShelfView.SeriesList || view is ShelfView.Collections -> R.layout.header_category_2
+            else -> R.layout.header_category_3
+        }
+
+        val headerContainer = binding.root.findViewById<android.widget.FrameLayout>(R.id.headerContainer)
+        val currentHeaderRes = headerContainer?.getTag(R.id.headerContainer) as? Int
         val isDetail = view is ShelfView.AuthorDetail || view is ShelfView.SeriesDetail
         val isRecentlyAdded = view is ShelfView.RecentlyAdded
-        drawerToggle.isDrawerIndicatorEnabled = !isDetail && !isRecentlyAdded
-        if (isDetail || isRecentlyAdded) {
-            // Patch 12: when the drawer indicator is disabled, ActionBarDrawerToggle
-            // draws NO icon on its own — so the back arrow was invisible on
-            // author/series detail. Explicitly set the up-indicator drawable so the
-            // back arrow renders and is tappable.
-            drawerToggle.setHomeAsUpIndicator(R.drawable.ic_arrow_back)
-            drawerToggle.setToolbarNavigationClickListener {
-                if (isRecentlyAdded) exitRecentlyAdded() else returnToParentList()
+
+        if (currentHeaderRes != headerLayoutRes) {
+            headerContainer?.removeAllViews()
+            val inflatedHeader = layoutInflater.inflate(headerLayoutRes, headerContainer, true)
+            headerContainer?.setTag(R.id.headerContainer, headerLayoutRes)
+
+            val activeToolbar = inflatedHeader.findViewById<com.google.android.material.appbar.MaterialToolbar>(R.id.toolbar)
+            if (activeToolbar != null) {
+                setSupportActionBar(activeToolbar)
+                supportActionBar?.setDisplayHomeAsUpEnabled(true)
+                supportActionBar?.setHomeButtonEnabled(true)
+            }
+
+            // Wire header buttons
+            inflatedHeader.findViewById<View>(R.id.addImportBtn)?.setOnClickListener {
+                openMultiFileLauncher.launch(BookFileTypes.acceptedMimeTypes)
+            }
+            inflatedHeader.findViewById<View>(R.id.headerBtnSearch)?.setOnClickListener {
+                launchSearch()
+            }
+            inflatedHeader.findViewById<View>(R.id.libBtnSearch)?.setOnClickListener {
+                launchSearch()
+            }
+            inflatedHeader.findViewById<View>(R.id.libBtnViewMode)?.setOnClickListener {
+                showViewModeDialog()
+            }
+            inflatedHeader.findViewById<View>(R.id.libBtnSort)?.setOnClickListener {
+                showSortDialog()
+            }
+        }
+
+        val activeToolbar = headerContainer?.findViewById<com.google.android.material.appbar.MaterialToolbar>(R.id.toolbar)
+        if (activeToolbar != null) {
+            if (isDetail || isRecentlyAdded) {
+                activeToolbar.setNavigationIcon(R.drawable.ic_arrow_back)
+                activeToolbar.setNavigationOnClickListener {
+                    if (isRecentlyAdded) exitRecentlyAdded() else returnToParentList()
+                }
+            } else {
+                activeToolbar.setNavigationIcon(R.drawable.ic_menu)
+                activeToolbar.setNavigationOnClickListener {
+                    if (binding.drawerRoot.isOpen) binding.drawerRoot.close() else binding.drawerRoot.open()
+                }
+            }
+            activeToolbar.title = titleFor(view)
+        }
+
+        drawerAdapter.setSelected(view)
+        updateHeaderViewModeIcon()
+
+        val isHome = view is ShelfView.Home
+        val isSettings = view is ShelfView.Settings
+        val isFolders = isFoldersView(view)
+        val isStats = view is ShelfView.Stats
+        val isVocab = view is ShelfView.Vocabulary
+        val showShelf = !isHome && !isSettings && !isFolders && !isStats && !isVocab
+
+        val homeRoot = binding.root.findViewById<View>(R.id.homeContent)
+        val settingsRoot = binding.root.findViewById<View>(R.id.mainSettingsContent)
+        val foldersRoot = binding.root.findViewById<View>(R.id.mainFoldersContent)
+        val statsRoot = binding.root.findViewById<View>(R.id.mainStatsContent)
+        val vocabRoot = binding.root.findViewById<View>(R.id.mainVocabularyContent)
+        val shelfContainer = binding.root.findViewById<android.widget.FrameLayout>(R.id.shelfContainer)
+
+        homeRoot?.visibility = if (isHome) View.VISIBLE else View.GONE
+        settingsRoot?.visibility = if (isSettings) View.VISIBLE else View.GONE
+        foldersRoot?.visibility = if (isFolders) View.VISIBLE else View.GONE
+        statsRoot?.visibility = if (isStats) View.VISIBLE else View.GONE
+        vocabRoot?.visibility = if (isVocab) View.VISIBLE else View.GONE
+        binding.emptyState.visibility = if (isPlaceholder(view)) View.VISIBLE else View.GONE
+
+        if (showShelf) {
+            shelfContainer?.visibility = View.VISIBLE
+            val shelfLayoutRes = when (view) {
+                is ShelfView.Reading -> R.layout.view_currently_reading
+                is ShelfView.Favorites -> R.layout.view_favorites
+                is ShelfView.AuthorsList, is ShelfView.AuthorDetail -> R.layout.view_authors
+                is ShelfView.SeriesList, is ShelfView.SeriesDetail -> R.layout.view_series
+                is ShelfView.Collections -> R.layout.view_collections
+                else -> R.layout.view_library
+            }
+            val currentShelfRes = shelfContainer?.getTag(R.id.shelfContainer) as? Int
+            if (currentShelfRes != shelfLayoutRes) {
+                shelfContainer?.removeAllViews()
+                layoutInflater.inflate(shelfLayoutRes, shelfContainer, true)
+                shelfContainer?.setTag(R.id.shelfContainer, shelfLayoutRes)
+            }
+
+            val tvHeaderTitle = shelfContainer?.findViewById<TextView>(R.id.tvHeaderTitle)
+            val tvHeaderSubtitle = shelfContainer?.findViewById<TextView>(R.id.tvHeaderSubtitle)
+            val ivHeaderIcon = shelfContainer?.findViewById<android.widget.ImageView>(R.id.ivHeaderIcon)
+
+            when (view) {
+                is ShelfView.AuthorDetail -> {
+                    tvHeaderTitle?.text = "AUTHOR: ${view.name.uppercase()}"
+                    tvHeaderSubtitle?.text = ""
+                    ivHeaderIcon?.visibility = View.VISIBLE
+                    ivHeaderIcon?.setImageResource(R.drawable.ic_person_frame)
+                }
+                is ShelfView.SeriesDetail -> {
+                    tvHeaderTitle?.text = "SERIES: ${view.name.uppercase()}"
+                    tvHeaderSubtitle?.text = ""
+                    ivHeaderIcon?.visibility = View.VISIBLE
+                    ivHeaderIcon?.setImageResource(R.drawable.ic_series)
+                }
+                is ShelfView.AuthorsList -> {
+                    tvHeaderTitle?.text = getString(R.string.authors_heading_title)
+                    tvHeaderSubtitle?.text = getString(R.string.authors_heading_subtitle)
+                    ivHeaderIcon?.visibility = View.VISIBLE
+                    ivHeaderIcon?.setImageResource(R.drawable.ic_person)
+                    shelfContainer?.findViewById<TextView>(R.id.headerCountText)?.visibility = View.VISIBLE
+                }
+                is ShelfView.SeriesList -> {
+                    tvHeaderTitle?.text = getString(R.string.series_heading_title)
+                    tvHeaderSubtitle?.text = getString(R.string.series_heading_subtitle)
+                    ivHeaderIcon?.visibility = View.VISIBLE
+                    ivHeaderIcon?.setImageResource(R.drawable.ic_series)
+                    shelfContainer?.findViewById<TextView>(R.id.headerCountText)?.visibility = View.VISIBLE
+                }
+                else -> {}
             }
         } else {
-            // Re-enable the hamburger. Passing 0 clears any previously-set
-            // up-indicator so the toggle's own drawer indicator takes over again.
-            drawerToggle.setHomeAsUpIndicator(0)
-            drawerToggle.setToolbarNavigationClickListener { binding.drawerRoot.open() }
+            shelfContainer?.visibility = View.GONE
         }
-        drawerToggle.syncState()
-        binding.toolbar.title = titleFor(view)
-        drawerAdapter.setSelected(view)
-        invalidateOptionsMenu()
-        binding.homeContent.root.visibility = if (view is ShelfView.Home) View.VISIBLE else View.GONE
-        binding.mainSettingsContent.root.visibility = if (view is ShelfView.Settings) View.VISIBLE else View.GONE
+
         if (view is ShelfView.Home) {
-            binding.recycler.visibility = View.GONE
-            binding.emptyState.visibility = View.GONE
-            binding.mainSettingsContent.root.visibility = View.GONE
             // Re-render the cached Home content so Continue Reading reflects the
             // latest DB state even if the LiveData emitted while Home was hidden.
             lastHomeContent?.let { renderHome(it) }
@@ -740,16 +830,31 @@ class MainActivity : AppCompatActivity() {
             }
         }
         if (view is ShelfView.Settings) {
-            binding.recycler.visibility = View.GONE
-            binding.emptyState.visibility = View.GONE
-            binding.homeContent.root.visibility = View.GONE
             showSettingsView()
             binding.mainSettingsContent.mainSettingsScroll.post {
                 binding.mainSettingsContent.mainSettingsScroll.scrollTo(0, 0)
             }
         }
-        updateFab(view)
-        binding.refresh.isEnabled = true // Patch 12: keep the refresh layout always
+        if (isFolders) {
+            showFoldersView()
+            val foldersRoot = binding.root.findViewById<View>(R.id.mainFoldersContent)
+            val foldersScroll = foldersRoot?.findViewById<androidx.core.widget.NestedScrollView>(R.id.foldersScroll)
+            foldersScroll?.post {
+                foldersScroll.scrollTo(0, 0)
+            }
+        }
+        if (view is ShelfView.Stats) {
+            showStatsView()
+            val statsRoot = binding.root.findViewById<View>(R.id.mainStatsContent)
+            val statsScroll = statsRoot?.findViewById<androidx.core.widget.NestedScrollView>(R.id.statsScroll)
+            statsScroll?.post {
+                statsScroll.scrollTo(0, 0)
+            }
+        }
+        if (view is ShelfView.Vocabulary) {
+            showVocabularyView()
+        }
+        refresh.isEnabled = true // Patch 12: keep the refresh layout always
         // enabled so the scanning spinner stays visible on EVERY view — previously
         // it was disabled on non-book views (Authors/Series/Folders/Settings) and a
         // scan started on Folders appeared to "stop" the moment the user navigated
@@ -781,9 +886,8 @@ class MainActivity : AppCompatActivity() {
                         }
                     }
                 }
-            touchHelper = ItemTouchHelper(cb).also { it.attachToRecyclerView(binding.recycler) }
+            touchHelper = ItemTouchHelper(cb).also { r -> recycler?.let { r.attachToRecyclerView(it) } }
         }
-        invalidateOptionsMenu()
     }
 
     // ---------------------------------------------------------------- observers
@@ -793,7 +897,7 @@ class MainActivity : AppCompatActivity() {
         // View mode + column count apply immediately: reconfigure the adapter without refetching.
         viewModel.viewModeGrid.observe(this) {
             reconfigureAdapter()
-            invalidateOptionsMenu()
+            updateHeaderViewModeIcon()
         }
         viewModel.gridColumns.observe(this) { reconfigureAdapter() }
 
@@ -803,11 +907,14 @@ class MainActivity : AppCompatActivity() {
 
         viewModel.content.observe(this) { items ->
             val view = viewModel.view.value ?: ShelfView.Library
+            if (!isPlaceholder(view)) {
+                binding.emptyState.visibility = View.GONE
+            }
+
             if (view is ShelfView.Home) return@observe
 
-            if (view is ShelfView.Settings) {
+            if (view is ShelfView.Settings || view is ShelfView.Stats || view is ShelfView.Vocabulary) {
                 binding.emptyAction.visibility = View.GONE
-                showSettingsView()
                 return@observe
             }
 
@@ -821,7 +928,7 @@ class MainActivity : AppCompatActivity() {
                 clearDynamicEmptyChildren()
                 binding.emptyState.visibility = View.VISIBLE
                 binding.emptyState.gravity = android.view.Gravity.CENTER
-                binding.recycler.visibility = View.GONE
+                recycler?.visibility = View.GONE
                 binding.emptyIcon.visibility = View.GONE
                 binding.emptyText.visibility = View.VISIBLE
                 binding.emptyText.text = getString(R.string.empty_placeholder)
@@ -837,7 +944,7 @@ class MainActivity : AppCompatActivity() {
             if (items.isEmpty()) {
                 binding.emptyState.visibility = View.VISIBLE
                 binding.emptyState.gravity = android.view.Gravity.CENTER
-                binding.recycler.visibility = View.GONE
+                recycler?.visibility = View.GONE
                 binding.emptyIcon.visibility = View.VISIBLE
                 binding.emptyText.visibility = View.VISIBLE
                 binding.emptyText.text =
@@ -856,7 +963,7 @@ class MainActivity : AppCompatActivity() {
                 }
             } else {
                 binding.emptyState.visibility = View.GONE
-                binding.recycler.visibility = View.VISIBLE
+                recycler?.visibility = View.VISIBLE
                 binding.emptyAction.visibility = View.GONE
             }
 
@@ -868,10 +975,10 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        viewModel.scanning.asLiveData().observe(this) { binding.refresh.isRefreshing = it }
+        viewModel.scanning.asLiveData().observe(this) { refresh.isRefreshing = it }
         viewModel.scanMessage.asLiveData().observe(this) { msg ->
             msg?.let {
-                Snackbar.make(binding.refresh, it, Snackbar.LENGTH_SHORT).show()
+                Snackbar.make(refresh, it, Snackbar.LENGTH_SHORT).show()
                 viewModel.setScanMessage(null)
             }
         }
@@ -881,6 +988,24 @@ class MainActivity : AppCompatActivity() {
         currentBooks = books
         val grid = viewModel.viewModeGrid.value == true
         val cols = viewModel.gridColumns.value ?: 3
+
+        val view = viewModel.view.value
+        val countTv = binding.root.findViewById<TextView>(R.id.headerCountText)
+        val tvHeaderSubtitle = binding.root.findViewById<TextView>(R.id.tvHeaderSubtitle)
+        val count = books.size
+        val countText = if (count == 1) "1 book" else "$count books"
+        countTv?.text = countText
+        countTv?.visibility = View.VISIBLE
+        if (view is ShelfView.AuthorDetail || view is ShelfView.SeriesDetail) {
+            tvHeaderSubtitle?.visibility = View.GONE
+        } else {
+            tvHeaderSubtitle?.visibility = View.VISIBLE
+            tvHeaderSubtitle?.text = when (view) {
+                is ShelfView.AuthorsList -> getString(R.string.authors_heading_subtitle)
+                is ShelfView.SeriesList -> getString(R.string.series_heading_subtitle)
+                else -> tvHeaderSubtitle?.text
+            }
+        }
 
         // Patch 10: when switching shelf views (drawer tap / "Show" action /
         // sort change / grid-column change) the user wants a clean, instant
@@ -892,14 +1017,11 @@ class MainActivity : AppCompatActivity() {
         // for a frame before the jump to 0 landed. Here we take a hard,
         // non-animated reset path: stop any in-flight scroll, disable item
         // animations for the swap, create a FRESH LayoutManager + BookAdapter
-        // (so there is no saved scroll state to restore and no diff to animate
-        // — the new list is laid out from position 0 from the start), then pin
-        // to the top with scrollToPositionWithOffset before submitting.
         if (scrollToTopOnNextContent) {
             scrollToTopOnNextContent = false
-            val previousAnimator = binding.recycler.itemAnimator
-            binding.recycler.stopScroll()
-            binding.recycler.itemAnimator = null
+            val previousAnimator = recycler?.itemAnimator
+            recycler?.stopScroll()
+            recycler?.itemAnimator = null
 
             val newAdapter = BookAdapter(grid, ::openBook, ::showBookOptions, ::openDetails)
             newAdapter.stateRestorationPolicy =
@@ -908,16 +1030,16 @@ class MainActivity : AppCompatActivity() {
 
             bookAdapter = newAdapter
             rowAdapter = null
-            binding.recycler.layoutManager = lm
-            binding.recycler.adapter = newAdapter
+            recycler?.layoutManager = lm
+            recycler?.adapter = newAdapter
 
             (lm as LinearLayoutManager).scrollToPositionWithOffset(0, 0)
 
             newAdapter.submitList(books) {
-                binding.recycler.post {
-                    (binding.recycler.layoutManager as? LinearLayoutManager)
+                recycler?.post {
+                    (recycler?.layoutManager as? LinearLayoutManager)
                         ?.scrollToPositionWithOffset(0, 0)
-                    binding.recycler.itemAnimator = previousAnimator
+                    recycler?.itemAnimator = previousAnimator
                 }
             }
             return
@@ -926,37 +1048,26 @@ class MainActivity : AppCompatActivity() {
         if (bookAdapter == null || bookAdapter?.grid != grid) {
             bookAdapter = BookAdapter(grid, ::openBook, ::showBookOptions, ::openDetails)
             rowAdapter = null
-            binding.recycler.adapter = bookAdapter
+            recycler?.adapter = bookAdapter
+        } else if (recycler?.adapter != bookAdapter) {
+            recycler?.adapter = bookAdapter
         }
-        // CRITICAL: keep the LayoutManager in sync with the adapter's mode.
-        // Forcing GridLayoutManager here even in list mode left list cards laid
-        // out in a 3-column grid (cut off) after returning from the reader.
-        // Patch 11: only recreate the LayoutManager when the grid/list mode or
-        // column count actually changed. Recreating it on every Room emission
-        // wipes scroll state whenever the database re-emits (e.g. after opening a
-        // book updates last-read progress), which would defeat scroll restoration.
-        // NOTE: GridLayoutManager extends LinearLayoutManager, so we must check
-        // for the more specific type first when in list mode, otherwise a
-        // leftover GridLayoutManager from a previous grid view would pass an
-        // "is LinearLayoutManager" check and never get replaced.
-        val currentLm = binding.recycler.layoutManager
+        val currentLm = recycler?.layoutManager
         val needsNewLm = if (grid) {
             currentLm !is GridLayoutManager || currentLm.spanCount != cols
         } else {
             currentLm !is LinearLayoutManager || currentLm is GridLayoutManager
         }
         if (needsNewLm) {
-            binding.recycler.layoutManager =
+            recycler?.layoutManager =
                 if (grid) GridLayoutManager(this, cols) else LinearLayoutManager(this)
         }
         if (grid) {
-            (binding.recycler.layoutManager as? GridLayoutManager)?.spanCount = cols
+            (recycler?.layoutManager as? GridLayoutManager)?.spanCount = cols
         }
         bookAdapter?.submitList(books) {
-            // Patch 11: after the new list is committed, restore the saved scroll
-            // position if the user is returning from the reader / details.
             if (pendingRestoreKey != null) {
-                binding.recycler.post { tryRestoreScroll() }
+                recycler?.post { tryRestoreScroll() }
             }
         }
     }
@@ -965,13 +1076,9 @@ class MainActivity : AppCompatActivity() {
         val grid = viewModel.viewModeGrid.value == true
         val cols = viewModel.gridColumns.value ?: 3
         if (currentBooks.isNotEmpty() && isBookView(viewModel.view.value ?: ShelfView.Library)) {
-            // Grid <-> list mode and grid-column-count changes are also a
-            // "different layout" event, so they get the same clean top reset
-            // as a shelf-view switch (see bindBookAdapter): fresh adapter, no
-            // item-diff animation, pinned to position 0 before layout.
-            val previousAnimator = binding.recycler.itemAnimator
-            binding.recycler.stopScroll()
-            binding.recycler.itemAnimator = null
+            val previousAnimator = recycler?.itemAnimator
+            recycler?.stopScroll()
+            recycler?.itemAnimator = null
 
             val newAdapter = BookAdapter(grid, ::openBook, ::showBookOptions, ::openDetails)
             newAdapter.stateRestorationPolicy =
@@ -979,15 +1086,15 @@ class MainActivity : AppCompatActivity() {
             val lm = if (grid) GridLayoutManager(this, cols) else LinearLayoutManager(this)
 
             bookAdapter = newAdapter
-            binding.recycler.layoutManager = lm
-            binding.recycler.adapter = newAdapter
+            recycler?.layoutManager = lm
+            recycler?.adapter = newAdapter
             lm.scrollToPositionWithOffset(0, 0)
 
             newAdapter.submitList(currentBooks) {
-                binding.recycler.post {
-                    (binding.recycler.layoutManager as? LinearLayoutManager)
+                recycler?.post {
+                    (recycler?.layoutManager as? LinearLayoutManager)
                         ?.scrollToPositionWithOffset(0, 0)
-                    binding.recycler.itemAnimator = previousAnimator
+                    recycler?.itemAnimator = previousAnimator
                 }
             }
         }
@@ -997,24 +1104,25 @@ class MainActivity : AppCompatActivity() {
         val view = viewModel.view.value
         val icon = if (view is ShelfView.SeriesList) R.drawable.ic_series else R.drawable.ic_person_frame
 
-        // For consistency with the book-list reset path, apply the same hard
-        // top reset on row-based (Authors/Series) views: stop scroll, disable
-        // item animation, use a FRESH adapter (so switching Authors<->Series
-        // never diffs the old rows against the new ones), pin to top before
-        // the new list is submitted. This avoids leftover scroll offset and
-        // visible fast-scroll when switching to/from Authors/Series.
+        val countTv = binding.root.findViewById<TextView>(R.id.headerCountText)
+        val tvHeaderSubtitle = binding.root.findViewById<TextView>(R.id.tvHeaderSubtitle)
+        countTv?.visibility = View.VISIBLE
+        tvHeaderSubtitle?.visibility = View.VISIBLE
+        tvHeaderSubtitle?.text = when (view) {
+            is ShelfView.SeriesList -> getString(R.string.series_heading_subtitle)
+            else -> getString(R.string.authors_heading_subtitle)
+        }
+        val count = rows.size
+        val unit = if (view is ShelfView.SeriesList) "series" else if (count == 1) "author" else "authors"
+        countTv?.text = "$count $unit"
+
         if (scrollToTopOnNextContent) {
             scrollToTopOnNextContent = false
-            val previousAnimator = binding.recycler.itemAnimator
-            binding.recycler.stopScroll()
-            binding.recycler.itemAnimator = null
+            val previousAnimator = recycler?.itemAnimator
+            recycler?.stopScroll()
+            recycler?.itemAnimator = null
 
             val newRowAdapter = RowAdapter(icon, onClick = { (name, _) ->
-                // Patch 11: capture THIS list's scroll position before descending
-                // into the author/series detail, so returning restores it. The
-                // detail list itself is NOT one of the capture candidates (it's a
-                // different ShelfView type than this list), so it naturally
-                // top-resets on the content re-emission below.
                 captureScrollState()
                 pendingRestoreKey = viewKey(viewModel.view.value ?: ShelfView.Library)
                 scrollToTopOnNextContent = true
@@ -1025,57 +1133,42 @@ class MainActivity : AppCompatActivity() {
             rowAdapter = newRowAdapter
             bookAdapter = null
             val lm = LinearLayoutManager(this)
-            binding.recycler.layoutManager = lm
-            binding.recycler.adapter = newRowAdapter
+            recycler?.layoutManager = lm
+            recycler?.adapter = newRowAdapter
             lm.scrollToPositionWithOffset(0, 0)
 
             newRowAdapter.submitList(rows.map { com.epubreader.app.data.GroupedRow(it.name, it.count) }) {
-                binding.recycler.post {
-                    (binding.recycler.layoutManager as? LinearLayoutManager)
+                recycler?.post {
+                    (recycler?.layoutManager as? LinearLayoutManager)
                         ?.scrollToPositionWithOffset(0, 0)
-                    binding.recycler.itemAnimator = previousAnimator
+                    recycler?.itemAnimator = previousAnimator
                 }
             }
             return
         }
 
-        // Patch 11: tapping an author/series row navigates into its books layout.
-        // We must capture the parent list's scroll position BEFORE switching so it
-        // can be restored when the user returns via the back arrow / phone back.
-        // We deliberately do NOT set scrollToTopOnNextContent here — the detail
-        // list itself top-resets via the existing top-reset path in bindBookAdapter
-        // (openDetail changes the view → content re-emits → top reset), but the
-        // parent list must NOT be top-reset on return.
         val onClick: (Pair<String, Long?>) -> Unit = { pair ->
             captureScrollState()
             pendingRestoreKey = viewKey(viewModel.view.value ?: ShelfView.Library)
-            // Patch 11: the newly-opened author/series book list should still start
-            // cleanly at the top (this view's prior scroll has been safely captured
-            // for its own future restore — top-resetting a DIFFERENT view's list).
             scrollToTopOnNextContent = true
             viewModel.openDetail(pair.first)
         }
         if (rowAdapter == null) {
             rowAdapter = RowAdapter(icon, onClick = onClick)
             bookAdapter = null
-            binding.recycler.adapter = rowAdapter
-            // Patch 12: GridLayoutManager extends LinearLayoutManager, so a plain
-            // `!is LinearLayoutManager` check MISSES a leftover grid layout manager
-            // from a previous book-list (grid) view. The Authors/Series list then
-            // rendered inside that grid LM, cutting off the list. Force a plain
-            // LinearLayoutManager whenever the current one is a grid (or null, or
-            // any future non-linear manager).
-            val currentLm = binding.recycler.layoutManager
+            recycler?.adapter = rowAdapter
+            val currentLm = recycler?.layoutManager
             if (currentLm !is LinearLayoutManager || currentLm is GridLayoutManager) {
-                binding.recycler.layoutManager = LinearLayoutManager(this)
+                recycler?.layoutManager = LinearLayoutManager(this)
             }
         } else {
             rowAdapter?.iconRes = icon
-            // Even when reusing the row adapter, make sure we are NOT still on a
-            // grid layout manager (e.g. returning from a grid detail view).
-            val currentLm = binding.recycler.layoutManager
+            if (recycler?.adapter != rowAdapter) {
+                recycler?.adapter = rowAdapter
+            }
+            val currentLm = recycler?.layoutManager
             if (currentLm !is LinearLayoutManager || currentLm is GridLayoutManager) {
-                binding.recycler.layoutManager = LinearLayoutManager(this)
+                recycler?.layoutManager = LinearLayoutManager(this)
             }
         }
         rowAdapter?.submitList(
@@ -1084,56 +1177,22 @@ class MainActivity : AppCompatActivity() {
                     .GroupedRow(it.name, it.count)
             },
         ) {
-            // Restore the parent list's scroll on return from a detail layout.
             if (pendingRestoreKey != null) {
-                binding.recycler.post { tryRestoreScroll() }
+                recycler?.post { tryRestoreScroll() }
             }
         }
     }
 
-    // ---------------------------------------------------------------- actions
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.menu_bookshelf, menu)
-        return true
-    }
-
-    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
-        val view = viewModel.view.value ?: ShelfView.Library
-        val bookView = isBookView(view)
-        val isSettings = view is ShelfView.Settings
-        val isReading = view is ShelfView.Reading
-        menu.findItem(R.id.action_view_mode)?.isVisible = bookView
-        menu.findItem(R.id.action_sort)?.isVisible = bookView && !isReading
-        menu.findItem(R.id.action_search)?.isVisible = !isSettings
-        menu.findItem(R.id.action_import)?.isVisible = !isSettings
-        menu.findItem(R.id.action_view_mode)?.setIcon(
-            if (viewModel.viewModeGrid.value == true) R.drawable.ic_list else R.drawable.ic_grid,
+    private fun updateHeaderViewModeIcon() {
+        val headerContainer = binding.root.findViewById<android.widget.FrameLayout>(R.id.headerContainer)
+        val viewModeBtn = headerContainer?.findViewById<android.widget.ImageButton>(R.id.libBtnViewMode)
+        viewModeBtn?.setImageResource(
+            if (viewModel.viewModeGrid.value == true) R.drawable.ic_list else R.drawable.ic_grid
         )
-        return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean =
         when (item.itemId) {
-            R.id.action_search -> {
-                launchSearch()
-                true
-            }
-
-            R.id.action_sort -> {
-                showSortDialog()
-                true
-            }
-
-            R.id.action_view_mode -> {
-                showViewModeDialog()
-                true
-            }
-
-            R.id.action_import -> {
-                openMultiFileLauncher.launch(BookFileTypes.acceptedMimeTypes)
-                true
-            }
-
             android.R.id.home -> {
                 returnToParentList()
                 true
@@ -1264,21 +1323,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     // ---------------------------------------------------------------- FAB + folder
-    private fun updateFab(view: ShelfView) {
-        when (view) {
-            is ShelfView.Library -> {
-                binding.fabScan.show()
-                binding.fabScan.setImageResource(R.drawable.ic_add)
-                binding.fabScan.contentDescription = getString(R.string.action_add)
-            }
-            // Patch 12: the Folders view already shows its action buttons inline
-            // (Scan Now / Select Folder / Remove). The bottom FAB here only popped
-            // up the SAME options in a dialog — a duplicate the user explicitly does
-            // not want. Hide the FAB on Folders so only the inline buttons remain.
-            is ShelfView.Folders -> binding.fabScan.hide()
-            else -> binding.fabScan.hide()
-        }
-    }
+
 
     private fun onFabClicked() {
         when (val view = viewModel.view.value ?: ShelfView.Library) {
@@ -1321,7 +1366,7 @@ class MainActivity : AppCompatActivity() {
 
                         Snackbar
                             .make(
-                                binding.refresh,
+                                refresh,
                                 R.string.folder_none,
                                 Snackbar.LENGTH_SHORT
                             )
@@ -1379,7 +1424,7 @@ class MainActivity : AppCompatActivity() {
         if (scanJob?.isActive == true) {
             Snackbar
                 .make(
-                    binding.refresh,
+                    refresh,
                     R.string.scan_already_running,
                     Snackbar.LENGTH_SHORT
                 )
@@ -1420,7 +1465,7 @@ class MainActivity : AppCompatActivity() {
 
                         val snackbar =
                             Snackbar.make(
-                                binding.refresh,
+                                refresh,
                                 getString(
                                     R.string.metadata_refresh_summary,
                                     result.updated,
@@ -1451,7 +1496,7 @@ class MainActivity : AppCompatActivity() {
 
                         Snackbar
                             .make(
-                                binding.refresh,
+                                refresh,
                                 R.string.scan_failed,
                                 Snackbar.LENGTH_LONG
                             )
@@ -1468,7 +1513,7 @@ class MainActivity : AppCompatActivity() {
     private fun rescanSelectedFolder() {
         val uriString = prefs.selectedFolderUri
         if (uriString == null) {
-            binding.refresh.isRefreshing = false
+            refresh.isRefreshing = false
             Snackbar.make(binding.root, R.string.scan_no_folder, Snackbar.LENGTH_LONG)
                 .setAction(R.string.folder_select) { openTreeLauncher.launch(null) }
                 .show()
@@ -1489,7 +1534,7 @@ class MainActivity : AppCompatActivity() {
         // concurrent scans on the same importer/DB would conflict and the second
         // would silently fail, which looked like "Scan Now doesn't do anything."
         if (scanJob?.isActive == true) {
-            Snackbar.make(binding.refresh, R.string.scan_already_running, Snackbar.LENGTH_SHORT).show()
+            Snackbar.make(refresh, R.string.scan_already_running, Snackbar.LENGTH_SHORT).show()
             return
         }
         try {
@@ -1545,7 +1590,7 @@ class MainActivity : AppCompatActivity() {
                 }
             } catch (_: Exception) {
                 withContext(Dispatchers.Main) {
-                    Snackbar.make(binding.refresh, R.string.scan_failed, Snackbar.LENGTH_LONG).show()
+                    Snackbar.make(refresh, R.string.scan_failed, Snackbar.LENGTH_LONG).show()
                 }
             } finally {
                 withContext(Dispatchers.Main) {
@@ -1583,7 +1628,7 @@ class MainActivity : AppCompatActivity() {
             getString(R.string.scan_complete_new, newCount)
         else
             getString(R.string.scan_complete_none)
-        val snackbar = Snackbar.make(binding.refresh, text, Snackbar.LENGTH_LONG)
+        val snackbar = Snackbar.make(refresh, text, Snackbar.LENGTH_LONG)
         if (newCount > 0) {
             snackbar.setAction(R.string.scan_show) {
                 // Patch 16 (Issue #3): instead of dumping the user on the Library
@@ -1604,49 +1649,53 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showFoldersView() {
-        clearDynamicEmptyChildren()
-        binding.recycler.visibility = View.GONE
-        // Patch 11: start the Folder view at the TOP of the layout instead of
-        // vertically centered in the middle of the screen.
-        binding.emptyState.gravity = android.view.Gravity.START or android.view.Gravity.TOP
-        binding.emptyState.visibility = View.VISIBLE
-        binding.emptyIcon.visibility = View.GONE
+        recycler?.visibility = View.GONE
+        binding.emptyState.visibility = View.GONE
+        binding.homeContent.root.visibility = View.GONE
+        binding.mainSettingsContent.root.visibility = View.GONE
+
+        val foldersRoot = binding.root.findViewById<View>(R.id.mainFoldersContent) ?: return
+        foldersRoot.visibility = View.VISIBLE
+
+        val tvFolderTitle = foldersRoot.findViewById<android.widget.TextView>(R.id.tvFolderTitle)
+        val tvFolderHint = foldersRoot.findViewById<android.widget.TextView>(R.id.tvFolderHint)
+        val btnScanNow = foldersRoot.findViewById<View>(R.id.btnScanNow)
+        val btnRefreshMetadata = foldersRoot.findViewById<View>(R.id.btnRefreshMetadata)
+        val btnSelectFolder = foldersRoot.findViewById<View>(R.id.btnSelectFolder)
+        val btnRemoveFolder = foldersRoot.findViewById<View>(R.id.btnRemoveFolder)
+
         val uri = prefs.selectedFolderUri
-        binding.emptyText.visibility = View.VISIBLE
-        binding.emptyText.text = if (uri != null) {
+        tvFolderTitle?.text = if (uri != null) {
             getString(R.string.folder_selected, folderDisplayName(uri))
         } else {
             getString(R.string.folder_none)
         }
-        binding.emptyHint.text = getString(R.string.folder_hint)
-        binding.emptyHint.visibility = View.VISIBLE
+        tvFolderHint?.text = getString(R.string.folder_hint)
 
         if (uri != null) {
+            btnScanNow?.visibility = View.VISIBLE
+            btnRefreshMetadata?.visibility = View.VISIBLE
+            btnRemoveFolder?.visibility = View.VISIBLE
 
-            addDynamicButton(R.string.folder_scan_now) {
-                rescanSelectedFolder()
-            }
-
-            addDynamicButton(R.string.folder_refresh_metadata) {
-                refreshMetadataSelectedFolder()
-            }
-
-            addDynamicButton(R.string.folder_select) {
-                openTreeLauncher.launch(null)
-            }
-
-            addDynamicButton(R.string.folder_remove) {
+            btnScanNow?.setOnClickListener { rescanSelectedFolder() }
+            btnRefreshMetadata?.setOnClickListener { refreshMetadataSelectedFolder() }
+            btnSelectFolder?.setOnClickListener { openTreeLauncher.launch(null) }
+            btnRemoveFolder?.setOnClickListener {
                 prefs.selectedFolderUri = null
                 showFoldersView()
-                Snackbar.make(binding.refresh, R.string.folder_none, Snackbar.LENGTH_SHORT).show()
+                Snackbar.make(refresh, R.string.folder_none, Snackbar.LENGTH_SHORT).show()
             }
         } else {
-            addDynamicButton(R.string.folder_select) { openTreeLauncher.launch(null) }
+            btnScanNow?.visibility = View.GONE
+            btnRefreshMetadata?.visibility = View.GONE
+            btnRemoveFolder?.visibility = View.GONE
+
+            btnSelectFolder?.setOnClickListener { openTreeLauncher.launch(null) }
         }
     }
 
     private fun showSettingsView() {
-        binding.recycler.visibility = View.GONE
+        recycler?.visibility = View.GONE
         binding.emptyState.visibility = View.GONE
         binding.homeContent.root.visibility = View.GONE
         binding.mainSettingsContent.root.visibility = View.VISIBLE
@@ -1660,15 +1709,39 @@ class MainActivity : AppCompatActivity() {
             60 -> binding.mainSettingsContent.goal60.isChecked = true
             else -> binding.mainSettingsContent.goal30.isChecked = true
         }
-        binding.mainSettingsContent.chipGroupGoal.setOnCheckedChangeListener { _, checkedId ->
-            prefs.dailyGoalMinutes = when (checkedId) {
-                R.id.goal15 -> 15
-                R.id.goal20 -> 20
-                R.id.goal30 -> 30
-                R.id.goal45 -> 45
-                R.id.goal60 -> 60
-                else -> 30
+
+        val chipGroup = binding.mainSettingsContent.chipGroupGoal
+        val updateChipStyles = {
+            for (i in 0 until chipGroup.childCount) {
+                val chip = chipGroup.getChildAt(i) as? com.google.android.material.chip.Chip
+                if (chip != null) {
+                    if (chip.isChecked) {
+                        chip.setChipBackgroundColorResource(R.color.accent_pop)
+                        chip.setTextColor(androidx.core.content.ContextCompat.getColor(this, android.R.color.black))
+                        chip.setChipStrokeColor(android.content.res.ColorStateList.valueOf(androidx.core.content.ContextCompat.getColor(this, R.color.accent_pop)))
+                    } else {
+                        chip.setChipBackgroundColorResource(R.color.dark_surface_alt)
+                        chip.setTextColor(androidx.core.content.ContextCompat.getColor(this, android.R.color.white))
+                        chip.setChipStrokeColor(android.content.res.ColorStateList.valueOf(androidx.core.content.ContextCompat.getColor(this, R.color.palette_slate)))
+                    }
+                }
             }
+        }
+        updateChipStyles()
+
+        binding.mainSettingsContent.chipGroupGoal.setOnCheckedStateChangeListener { _, checkedIds ->
+            val checkedId = checkedIds.firstOrNull() ?: View.NO_ID
+            if (checkedId != View.NO_ID) {
+                prefs.dailyGoalMinutes = when (checkedId) {
+                    R.id.goal15 -> 15
+                    R.id.goal20 -> 20
+                    R.id.goal30 -> 30
+                    R.id.goal45 -> 45
+                    R.id.goal60 -> 60
+                    else -> 30
+                }
+            }
+            updateChipStyles()
         }
         binding.mainSettingsContent.goalDashboardSwitch.isChecked = prefs.showGoalOnDashboard
         binding.mainSettingsContent.goalDashboardSwitch.setOnCheckedChangeListener { _, checked ->
@@ -1691,125 +1764,11 @@ class MainActivity : AppCompatActivity() {
 
         // 5. Full Backup and Restore Section
         binding.mainSettingsContent.btnExportBackup.setOnClickListener {
-            Toast.makeText(this, "Backup exported successfully (local encrypted DB & preferences).", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, R.string.backup_export_success, Toast.LENGTH_LONG).show()
         }
         binding.mainSettingsContent.btnImportBackup.setOnClickListener {
-            Toast.makeText(this, "Backup imported successfully.", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, R.string.backup_import_success, Toast.LENGTH_LONG).show()
         }
-    }
-
-    private fun addSettingsCard(title: String, body: String) {
-        val card = com.google.android.material.card.MaterialCardView(this).apply {
-            layoutParams = android.widget.LinearLayout.LayoutParams(
-                android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
-                android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
-            ).apply { setMargins(0, 16.dp(), 0, 0) }
-            radius = 14f * resources.displayMetrics.density
-            cardElevation = 1f
-            setCardBackgroundColor(themeColor(android.R.attr.colorBackground))
-        }
-        val layout = android.widget.LinearLayout(this).apply {
-            orientation = android.widget.LinearLayout.VERTICAL
-            setPadding(16.dp(), 16.dp(), 16.dp(), 16.dp())
-        }
-        android.widget.TextView(this).apply {
-            text = title
-            setTextColor(themeColor(android.R.attr.textColorPrimary))
-            textSize = 16f
-            setTypeface(null, android.graphics.Typeface.BOLD)
-            layout.addView(this)
-        }
-        android.widget.TextView(this).apply {
-            text = body
-            setTextColor(themeColor(android.R.attr.textColorSecondary))
-            textSize = 13f
-            setPadding(0, 8.dp(), 0, 0)
-            layout.addView(this)
-        }
-        card.addView(layout)
-        binding.emptyState.addView(card)
-        dynamicEmptyChildren.add(card)
-    }
-
-    // Patch 17 (Addition #1): theme display name comes from the single-source
-    // registry so the main-app settings row stays in sync with the reader
-    // dropdown automatically.
-    private fun readerThemeLabel(): String =
-        getString(com.epubreader.app.ui.ReaderTheme.byId(prefs.theme).displayNameRes)
-
-    private fun addSettingsRow(label: String, value: String, onClick: (() -> Unit)? = null) {
-        val row = android.widget.LinearLayout(this).apply {
-            orientation = android.widget.LinearLayout.VERTICAL
-            setPadding(0, 12.dp(), 0, 0)
-            if (onClick != null) {
-                isClickable = true
-                setOnClickListener { onClick() }
-            }
-        }
-        android.widget.TextView(this).apply {
-            text = label
-            setTextColor(themeColor(android.R.attr.textColorSecondary))
-            textSize = 12f
-            row.addView(this)
-        }
-        android.widget.TextView(this).apply {
-            text = value
-            setTextColor(themeColor(android.R.attr.textColorPrimary))
-            textSize = 15f
-            row.addView(this)
-        }
-        binding.emptyState.addView(row)
-        dynamicEmptyChildren.add(row)
-    }
-
-    // ------------------------------------------------------------- Screen On (Patch 11)
-    // See util/KeepScreenOnController.kt for the full write-up. It is shared by
-    // MainActivity, ReaderActivity and BookDetailsActivity so "keep the screen
-    // on 10 minutes longer" applies app-wide, not just on the bookshelf.
-    private fun addScreenOnToggle() {
-        val row = android.widget.LinearLayout(this).apply {
-            orientation = android.widget.LinearLayout.HORIZONTAL
-            gravity = android.view.Gravity.CENTER_VERTICAL
-            setPadding(0, 12.dp(), 0, 0)
-            // Fill the available width so the label column (weight 1f) expands and
-            // the switch hugs the trailing edge cleanly.
-            layoutParams = android.widget.LinearLayout.LayoutParams(
-                android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
-                android.widget.LinearLayout.LayoutParams.WRAP_CONTENT,
-            )
-        }
-        val labelColumn = android.widget.LinearLayout(this).apply {
-            orientation = android.widget.LinearLayout.VERTICAL
-            layoutParams = android.widget.LinearLayout.LayoutParams(
-                0,
-                android.widget.LinearLayout.LayoutParams.WRAP_CONTENT,
-            ).apply { weight = 1f }
-        }
-        android.widget.TextView(this).apply {
-            text = getString(R.string.settings_keep_screen_on)
-            setTextColor(themeColor(android.R.attr.textColorPrimary))
-            textSize = 15f
-            labelColumn.addView(this)
-        }
-        android.widget.TextView(this).apply {
-            text = getString(R.string.settings_keep_screen_on_summary)
-            setTextColor(themeColor(android.R.attr.textColorSecondary))
-            textSize = 12f
-            labelColumn.addView(this)
-        }
-        // Material2 (Theme.MaterialComponents) is used, so SwitchCompat is
-        // required for proper theming — MaterialSwitch would not theme well.
-        val switch = androidx.appcompat.widget.SwitchCompat(this).apply {
-            isChecked = prefs.keepScreenOn
-        }
-        switch.setOnCheckedChangeListener { _, isChecked ->
-            prefs.keepScreenOn = isChecked
-            keepScreenOnController.refresh()
-        }
-        row.addView(labelColumn)
-        row.addView(switch)
-        binding.emptyState.addView(row)
-        dynamicEmptyChildren.add(row)
     }
 
     override fun onUserInteraction() {
@@ -1827,20 +1786,6 @@ class MainActivity : AppCompatActivity() {
         } finally {
             ta.recycle()
         }
-    }
-
-    private fun addDynamicButton(labelRes: Int, onClick: () -> Unit) {
-        val btn = com.google.android.material.button.MaterialButton(this)
-        btn.text = getString(labelRes)
-        val lp = androidx.recyclerview.widget.RecyclerView.LayoutParams(
-            androidx.recyclerview.widget.RecyclerView.LayoutParams.WRAP_CONTENT,
-            androidx.recyclerview.widget.RecyclerView.LayoutParams.WRAP_CONTENT
-        )
-        lp.topMargin = 8.dp()
-        btn.layoutParams = lp
-        btn.setOnClickListener { onClick() }
-        binding.emptyState.addView(btn)
-        dynamicEmptyChildren.add(btn)
     }
 
     private fun clearDynamicEmptyChildren() {
@@ -1864,7 +1809,7 @@ class MainActivity : AppCompatActivity() {
         if (intent.action != Intent.ACTION_VIEW) return
         val uri = intent.data ?: return
         if (!BookFileTypes.isBookFile(uri, contentResolver)) {
-            Snackbar.make(binding.fabScan, R.string.import_unsupported_file, Snackbar.LENGTH_SHORT).show()
+            Snackbar.make(binding.root, R.string.import_unsupported_file, Snackbar.LENGTH_SHORT).show()
             return
         }
         viewModel.setScanning(true)
@@ -1883,7 +1828,7 @@ class MainActivity : AppCompatActivity() {
                             .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                     )
                 } else {
-                    Snackbar.make(binding.fabScan, R.string.import_failed, Snackbar.LENGTH_SHORT).show()
+                    Snackbar.make(binding.root, R.string.import_failed, Snackbar.LENGTH_SHORT).show()
                 }
             }
         }
@@ -1919,5 +1864,374 @@ class MainActivity : AppCompatActivity() {
                 book.id
             )
         )
+    }
+
+    private fun showStatsView() {
+        val statsRoot = binding.root.findViewById<View>(R.id.mainStatsContent) ?: return
+        val now = System.currentTimeMillis()
+        val weekStart = java.util.Calendar.getInstance().apply {
+            firstDayOfWeek = java.util.Calendar.MONDAY
+            set(java.util.Calendar.HOUR_OF_DAY, 0); set(java.util.Calendar.MINUTE, 0); set(java.util.Calendar.SECOND, 0); set(java.util.Calendar.MILLISECOND, 0)
+            set(java.util.Calendar.DAY_OF_WEEK, java.util.Calendar.MONDAY)
+        }.timeInMillis
+        val yearStart = java.util.Calendar.getInstance().apply {
+            set(java.util.Calendar.MONTH, java.util.Calendar.JANUARY); set(java.util.Calendar.DAY_OF_MONTH, 1)
+            set(java.util.Calendar.HOUR_OF_DAY, 0); set(java.util.Calendar.MINUTE, 0); set(java.util.Calendar.SECOND, 0); set(java.util.Calendar.MILLISECOND, 0)
+        }.timeInMillis
+        val todayStart = java.util.Calendar.getInstance().apply {
+            set(java.util.Calendar.HOUR_OF_DAY, 0); set(java.util.Calendar.MINUTE, 0); set(java.util.Calendar.SECOND, 0); set(java.util.Calendar.MILLISECOND, 0)
+        }.timeInMillis
+
+        lifecycleScope.launch {
+            val stats = withContext(Dispatchers.IO) {
+                val db = AppDatabase.get(applicationContext)
+                val dao = db.readingSessionDao()
+                val days = dao.activeDays()
+                var streak = 0
+                if (days.isNotEmpty()) {
+                    val keys = days.toHashSet()
+                    val cursor = java.util.Calendar.getInstance().apply {
+                        timeInMillis = now
+                        set(java.util.Calendar.HOUR_OF_DAY, 0); set(java.util.Calendar.MINUTE, 0); set(java.util.Calendar.SECOND, 0); set(java.util.Calendar.MILLISECOND, 0)
+                    }
+                    while (true) {
+                        val key = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).format(cursor.time)
+                        if (!keys.contains(key)) break
+                        streak++
+                        cursor.add(java.util.Calendar.DAY_OF_YEAR, -1)
+                    }
+                }
+                StatsValues(
+                    weekSeconds = dao.activeSecondsSince(weekStart),
+                    yearSeconds = dao.activeSecondsSinceYear(yearStart),
+                    todaySeconds = dao.activeSecondsSince(todayStart),
+                    chapters = dao.chaptersSince(yearStart),
+                    pages = dao.pagesSince(yearStart),
+                    finished = db.bookDao().getFinishedCount(),
+                    streak = streak
+                )
+            }
+            val todayMinutes = stats.todaySeconds / 60
+            val goalMinutes = prefs.dailyGoalMinutes.coerceAtLeast(1)
+            val percent = ((todayMinutes * 100) / goalMinutes).coerceIn(0, 100)
+
+            statsRoot.findViewById<TextView>(R.id.statsGoalFraction)?.text = getString(R.string.stats_goal_fraction, todayMinutes, goalMinutes)
+            statsRoot.findViewById<ProgressBar>(R.id.statsGoalProgressBar)?.progress = percent
+            statsRoot.findViewById<TextView>(R.id.statsGoalPercent)?.text = "$percent%"
+
+            statsRoot.findViewById<TextView>(R.id.statsWeek)?.text = formatStatsMinutes(stats.weekSeconds)
+            statsRoot.findViewById<TextView>(R.id.statsYear)?.text = formatStatsMinutes(stats.yearSeconds)
+            statsRoot.findViewById<TextView>(R.id.statsFinished)?.text = stats.finished.toString()
+            statsRoot.findViewById<TextView>(R.id.statsStreak)?.text = "${stats.streak} ${if (stats.streak == 1) "day" else getString(R.string.stats_days)}"
+            statsRoot.findViewById<TextView>(R.id.statsChapters)?.text = stats.chapters.toString()
+            statsRoot.findViewById<TextView>(R.id.statsPages)?.text = stats.pages.toString()
+        }
+    }
+
+    private data class StatsValues(
+        val weekSeconds: Int, val yearSeconds: Int, val todaySeconds: Int, val chapters: Int, val pages: Int, val finished: Int, val streak: Int
+    )
+
+    private fun formatStatsMinutes(seconds: Int): String {
+        val minutes = seconds / 60
+        return if (minutes < 60) getString(R.string.stats_minutes_value, minutes)
+        else getString(R.string.stats_hours_value, minutes / 60, minutes % 60)
+    }
+
+    private var vocabAdapter: com.epubreader.app.ui.VocabularyAdapter? = null
+    private var vocabFullList: List<com.epubreader.app.data.DictionaryHistoryEntity> = emptyList()
+    private var vocabFlashcardIndex: Int = 0
+    private var vocabFlashcardFlipped: Boolean = false
+
+    private fun showVocabularyView() {
+        val vocabRoot = binding.root.findViewById<View>(R.id.mainVocabularyContent) ?: return
+        val tabs = vocabRoot.findViewById<com.google.android.material.tabs.TabLayout>(R.id.vocabTabs)
+        val wordsContainer = vocabRoot.findViewById<View>(R.id.vocabWordsTabContainer)
+        val flashcardContainer = vocabRoot.findViewById<View>(R.id.vocabFlashcardContainer)
+        val searchEdit = vocabRoot.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.vocabSearchEdit)
+        val chipGroup = vocabRoot.findViewById<com.google.android.material.chip.ChipGroup>(R.id.vocabFilterChipGroup)
+        val recycler = vocabRoot.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.vocabRecycler)
+        val emptyText = vocabRoot.findViewById<View>(R.id.vocabEmptyText)
+        val actionsRow = vocabRoot.findViewById<View>(R.id.vocabActionsRow)
+
+        if (vocabAdapter == null) {
+            vocabAdapter = com.epubreader.app.ui.VocabularyAdapter(
+                onMasteryCycle = { item ->
+                    val nextMastery = (item.masteryLevel + 1) % 3
+                    lifecycleScope.launch(Dispatchers.IO) {
+                        AppDatabase.get(applicationContext).dictionaryHistoryDao().updateMasteryLevel(item.id, nextMastery)
+                    }
+                },
+                onPronounce = { word ->
+                    Toast.makeText(this, "Pronouncing $word", Toast.LENGTH_SHORT).show()
+                },
+                onDelete = { item ->
+                    lifecycleScope.launch(Dispatchers.IO) {
+                        AppDatabase.get(applicationContext).dictionaryHistoryDao().delete(item)
+                    }
+                }
+            )
+        }
+        recycler?.layoutManager = LinearLayoutManager(this)
+        recycler?.adapter = vocabAdapter
+
+        // Dual Tab Switcher
+        tabs?.addOnTabSelectedListener(object : com.google.android.material.tabs.TabLayout.OnTabSelectedListener {
+            override fun onTabSelected(tab: com.google.android.material.tabs.TabLayout.Tab?) {
+                if (tab?.position == 1) {
+                    wordsContainer?.visibility = View.GONE
+                    flashcardContainer?.visibility = View.VISIBLE
+                    renderFlashcard(vocabRoot)
+                } else {
+                    wordsContainer?.visibility = View.VISIBLE
+                    flashcardContainer?.visibility = View.GONE
+                }
+            }
+            override fun onTabUnselected(tab: com.google.android.material.tabs.TabLayout.Tab?) {}
+            override fun onTabReselected(tab: com.google.android.material.tabs.TabLayout.Tab?) {}
+        })
+
+        val subtitleTv = vocabRoot.findViewById<TextView>(R.id.vocabSubtitleText)
+        // Live Search Filter
+        val applyFilters = {
+            val query = searchEdit?.text?.toString()?.trim()?.lowercase() ?: ""
+            val checkedId = chipGroup?.checkedChipId
+            val filtered = vocabFullList.filter { item ->
+                val matchesQuery = query.isBlank() ||
+                    item.word.lowercase().contains(query) ||
+                    (item.definition?.lowercase()?.contains(query) == true) ||
+                    (item.bookTitle?.lowercase()?.contains(query) == true)
+
+                val matchesChip = when (checkedId) {
+                    R.id.chipNew -> item.masteryLevel == 0
+                    R.id.chipLearning -> item.masteryLevel == 1
+                    R.id.chipMastered -> item.masteryLevel == 2
+                    else -> true
+                }
+                matchesQuery && matchesChip
+            }
+            vocabAdapter?.submitList(filtered)
+            emptyText?.visibility = if (filtered.isEmpty()) View.VISIBLE else View.GONE
+            recycler?.visibility = if (filtered.isEmpty()) View.GONE else View.VISIBLE
+            actionsRow?.visibility = if (vocabFullList.isEmpty()) View.GONE else View.VISIBLE
+
+            val total = vocabFullList.size
+            val count = filtered.size
+            val wordOrWords = if (count == 1) "word" else "words"
+            subtitleTv?.text = if (filtered.size == vocabFullList.size) {
+                vocabRoot.context.getString(R.string.vocab_heading_subtitle, total, if (total == 1) "word" else "words")
+            } else {
+                "$count matching $wordOrWords (filtered from $total)"
+            }
+        }
+
+        searchEdit?.addTextChangedListener(object : android.text.TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) { applyFilters() }
+            override fun afterTextChanged(s: android.text.Editable?) {}
+        })
+
+        val updateChipStyles = {
+            for (i in 0 until (chipGroup?.childCount ?: 0)) {
+                val chip = chipGroup?.getChildAt(i) as? com.google.android.material.chip.Chip
+                if (chip != null) {
+                    if (chip.isChecked) {
+                        chip.chipBackgroundColor = android.content.res.ColorStateList.valueOf(androidx.core.content.ContextCompat.getColor(this, R.color.accent_pop))
+                        chip.setTextColor(androidx.core.content.ContextCompat.getColor(this, android.R.color.black))
+                    } else {
+                        chip.chipBackgroundColor = android.content.res.ColorStateList.valueOf(androidx.core.content.ContextCompat.getColor(this, R.color.palette_plum))
+                        chip.setTextColor(androidx.core.content.ContextCompat.getColor(this, R.color.palette_mint))
+                    }
+                }
+            }
+        }
+        updateChipStyles()
+
+        chipGroup?.setOnCheckedStateChangeListener { _, _ ->
+            updateChipStyles()
+            applyFilters()
+        }
+
+        vocabRoot.findViewById<View>(R.id.vocabExportCsv)?.setOnClickListener { exportVocab(0) }
+        vocabRoot.findViewById<View>(R.id.vocabExportMarkdown)?.setOnClickListener { exportVocab(1) }
+        vocabRoot.findViewById<View>(R.id.vocabClearAll)?.setOnClickListener { confirmClearVocab() }
+
+        // Flashcard controls
+        val flashcardCard = vocabRoot.findViewById<View>(R.id.flashcardCardView)
+        val flashcardPrev = vocabRoot.findViewById<View>(R.id.flashcardPrevBtn)
+        val flashcardNext = vocabRoot.findViewById<View>(R.id.flashcardNextBtn)
+        val flashcardLearning = vocabRoot.findViewById<com.google.android.material.button.MaterialButton>(R.id.flashcardLearningBtn)
+        val flashcardMastered = vocabRoot.findViewById<com.google.android.material.button.MaterialButton>(R.id.flashcardMasteredBtn)
+
+        flashcardCard?.setOnClickListener {
+            vocabFlashcardFlipped = !vocabFlashcardFlipped
+            flashcardCard.animate().rotationY(if (vocabFlashcardFlipped) 180f else 0f).setDuration(350).start()
+            val front = vocabRoot.findViewById<View>(R.id.flashcardFrontSide)
+            val back = vocabRoot.findViewById<View>(R.id.flashcardBackSide)
+            flashcardCard.postDelayed({
+                front?.visibility = if (vocabFlashcardFlipped) View.GONE else View.VISIBLE
+                back?.visibility = if (vocabFlashcardFlipped) View.VISIBLE else View.GONE
+                if (vocabFlashcardFlipped) back?.rotationY = 180f
+            }, 175)
+        }
+
+        flashcardPrev?.setOnClickListener {
+            if (vocabFullList.isNotEmpty()) {
+                vocabFlashcardIndex = (vocabFlashcardIndex - 1 + vocabFullList.size) % vocabFullList.size
+                vocabFlashcardFlipped = false
+                flashcardCard?.rotationY = 0f
+                vocabRoot.findViewById<View>(R.id.flashcardFrontSide)?.visibility = View.VISIBLE
+                vocabRoot.findViewById<View>(R.id.flashcardBackSide)?.visibility = View.GONE
+                renderFlashcard(vocabRoot)
+            }
+        }
+
+        flashcardNext?.setOnClickListener {
+            if (vocabFullList.isNotEmpty()) {
+                vocabFlashcardIndex = (vocabFlashcardIndex + 1) % vocabFullList.size
+                vocabFlashcardFlipped = false
+                flashcardCard?.rotationY = 0f
+                vocabRoot.findViewById<View>(R.id.flashcardFrontSide)?.visibility = View.VISIBLE
+                vocabRoot.findViewById<View>(R.id.flashcardBackSide)?.visibility = View.GONE
+                renderFlashcard(vocabRoot)
+            }
+        }
+
+        flashcardLearning?.setOnClickListener {
+            if (vocabFullList.isNotEmpty() && vocabFlashcardIndex in vocabFullList.indices) {
+                val current = vocabFullList[vocabFlashcardIndex]
+                lifecycleScope.launch(Dispatchers.IO) {
+                    AppDatabase.get(applicationContext).dictionaryHistoryDao().updateMasteryLevel(current.id, 1)
+                }
+            }
+        }
+
+        flashcardMastered?.setOnClickListener {
+            if (vocabFullList.isNotEmpty() && vocabFlashcardIndex in vocabFullList.indices) {
+                val current = vocabFullList[vocabFlashcardIndex]
+                lifecycleScope.launch(Dispatchers.IO) {
+                    AppDatabase.get(applicationContext).dictionaryHistoryDao().updateMasteryLevel(current.id, 2)
+                }
+            }
+        }
+
+        AppDatabase.get(this).dictionaryHistoryDao().observeAll().asLiveData().observe(this) { list ->
+            vocabFullList = list
+            applyFilters()
+            if (vocabFlashcardIndex >= list.size) vocabFlashcardIndex = (list.size - 1).coerceAtLeast(0)
+            renderFlashcard(vocabRoot)
+
+            val subtitleTv = vocabRoot.findViewById<TextView>(R.id.vocabSubtitleText)
+            val count = list.size
+            val wordOrWords = if (count == 1) "word" else "words"
+            subtitleTv?.text = vocabRoot.context.getString(R.string.vocab_heading_subtitle, count, wordOrWords)
+        }
+    }
+
+    private fun renderFlashcard(vocabRoot: View) {
+        if (vocabFullList.isEmpty()) return
+        val current = vocabFullList[vocabFlashcardIndex.coerceIn(0, vocabFullList.size - 1)]
+        val progressTv = vocabRoot.findViewById<TextView>(R.id.flashcardProgressText)
+        val wordTv = vocabRoot.findViewById<TextView>(R.id.flashcardWord)
+        val phoneticTv = vocabRoot.findViewById<TextView>(R.id.flashcardPhonetic)
+        val posTv = vocabRoot.findViewById<TextView>(R.id.flashcardPos)
+        val defTv = vocabRoot.findViewById<TextView>(R.id.flashcardDef)
+        val exampleTv = vocabRoot.findViewById<TextView>(R.id.flashcardExample)
+
+        progressTv?.text = vocabRoot.context.getString(R.string.vocab_flashcard_progress, vocabFlashcardIndex + 1, vocabFullList.size)
+
+        wordTv?.text = current.word.uppercase()
+        phoneticTv?.text = current.phonetic ?: "/${current.word.lowercase()}/"
+        posTv?.text = current.partOfSpeech?.uppercase() ?: "WORD"
+        defTv?.text = current.definition ?: getString(R.string.dictionary_not_found)
+        exampleTv?.text = if (!current.example.isNullOrBlank()) "\"${current.example}\"" else ""
+    }
+
+    private fun confirmClearVocab() {
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle(R.string.vocabulary_clear_confirm)
+            .setPositiveButton(R.string.delete) { _, _ ->
+                lifecycleScope.launch(Dispatchers.IO) {
+                    AppDatabase.get(applicationContext).dictionaryHistoryDao().clear()
+                }
+                Snackbar.make(binding.root, R.string.vocabulary_cleared, Snackbar.LENGTH_SHORT).show()
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
+    private fun exportVocab(format: Int) {
+        val words = vocabAdapter?.currentList ?: return
+        if (words.isEmpty()) return
+        val timestamp = java.text.SimpleDateFormat("yyyyMMdd-HHmmss", java.util.Locale.US).format(java.util.Date())
+        val (fileName, mime, content) = when (format) {
+            1 -> Triple("vocabulary-$timestamp.md", "text/markdown", buildVocabMarkdown(words))
+            else -> Triple("vocabulary-$timestamp.csv", "text/csv", buildVocabCsv(words))
+        }
+        lifecycleScope.launch(Dispatchers.IO) {
+            val file = java.io.File(cacheDir, fileName)
+            file.writeText(content, Charsets.UTF_8)
+            withContext(Dispatchers.Main) {
+                shareVocabFile(file, mime)
+                Snackbar.make(binding.root, R.string.vocabulary_exported, Snackbar.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun buildVocabCsv(words: List<com.epubreader.app.data.DictionaryHistoryEntity>): String = buildString {
+        append("word,part_of_speech,definition,example,source_book,mastery\n")
+        words.forEach { item ->
+            val masteryStr = when (item.masteryLevel) {
+                1 -> "Learning"
+                2 -> "Mastered"
+                else -> "New"
+            }
+            append(csvCell(item.word)).append(',')
+                .append(csvCell(item.partOfSpeech.orEmpty())).append(',')
+                .append(csvCell(item.definition.orEmpty())).append(',')
+                .append(csvCell(item.example.orEmpty())).append(',')
+                .append(csvCell(item.bookTitle.orEmpty())).append(',')
+                .append(csvCell(masteryStr)).append('\n')
+        }
+    }
+
+    private fun csvCell(value: String): String =
+        if (value.contains(',') || value.contains('"') || value.contains('\n')) {
+            "\"" + value.replace("\"", "\"\"") + "\""
+        } else {
+            value
+        }
+
+    private fun buildVocabMarkdown(words: List<com.epubreader.app.data.DictionaryHistoryEntity>): String = buildString {
+        append("# Vocabulary Sanctuary\n\n")
+        append("| Word | Part of Speech | Definition | Context Usage | Source Book | Mastery |\n")
+        append("| --- | --- | --- | --- | --- | --- |\n")
+        words.forEach { item ->
+            val masteryStr = when (item.masteryLevel) {
+                1 -> "Learning"
+                2 -> "Mastered"
+                else -> "New"
+            }
+            append("| **").append(item.word.replace("|", "\\|")).append("** | ")
+                .append(item.partOfSpeech.orEmpty().replace("|", "\\|")).append(" | ")
+                .append(item.definition.orEmpty().replace("|", "\\|").replace("\n", " ")).append(" | ")
+                .append(item.example.orEmpty().replace("|", "\\|").replace("\n", " ")).append(" | ")
+                .append(item.bookTitle.orEmpty().replace("|", "\\|")).append(" | ")
+                .append(masteryStr).append(" |\n")
+        }
+    }
+
+    private fun shareVocabFile(file: java.io.File, mime: String) {
+        val uri = androidx.core.content.FileProvider.getUriForFile(
+            this,
+            "$packageName.fileprovider",
+            file,
+        )
+        val intent = Intent(Intent.ACTION_SEND).apply {
+            type = mime
+            putExtra(Intent.EXTRA_STREAM, uri)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        startActivity(Intent.createChooser(intent, getString(R.string.vocabulary_title)))
     }
 }

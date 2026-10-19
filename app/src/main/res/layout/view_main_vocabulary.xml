@@ -1,0 +1,321 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/vocabScroll"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:clipToPadding="false"
+    android:fillViewport="true"
+    android:overScrollMode="never"
+    android:paddingBottom="@dimen/app_screen_end_padding">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingStart="@dimen/app_row_content_padding_h"
+        android:paddingEnd="@dimen/app_row_content_padding_h"
+        android:paddingTop="@dimen/app_screen_start_below_header">
+
+        <!-- 1. Vocabulary Builder Header -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="12dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_vocab_builder"
+                    app:tint="@color/palette_mint" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:text="@string/vocab_heading_title"
+                    android:textColor="@color/palette_mint"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/vocabSubtitleText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/vocab_heading_subtitle"
+                android:textColor="@color/palette_slate"
+                android:textSize="13sp"
+                android:lineSpacingMultiplier="1.2" />
+        </LinearLayout>
+
+        <!-- Divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginBottom="@dimen/app_row_content_padding_h"
+            android:background="?attr/dividerHorizontal" />
+
+        <!-- 2. Dual Tab Switcher -->
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/vocabTabs"
+            style="@style/Widget.MaterialComponents.TabLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            app:tabIndicatorColor="@color/accent_pop"
+            app:tabSelectedTextColor="@color/accent_pop"
+            app:tabTextColor="@color/palette_slate">
+
+            <com.google.android.material.tabs.TabItem
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/vocab_tab_sanctuary" />
+
+            <com.google.android.material.tabs.TabItem
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/vocab_tab_practice" />
+        </com.google.android.material.tabs.TabLayout>
+
+        <!-- 3. Words Tab Container -->
+        <LinearLayout
+            android:id="@+id/vocabWordsTabContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Search Input -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/vocabSearchLayout"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:hint="@string/vocab_search_hint"
+                app:startIconDrawable="@drawable/ic_search">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/vocabSearchEdit"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:imeOptions="actionSearch"
+                    android:inputType="text"
+                    android:singleLine="true"
+                    android:textSize="14sp" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Mastery Filter Chips -->
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/vocabFilterChipGroup"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                app:singleSelection="true">
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipAll"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:text="@string/vocab_chip_all" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipNew"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/vocab_chip_new" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipLearning"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/vocab_chip_learning" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipMastered"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/vocab_chip_mastered" />
+            </com.google.android.material.chip.ChipGroup>
+
+            <!-- Export / Clear Action Buttons Row -->
+            <LinearLayout
+                android:id="@+id/vocabActionsRow"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:baselineAligned="false"
+                android:orientation="horizontal">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/vocabExportCsv"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="4dp"
+                    android:text="@string/vocabulary_export_csv"
+                    android:textColor="@color/white"
+                    app:strokeColor="@color/accent_pop"
+                    android:textSize="12sp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/vocabExportMarkdown"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginEnd="4dp"
+                    android:text="@string/vocabulary_export_markdown"
+                    android:textColor="@color/white"
+                    app:strokeColor="@color/accent_pop"
+                    android:textSize="12sp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/vocabClearAll"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:text="@string/action_clear_all"
+                    android:textColor="@color/white"
+                    app:strokeColor="@color/accent_pop"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <!-- Vocabulary Empty State Text -->
+            <TextView
+                android:id="@+id/vocabEmptyText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:padding="32dp"
+                android:text="@string/vocabulary_empty"
+                android:textColor="@color/palette_slate"
+                android:textSize="14sp" />
+
+            <!-- Vocabulary Words Recycler -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/vocabRecycler"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false"
+                android:overScrollMode="never" />
+        </LinearLayout>
+
+        <!-- 4. Flashcard Practice Tab Container -->
+        <LinearLayout
+            android:id="@+id/vocabFlashcardContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <!-- Progress Header -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:layout_marginBottom="8dp">
+
+                <TextView
+                    android:id="@+id/flashcardProgressText"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textColor="@color/palette_mint"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <ImageButton
+                    android:id="@+id/flashcardAudioBtn"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:background="@drawable/item_background_borderless_material"
+                    android:contentDescription="@string/tts_play"
+                    android:src="@drawable/ic_volume"
+                    app:tint="@color/palette_mint" />
+            </LinearLayout>
+
+            <!-- 3D Flip Card Included Layout -->
+            <include layout="@layout/item_vocabulary_flashcard" />
+
+            <!-- Still Learning & Mastered Action Buttons -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:orientation="horizontal">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/flashcardLearningBtn"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="6dp"
+                    android:text="@string/vocab_mark_learning"
+                    android:textColor="@color/white"
+                    app:strokeColor="@color/accent_pop" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/flashcardMasteredBtn"
+                    style="@style/Widget.MaterialComponents.Button"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="6dp"
+                    android:text="@string/vocab_mark_mastered"
+                    android:textColor="@color/black"
+                    app:backgroundTint="@color/accent_pop" />
+            </LinearLayout>
+
+            <!-- Previous and Next Card Buttons on Left and Right Edges -->
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp">
+
+                <TextView
+                    android:id="@+id/flashcardPrevBtn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:padding="8dp"
+                    android:text="@string/vocab_flashcard_prev"
+                    android:textColor="@color/accent_pop"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/flashcardNextBtn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:padding="8dp"
+                    android:text="@string/vocab_flashcard_next"
+                    android:textColor="@color/accent_pop"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+            </RelativeLayout>
+        </LinearLayout>
+
+    </LinearLayout>
+
+</androidx.core.widget.NestedScrollView>

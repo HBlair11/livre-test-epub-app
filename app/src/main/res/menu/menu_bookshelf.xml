@@ -18,7 +18,8 @@
         app:showAsAction="ifRoom" />
     <item
         android:id="@+id/action_import"
-        android:icon="@drawable/ic_file"
+        android:icon="@drawable/ic_add"
         android:title="@string/action_import_file"
-        app:showAsAction="never" />
+        app:actionLayout="@layout/action_import_button"
+        app:showAsAction="always" />
 </menu>

@@ -164,7 +164,9 @@ class BookAdapter(
     private fun loadCover(book: BookEntity, view: android.widget.ImageView) {
         val coverPath = book.coverPath
         if (coverPath != null) {
-            Glide.with(view).load(java.io.File(coverPath))
+            Glide.with(view)
+                .load(java.io.File(coverPath))
+                .override(300, 450)
                 .centerCrop()
                 .placeholder(com.epubreader.app.R.drawable.cover_frame)
                 .into(view)

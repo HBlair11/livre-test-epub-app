@@ -4,11 +4,20 @@
 
     <string name="continue_reading">Continue reading</string>
     <string name="home_continue_label">Continue Reading</string>
-    <string name="home_continue_heading">Continue Reading</string>
+    <string name="home_continue_heading">CONTINUE READING</string>
     <string name="home_continue_series">%1$s</string>
     <string name="home_continue_location">Location - %1$s</string>
-    <string name="home_recently_added">Recent</string>
-    <string name="home_favorites">Favorites</string>
+    <string name="home_recently_added">RECENTLY ADDED</string>
+    <string name="home_favorites">FAVORITES</string>
+    <string name="home_opened_date">Opened %1$s</string>
+    <string name="home_browse_by_author">BROWSE BY AUTHOR</string>
+    <string name="home_browse_by_series">BROWSE BY SERIES</string>
+    <string name="home_all_authors">All Authors</string>
+    <string name="home_all_series">All Series</string>
+    <string name="home_view_all">View All &gt;</string>
+    <string name="home_progress">Progress</string>
+    <string name="home_resume_reading">Resume Reading</string>
+    <string name="home_book_details">View Book Details</string>
     <string name="home_top_authors">Top Authors</string>
     <string name="home_top_series">Top Series</string>
     <string name="home_group_title">%1$s · %2$d books</string>
@@ -43,7 +52,6 @@
     <string name="settings_font_size">Font size</string>
     <string name="settings_line_height">Line spacing</string>
     <string name="settings_margin">Margin</string>
-    <string name="settings_scanned_folder">Scanned folder</string>
     <string name="settings_reader_theme">Reader theme</string>
     <string name="settings_about">About</string>
     <string name="settings_about_detail">The Livre Magicae · Epub Reader</string>
@@ -77,9 +85,11 @@
     <string name="nav_close">Close navigation menu</string>
     <string name="back_again_to_exit">Press back again to exit</string>
     <string name="action_add">Import books</string>
+    <string name="folder_heading_title">OFFLINE EPUB FOLDER AND FILE MANAGER</string>
+    <string name="folder_heading_subtitle">Import and organize your EPUB archives without internet permission or cloud synchronization</string>
     <string name="folder_none">No folder selected</string>
-    <string name="folder_selected">Folder: %1$s</string>
-    <string name="folder_hint">Tap the folder button to select, scan, or remove a folder.</string>
+    <string name="folder_selected">Selected Folder: %1$s</string>
+    <string name="folder_hint">Tap the import button to select individual files anywhere in the app or select a folder here to import all your EPUB files. \n\nFolder Options: \n · Re-scan to import new files added to selected folder, refresh metadata to import recently modified EPUB file metadata, select a different folder or remove selected folder.</string>
     <string name="folder_select">Select folder</string>
     <string name="folder_scan_now">Scan now</string>
     <string name="folder_refresh_metadata">Refresh metadata</string>
@@ -293,11 +303,7 @@
     <string name="stats_minutes_value">%1$d min</string>
     <string name="stats_hours_value">%1$dh %2$dm</string>
     <string name="about_privacy_title">Privacy</string>
-    <string name="about_privacy_body">The Livre Magicae is designed to work entirely offline.\n\n• No account\n• No tracking\n• No analytics\n• No cloud library\n• No advertising\n• No internet connection required\n\nYour books stay on your device.</string>
-    <string name="about_app_title">About</string>
-    <string name="about_app_version">Version 1.36</string>
-    <string name="about_app_description">The Livre Magicae · EPUB Reader\nA calm, offline-first reading companion.</string>
-    <string name="about_dictionary_attribution">Offline dictionary bundled with the app.\nEnglish definitions are derived from WordNet 3.1 (wordnet.princeton.edu), used under its permissive license.\nSee assets/dict/WORDNET_LICENSE.txt for details.</string>
+    <string name="define_title">Define</string>
 
     <!-- Patch v37: Vocabulary (offline dictionary lookup history) -->
     <string name="nav_vocabulary">Vocabulary</string>
@@ -309,6 +315,8 @@
     <string name="vocabulary_cleared">Vocabulary cleared</string>
     <string name="vocabulary_clear_confirm">Clear all looked-up words?</string>
     <string name="vocabulary_delete_word">Delete word</string>
+    <string name="vocab_heading_title">VOCABULARY BUILDER</string>
+    <string name="vocab_heading_subtitle">%1$d saved %2$s from your offline dictionary lookups.</string>
 
     <!-- Highlights -->
     <string name="highlight_action">Highlight</string>
@@ -365,20 +373,101 @@
 
     <string name="selection_move_toolbar">Move selection toolbar</string>
 
-    <string name="settings_section_daily_goal">Daily Reading Goal</string>
+    <string name="settings_section_heading_title">SETTINGS &amp; APP CONFIGURATION</string>
+    <string name="settings_section_heading_subtitle">Manage Reading Goals, configure app level settings and backups and learn more about the App features.</string>
+    <string name="settings_section_daily_goal">DAILY READING GOAL</string>
     <string name="settings_section_daily_goal_subtitle">Set a gentle daily reading milestone to celebrate your reading habit without high-pressure streaks.</string>
     <string name="settings_target_minutes">Target Minutes per Day</string>
     <string name="settings_show_goal_stats">Show Goal on Stats Dashboard</string>
     <string name="settings_show_goal_stats_summary">Displays your daily goal ring and progress</string>
 
+    <string name="settings_section_scanned_folder">SCANNED FOLDER</string>
+
     <string name="settings_section_color_theme">Reader Color Theme</string>
     <string name="settings_section_typography">Typography &amp; Sizing</string>
     <string name="settings_section_tts">Read Aloud TTS Voice &amp; Speed</string>
-    <string name="settings_section_backup">Full Backup and Restore</string>
+    <string name="settings_section_backup">FULL BACKUP &amp; RESTORE</string>
     <string name="settings_section_backup_summary">Export your reading database, bookmarks, highlights, and preferences to a secure file, or restore from a previous backup.</string>
     <string name="settings_export_backup">Export Backup</string>
     <string name="settings_import_backup">Import Backup</string>
 
-    <string name="settings_section_privacy">Privacy Guaranteed &amp; Architecture</string>
-    <string name="settings_privacy_summary">The Livre Magicae is strictly offline-first. All reading history, bookmarks, highlights, and dictionary history stay locally on your device in an encrypted Room database. The app declares zero internet permissions, ensuring absolute data sovereignty and complete privacy.</string>
+    <string name="settings_section_privacy">PRIVACY GUARANTEED &amp; ARCHITECTURE</string>
+    <string name="settings_privacy_title">The Livre Magicae is designed to work entirely offline.</string>
+    <string name="settings_privacy_summary">All reading history, bookmarks, highlights, and dictionary history stay locally on your device in an encrypted Room database. The app declares zero internet permissions, ensuring absolute data sovereignty and complete privacy.</string>
+    <string name="settings_privacy_body">• No account\n• No tracking\n• No analytics\n• No cloud library\n• No advertising\n• No internet connection required\n\nYour books stay on your device.</string>
+    <string name="settings_epub_reader_settings_info_title">EPUB READER SETTINGS AND CONFIGURATION</string>
+    <string name="settings_epub_reader_settings_info_body">Reader appearance, typography, fonts, line spacing, margins, hyphenation, page turn animations, and read-aloud voice settings can be configured directly inside any open book reader settings menu.</string>
+    <string name="goal_15_mins">15 mins</string>
+    <string name="goal_20_mins">20 mins</string>
+    <string name="goal_30_mins">30 mins</string>
+    <string name="goal_45_mins">45 mins</string>
+    <string name="goal_60_mins">60 mins</string>
+    <string name="about_app_full_info">Version 1.36\n\nThe Livre Magicae · EPUB Reader\nA calm, offline-first reading companion.</string>
+    <string name="backup_export_success">Backup exported successfully (local encrypted DB &amp; preferences).</string>
+    <string name="backup_import_success">Backup imported successfully.</string>
+
+    <string name="settings_section_define">DEFINE</string>
+    <string name="settings_section_dictionary_attribution">Offline dictionary bundled with the app.\nEnglish definitions are derived from WordNet 3.1 (wordnet.princeton.edu), used under its permissive license.\nSee assets/dict/WORDNET_LICENSE.txt for details.</string>
+
+    <string name="settings_section_app_title">The Livre Magicae</string>
+    <string name="settings_section_app_version">Version 1.36</string>
+    <string name="settings_section_description">The Livre Magicae · EPUB Reader\nA calm, offline-first reading companion.</string>
+    <string name="settings_section_info">Version 1.36\n\nThe Livre Magicae · EPUB Reader\nA calm, offline-first reading companion.</string>
+
+    <string name="action_clear_all">Clear All</string>
+    <string name="stats_time_read">Time Read</string>
+    <string name="stats_this_week">This Week</string>
+    <string name="stats_this_year">This Year</string>
+    <string name="stats_overview">Reading Overview</string>
+    <string name="stats_overview_title">READING OVERVIEW</string>
+    <string name="stats_finished">Books Finished</string>
+    <string name="stats_streak">Reading Streak</string>
+    <string name="stats_heading_title">READING STATISTICS</string>
+    <string name="stats_heading_subtitle">Track your personal reading habits, offline streaks, and progress.</string>
+    <string name="stats_daily_goal_title">DAILY READING GOAL</string>
+    <string name="stats_streak_title">READING STREAK</string>
+    <string name="stats_this_week_title">THIS WEEK</string>
+    <string name="stats_this_year_title">THIS YEAR</string>
+    <string name="stats_completed_title">COMPLETED</string>
+    <string name="stats_goal_fraction">%1$d of %2$d minutes completed today</string>
+    <string name="plus_sign">+</string>
+
+    <string name="library_heading_title">LIBRARY</string>
+    <string name="library_heading_subtitle">Your entire personal, offline bookshelf.</string>
+    <string name="authors_heading_title">AUTHORS</string>
+    <string name="authors_heading_subtitle">Browse your library organized by authors.</string>
+    <string name="series_heading_title">SERIES</string>
+    <string name="series_heading_subtitle">Browse your library organized by series and books order.</string>
+    <string name="favorites_heading_title">FAVORITES</string>
+    <string name="favorites_heading_subtitle">Your hand-picked favorite books for quick access.</string>
+    <string name="collections_heading_title">COLLECTIONS</string>
+    <string name="collections_heading_subtitle">Custom shelves and reading lists.</string>
+    <string name="reading_heading_title">CURRENTLY READING</string>
+    <string name="reading_heading_subtitle">Books you are actively reading right now.</string>
+    <string name="vocabulary_save_to_sanctuary">Save to Vocabulary Sanctuary</string>
+    <string name="vocabulary_saved_to_sanctuary">Saved to Sanctuary ✓</string>
+    <string name="vocab_tab_sanctuary">Word Sanctuary</string>
+    <string name="vocab_tab_practice">Flashcard Practice</string>
+    <string name="vocab_search_hint">Search saved words, definitions, sources…</string>
+    <string name="vocab_chip_all">All</string>
+    <string name="vocab_chip_new">New</string>
+    <string name="vocab_chip_learning">Learning</string>
+    <string name="vocab_chip_mastered">Mastered</string>
+    <string name="vocab_flashcard_progress">Flashcard %1$d of %2$d</string>
+    <string name="vocab_tap_to_flip">Tap card to flip ↺</string>
+    <string name="vocab_flashcard_prev">‹ Prev</string>
+    <string name="vocab_flashcard_next">Next ›</string>
+    <string name="vocab_mark_learning">Still Learning</string>
+    <string name="vocab_mark_mastered">Mastered</string>
+    <string name="vocab_mastered_badge">Mastered ✓</string>
+    <string name="vocab_discovered_in">Discovered in: %1$s</string>
+    <string name="vocab_pronouncing">Pronouncing %1$s</string>
+    <string name="vocab_label_book">Book</string>
+    <string name="vocab_label_books">Books</string>
+    <string name="vocab_label_author">Author</string>
+    <string name="vocab_label_authors">Authors</string>
+    <string name="vocab_label_series">Series</string>
+    <string name="vocab_label_collection">Collection</string>
+    <string name="vocab_label_collections">Collections</string>
+    <string name="vocab_quote_format">"%1$s"</string>
 </resources>

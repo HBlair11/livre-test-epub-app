@@ -36,6 +36,8 @@ sealed class ShelfView {
     object Collections : ShelfView()
     object Folders : ShelfView()
     object Settings : ShelfView()
+    object Stats : ShelfView()
+    object Vocabulary : ShelfView()
 
     // Patch 16 (Issue #3): a transient, non-persisted view that shows only the
     // books imported in the most recent scan. It is entered by tapping "Show" on
@@ -155,7 +157,7 @@ class BookshelfViewModel(
         is ShelfView.SeriesDetail ->
             repo.observeBySeries(view.name).map { applySort(it, sort, asc).map { DisplayItem.Book(it) } }
 
-        is ShelfView.Collections, is ShelfView.Folders, is ShelfView.Settings ->
+        is ShelfView.Collections, is ShelfView.Folders, is ShelfView.Settings, is ShelfView.Stats, is ShelfView.Vocabulary ->
             kotlinx.coroutines.flow.flowOf(emptyList<DisplayItem>())
     }
 

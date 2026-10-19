@@ -13,6 +13,7 @@
       plum     #503A65  rich      — primary/accent (FAB, chips, drawer header)
       eggplant #3C2A4D  darkest   — app background (night), reader chrome bg,
                                     dark body text (light mode)
+      violet   #B388FF  pop       — accent pop that needs to be highlighted on dark background
       ============================================================
     -->
     <color name="palette_mint">#E0F0EA</color>
@@ -20,6 +21,7 @@
     <color name="palette_purple">#574F7D</color>
     <color name="palette_plum">#503A65</color>
     <color name="palette_eggplant">#3C2A4D</color>
+    <color name="palette_violet">#B388FF</color>
 
     <!-- ===== App — light mode ===== -->
     <color name="light_bg">@color/palette_mint</color>
@@ -69,6 +71,7 @@
     <color name="pop">@color/palette_mint</color>
     <color name="pop2">@color/palette_purple</color>
     <color name="light_accent">@color/palette_mint</color>
+    <color name="accent_pop">@color/palette_violet</color>
 
     <!-- ===== Misc ===== -->
     <color name="white">#FFFFFF</color>
@@ -79,8 +82,6 @@
     <color name="progress_track">@color/palette_slate</color>
     <color name="progress_fill">@color/palette_mint</color>
     <color name="completed">@color/palette_slate</color>
-
-
 
     <!-- Patch 18 (Addition #1): fast-scroll thumb (muted slate, 55% opacity) -->
     <color name="reader_history_surface">#00000000</color>

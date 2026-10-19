@@ -19,10 +19,13 @@ interface DictionaryHistoryDao {
     suspend fun find(word: String): DictionaryHistoryEntity?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(entry: DictionaryHistoryEntity)
+    suspend fun insert(entry: DictionaryHistoryEntity): Long
 
-    @Query("UPDATE dictionary_history SET definition = :definition, part_of_speech = :partOfSpeech, book_id = :bookId, looked_up_at = :lookedUpAt WHERE id = :id")
-    suspend fun refresh(id: Long, definition: String?, partOfSpeech: String?, bookId: Long?, lookedUpAt: Long)
+    @Query("UPDATE dictionary_history SET definition = :definition, part_of_speech = :partOfSpeech, example = :example, book_title = :bookTitle, book_id = :bookId, looked_up_at = :lookedUpAt, phonetic = :phonetic WHERE id = :id")
+    suspend fun refresh(id: Long, definition: String?, partOfSpeech: String?, example: String?, bookTitle: String?, bookId: Long?, lookedUpAt: Long, phonetic: String?)
+
+    @Query("UPDATE dictionary_history SET mastery_level = :masteryLevel WHERE id = :id")
+    suspend fun updateMasteryLevel(id: Long, masteryLevel: Int)
 
     @Delete
     suspend fun delete(entry: DictionaryHistoryEntity)

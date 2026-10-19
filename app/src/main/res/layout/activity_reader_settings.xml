@@ -166,7 +166,7 @@
                 android:id="@+id/bottomMarginSwitch"
                 style="@style/ReaderSwitchRow"
                 android:text="@string/reader_bottom_margin_summary"
-                android:textColor="?android:textColorSecondary"
+                android:textColor="@color/palette_slate"
                 android:textSize="13sp" />
 
             <!-- ============ Hyphenation toggle ============ -->
@@ -175,7 +175,7 @@
                 android:id="@+id/hyphenationSwitch"
                 style="@style/ReaderSwitchRow"
                 android:text="@string/reader_hyphenation_summary"
-                android:textColor="?android:textColorSecondary"
+                android:textColor="@color/palette_slate"
                 android:textSize="13sp" />
 
             <!-- ============ Page Turn Animation toggle (Patch 17, Addition #2) ============ -->
@@ -184,7 +184,7 @@
                 android:id="@+id/pageTurnAnimSwitch"
                 style="@style/ReaderSwitchRow"
                 android:text="@string/reader_page_turn_animation_summary"
-                android:textColor="?android:textColorSecondary"
+                android:textColor="@color/palette_slate"
                 android:textSize="13sp" />
 
         </LinearLayout>

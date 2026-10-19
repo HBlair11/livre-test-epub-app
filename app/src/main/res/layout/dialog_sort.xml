@@ -15,7 +15,7 @@
         android:paddingEnd="24dp"
         android:paddingBottom="8dp"
         android:text="@string/action_sort"
-        android:textColor="?android:textColorSecondary"
+        android:textColor="@color/palette_slate"
         android:textSize="13sp"
         android:textStyle="bold"
         android:textAllCaps="true" />

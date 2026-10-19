@@ -28,7 +28,7 @@
                 android:id="@+id/title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="?android:textColorPrimary"
+                android:textColor="@color/palette_mint"
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
@@ -45,7 +45,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
-                android:textColor="?android:textColorSecondary"
+                android:textColor="@color/palette_slate"
                 android:textSize="12sp"
                 android:visibility="gone" />
 
@@ -54,7 +54,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:textColor="?android:textColorSecondary"
+                android:textColor="@color/palette_slate"
                 android:textSize="12sp" />
 
             <TextView
@@ -62,7 +62,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
-                android:textColor="?android:textColorSecondary"
+                android:textColor="@color/palette_slate"
                 android:textSize="13sp" />
         </LinearLayout>
     </ScrollView>

@@ -22,9 +22,9 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:title="@string/app_name"
-            app:titleTextColor="?android:textColorPrimary"
+            app:titleTextColor="@color/palette_mint"
             app:navigationIcon="@drawable/ic_arrow_back"
-            app:navigationIconTint="?android:textColorPrimary" />
+            app:navigationIconTint="@color/palette_mint" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -83,7 +83,7 @@
                 android:layout_marginTop="12dp"
                 android:layout_marginEnd="@dimen/app_row_content_padding_h"
                 android:gravity="start"
-                android:textColor="?android:textColorPrimary"
+                android:textColor="@color/palette_mint"
                 android:textSize="26sp"
                 android:textStyle="bold"
                 android:textAllCaps="true" />
@@ -109,11 +109,11 @@
                     android:layout_width="0dp"
                     android:layout_height="48dp"
                     android:layout_weight="1"
-                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:background="@drawable/item_background_borderless_material"
                     android:contentDescription="@string/option_open"
                     android:padding="10dp"
                     android:src="@drawable/ic_menu_book"
-                    app:tint="?android:textColorPrimary" />
+                    app:tint="@color/palette_mint" />
 
                 <!-- Favorite -->
 
@@ -122,11 +122,11 @@
                     android:layout_width="0dp"
                     android:layout_height="48dp"
                     android:layout_weight="1"
-                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:background="@drawable/item_background_borderless_material"
                     android:contentDescription="@string/option_favorite"
                     android:padding="10dp"
                     android:src="@drawable/ic_favorite_border"
-                    app:tint="?android:textColorPrimary" />
+                    app:tint="@color/palette_mint" />
 
                 <!-- Remove from Reading -->
 
@@ -135,22 +135,22 @@
                     android:layout_width="0dp"
                     android:layout_height="48dp"
                     android:layout_weight="1"
-                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:background="@drawable/item_background_borderless_material"
                     android:contentDescription="@string/option_edit_details"
                     android:padding="10dp"
                     android:src="@drawable/ic_edit"
-                    app:tint="?android:textColorPrimary" />
+                    app:tint="@color/palette_mint" />
 
                 <ImageButton
                     android:id="@+id/btnRemoveReading"
                     android:layout_width="0dp"
                     android:layout_height="48dp"
                     android:layout_weight="1"
-                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:background="@drawable/item_background_borderless_material"
                     android:contentDescription="@string/option_remove_reading"
                     android:padding="10dp"
                     android:src="@drawable/ic_remove_reading"
-                    app:tint="?android:textColorPrimary" />
+                    app:tint="@color/palette_mint" />
 
                 <!-- Remove from Library -->
 
@@ -159,7 +159,7 @@
                     android:layout_width="0dp"
                     android:layout_height="48dp"
                     android:layout_weight="1"
-                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:background="@drawable/item_background_borderless_material"
                     android:contentDescription="@string/option_remove"
                     android:padding="10dp"
                     android:src="@drawable/ic_delete"
@@ -209,7 +209,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:textColor="?android:textColorPrimary"
+                    android:textColor="@color/palette_mint"
                     android:textSize="15sp" />
 
 
@@ -228,7 +228,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:textColor="?android:textColorPrimary"
+                    android:textColor="@color/palette_mint"
                     android:textSize="15sp" />
 
 
@@ -253,7 +253,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
-                        android:textColor="?android:textColorPrimary"
+                        android:textColor="@color/palette_mint"
                         android:textSize="15sp" />
 
                 </LinearLayout>
@@ -274,7 +274,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:textColor="?android:textColorPrimary"
+                    android:textColor="@color/palette_mint"
                     android:textSize="15sp" />
 
 
@@ -293,7 +293,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:textColor="?android:textColorPrimary"
+                    android:textColor="@color/palette_mint"
                     android:textSize="15sp" />
 
 
@@ -312,7 +312,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:textColor="?android:textColorPrimary"
+                    android:textColor="@color/palette_mint"
                     android:textSize="15sp" />
 
                 <TextView
@@ -328,7 +328,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:textColor="?android:textColorPrimary"
+                    android:textColor="@color/palette_mint"
                     android:textSize="15sp" />
 
                 <TextView
@@ -344,7 +344,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:textColor="?android:textColorPrimary"
+                    android:textColor="@color/palette_mint"
                     android:textSize="15sp" />
 
 
@@ -363,7 +363,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:textColor="?android:textColorPrimary"
+                    android:textColor="@color/palette_mint"
                     android:textSize="15sp" />
 
 
@@ -388,7 +388,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
-                        android:textColor="?android:textColorPrimary"
+                        android:textColor="@color/palette_mint"
                         android:textSize="15sp" />
 
                 </LinearLayout>
@@ -436,7 +436,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
                     android:lineSpacingExtra="3dp"
-                    android:textColor="?android:textColorPrimary"
+                    android:textColor="@color/palette_mint"
                     android:textSize="15sp" />
 
             </LinearLayout>

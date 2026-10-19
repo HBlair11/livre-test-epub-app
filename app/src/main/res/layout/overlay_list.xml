@@ -17,7 +17,7 @@
         android:layout_gravity="center"
         android:gravity="center"
         android:padding="32dp"
-        android:textColor="?android:textColorSecondary"
+        android:textColor="@color/palette_slate"
         android:textSize="14sp"
         android:visibility="gone" />
 </FrameLayout>

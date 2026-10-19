@@ -16,16 +16,16 @@
         android:layout_width="24dp"
         android:layout_height="24dp"
         android:contentDescription="@null"
-        app:tint="@color/white" />
+        app:tint="@color/palette_slate" />
 
     <TextView
         android:id="@+id/drawerLabel"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:layout_marginStart="16dp"
         android:textSize="16sp"
-        android:textColor="@color/white" />
+        android:textColor="@color/palette_mint" />
 
     <TextView
         android:id="@+id/drawerCount"

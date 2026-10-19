@@ -67,7 +67,7 @@
             android:layout_marginTop="8dp"
             android:ellipsize="end"
             android:maxLines="2"
-            android:textColor="?android:textColorPrimary"
+            android:textColor="@color/palette_mint"
             android:textSize="12sp"
             android:textStyle="bold" />
 
@@ -78,7 +78,7 @@
             android:layout_marginTop="2dp"
             android:ellipsize="end"
             android:maxLines="1"
-            android:textColor="?android:textColorSecondary"
+            android:textColor="@color/palette_slate"
             android:textSize="11sp" />
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

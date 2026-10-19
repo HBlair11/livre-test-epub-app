@@ -44,6 +44,7 @@ class HomeBookAdapter(
             if (book.coverPath != null) {
                 Glide.with(binding.cover)
                     .load(File(book.coverPath))
+                    .override(300, 450)
                     .centerInside()
                     .placeholder(R.drawable.cover_frame)
                     .into(binding.cover)

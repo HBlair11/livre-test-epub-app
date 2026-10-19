@@ -21,9 +21,9 @@
             android:layout_height="?attr/actionBarSize"
             android:background="?android:colorBackground"
             android:title="@string/stats_title"
-            android:titleTextColor="?android:textColorPrimary"
+            android:titleTextColor="@color/palette_mint"
             app:navigationIcon="@drawable/ic_arrow_back"
-            app:navigationIconTint="?android:textColorPrimary" />
+            app:navigationIconTint="@color/palette_mint" />
 
         <LinearLayout
             android:id="@+id/statsRoot"
@@ -39,7 +39,7 @@
                 android:layout_marginTop="4dp"
                 android:gravity="center"
                 android:text="@string/stats_privacy"
-                android:textColor="?android:textColorSecondary"
+                android:textColor="@color/palette_slate"
                 android:textSize="13sp"
                 android:textStyle="italic" />
 
@@ -71,7 +71,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:text="@string/stats_time_week"
-                            android:textColor="?android:textColorSecondary"
+                            android:textColor="@color/palette_slate"
                             android:textSize="12sp" />
 
                         <TextView
@@ -79,7 +79,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
-                            android:textColor="?android:textColorPrimary"
+                            android:textColor="@color/palette_mint"
                             android:textSize="22sp"
                             android:textStyle="bold" />
                     </LinearLayout>
@@ -105,7 +105,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:text="@string/stats_time_year"
-                            android:textColor="?android:textColorSecondary"
+                            android:textColor="@color/palette_slate"
                             android:textSize="12sp" />
 
                         <TextView
@@ -113,7 +113,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
-                            android:textColor="?android:textColorPrimary"
+                            android:textColor="@color/palette_mint"
                             android:textSize="22sp"
                             android:textStyle="bold" />
                     </LinearLayout>
@@ -148,7 +148,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:text="@string/stats_books_finished"
-                            android:textColor="?android:textColorSecondary"
+                            android:textColor="@color/palette_slate"
                             android:textSize="12sp" />
 
                         <TextView
@@ -156,7 +156,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
-                            android:textColor="?android:textColorPrimary"
+                            android:textColor="@color/palette_mint"
                             android:textSize="22sp"
                             android:textStyle="bold" />
                     </LinearLayout>
@@ -182,7 +182,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:text="@string/stats_current_streak"
-                            android:textColor="?android:textColorSecondary"
+                            android:textColor="@color/palette_slate"
                             android:textSize="12sp" />
 
                         <TextView
@@ -190,7 +190,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
-                            android:textColor="?android:textColorPrimary"
+                            android:textColor="@color/palette_mint"
                             android:textSize="22sp"
                             android:textStyle="bold" />
                     </LinearLayout>
@@ -216,7 +216,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="@string/stats_chapters"
-                        android:textColor="?android:textColorSecondary"
+                        android:textColor="@color/palette_slate"
                         android:textSize="13sp" />
 
                     <TextView
@@ -224,7 +224,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
-                        android:textColor="?android:textColorPrimary"
+                        android:textColor="@color/palette_mint"
                         android:textSize="18sp" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -248,7 +248,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="@string/stats_pages"
-                        android:textColor="?android:textColorSecondary"
+                        android:textColor="@color/palette_slate"
                         android:textSize="13sp" />
 
                     <TextView
@@ -256,7 +256,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
-                        android:textColor="?android:textColorPrimary"
+                        android:textColor="@color/palette_mint"
                         android:textSize="18sp" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>

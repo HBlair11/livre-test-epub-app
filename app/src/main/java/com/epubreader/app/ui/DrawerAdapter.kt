@@ -79,6 +79,18 @@ class DrawerAdapter(
 
         val active = item.view != null && item.view == selectedView
         holder.itemView.isSelected = active
+        holder.itemView.setBackgroundColor(android.graphics.Color.TRANSPARENT)
+
+        val context = holder.itemView.context
+        val activeColor = androidx.core.content.ContextCompat.getColor(context, R.color.accent_pop)
+        val defaultColor = androidx.core.content.ContextCompat.getColor(context, android.R.color.white)
+
+        holder.label.setTextColor(if (active) activeColor else defaultColor)
+        androidx.core.widget.ImageViewCompat.setImageTintList(
+            holder.icon,
+            android.content.res.ColorStateList.valueOf(if (active) activeColor else defaultColor)
+        )
+
         holder.label.setTypeface(
             null,
             if (active) android.graphics.Typeface.BOLD

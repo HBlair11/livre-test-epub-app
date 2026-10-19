@@ -1,89 +1,100 @@
 package com.epubreader.app.ui
 
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
-import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.epubreader.app.R
 import com.epubreader.app.data.DictionaryHistoryEntity
-import kotlin.math.roundToInt
 
 /**
- * Patch v37: rows for the offline Vocabulary list (dictionary lookup
- * history). Shows the looked-up word, its first saved definition and a
- * delete button; built programmatically to match HighlightListAdapter's
- * row style.
+ * Enhanced Vocabulary Sanctuary Adapter using item_vocabulary_word.xml for pure XML UI styling.
  */
 class VocabularyAdapter(
+    private val onMasteryCycle: (DictionaryHistoryEntity) -> Unit,
+    private val onPronounce: (String) -> Unit,
     private val onDelete: (DictionaryHistoryEntity) -> Unit,
 ) : ListAdapter<DictionaryHistoryEntity, VocabularyAdapter.VH>(DIFF) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
-        val ctx = parent.context
-        val density = ctx.resources.displayMetrics.density
-        val row = LinearLayout(ctx).apply {
-            orientation = LinearLayout.HORIZONTAL
-            gravity = android.view.Gravity.CENTER_VERTICAL
-            setPadding(0, (10 * density).roundToInt(), 0, (10 * density).roundToInt())
-        }
-        val content = LinearLayout(ctx).apply {
-            orientation = LinearLayout.VERTICAL
-            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
-        }
-        val word = TextView(ctx).apply {
-            textSize = 16f
-            typeface = android.graphics.Typeface.DEFAULT_BOLD
-        }
-        val definition = TextView(ctx).apply {
-            textSize = 13f
-            maxLines = 3
-            layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT,
-            ).apply { topMargin = (2 * density).roundToInt() }
-        }
-        content.addView(word)
-        content.addView(definition)
-        row.addView(content)
-        val delete = ImageButton(ctx).apply {
-            setImageResource(R.drawable.ic_delete)
-            background = null
-            val pad = (8 * density).roundToInt()
-            setPadding(pad, pad, pad, pad)
-            contentDescription = ctx.getString(R.string.vocabulary_delete_word)
-        }
-        row.addView(delete)
-        return VH(row, word, definition, delete)
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_vocabulary_word, parent, false)
+        return VH(view)
     }
 
     override fun onBindViewHolder(holder: VH, position: Int) {
-        holder.bind(getItem(position), onDelete)
+        holder.bind(getItem(position), onMasteryCycle, onPronounce, onDelete)
     }
 
-    class VH(
-        itemView: View,
-        private val word: TextView,
-        private val definition: TextView,
-        private val delete: ImageButton,
-    ) : RecyclerView.ViewHolder(itemView) {
-        fun bind(item: DictionaryHistoryEntity, onDelete: (DictionaryHistoryEntity) -> Unit) {
+    class VH(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        private val wordTv: TextView = itemView.findViewById(R.id.vocabWordText)
+        private val posBadge: TextView = itemView.findViewById(R.id.vocabPosBadge)
+        private val audioBtn: ImageButton = itemView.findViewById(R.id.vocabAudioBtn)
+        private val masteryPill: TextView = itemView.findViewById(R.id.vocabMasteryPill)
+        private val deleteBtn: ImageButton = itemView.findViewById(R.id.vocabDeleteBtn)
+        private val defTv: TextView = itemView.findViewById(R.id.vocabDefinitionText)
+        private val quoteTv: TextView = itemView.findViewById(R.id.vocabQuoteText)
+        private val sourceTv: TextView = itemView.findViewById(R.id.vocabSourceText)
+
+        fun bind(
+            item: DictionaryHistoryEntity,
+            onMasteryCycle: (DictionaryHistoryEntity) -> Unit,
+            onPronounce: (String) -> Unit,
+            onDelete: (DictionaryHistoryEntity) -> Unit,
+        ) {
             val ctx = itemView.context
-            word.text = item.word
-            definition.text = listOfNotNull(
-                item.partOfSpeech?.takeIf { it.isNotBlank() },
-                item.definition,
-            ).joinToString("  ").ifBlank { ctx.getString(R.string.dictionary_not_found) }
-            val primary = ctx.obtainStyledAttributes(intArrayOf(android.R.attr.textColorPrimary))
-            word.setTextColor(primary.getColor(0, 0xFF000000.toInt()))
-            primary.recycle()
-            val secondary = ctx.obtainStyledAttributes(intArrayOf(android.R.attr.textColorSecondary))
-            definition.setTextColor(secondary.getColor(0, 0xFF888888.toInt()))
-            secondary.recycle()
-            delete.setOnClickListener { onDelete(item) }
+            wordTv.text = item.word.uppercase()
+
+            if (!item.partOfSpeech.isNullOrBlank()) {
+                posBadge.visibility = View.VISIBLE
+                posBadge.text = item.partOfSpeech.lowercase()
+            } else {
+                posBadge.visibility = View.GONE
+            }
+
+            audioBtn.setOnClickListener { onPronounce(item.word) }
+
+            // Mastery Level Pill (0: New, 1: Learning, 2: Mastered)
+            when (item.masteryLevel) {
+                1 -> {
+                    masteryPill.text = ctx.getString(R.string.vocab_chip_learning)
+                    masteryPill.backgroundTintList = android.content.res.ColorStateList.valueOf(ContextCompat.getColor(ctx, R.color.dark_surface))
+                    masteryPill.setTextColor(ContextCompat.getColor(ctx, R.color.white))
+                }
+                2 -> {
+                    masteryPill.text = ctx.getString(R.string.vocab_mastered_badge)
+                    masteryPill.backgroundTintList = android.content.res.ColorStateList.valueOf(ContextCompat.getColor(ctx, R.color.accent_pop))
+                    masteryPill.setTextColor(ContextCompat.getColor(ctx, R.color.white))
+                }
+                else -> {
+                    masteryPill.text = ctx.getString(R.string.vocab_chip_new)
+                    masteryPill.backgroundTintList = android.content.res.ColorStateList.valueOf(ContextCompat.getColor(ctx, R.color.dark_surface))
+                    masteryPill.setTextColor(ContextCompat.getColor(ctx, R.color.white))
+                }
+            }
+            masteryPill.setOnClickListener { onMasteryCycle(item) }
+
+            deleteBtn.setOnClickListener { onDelete(item) }
+
+            defTv.text = item.definition ?: ctx.getString(R.string.dictionary_not_found)
+
+            if (!item.example.isNullOrBlank()) {
+                quoteTv.visibility = View.VISIBLE
+                quoteTv.text = ctx.getString(R.string.vocab_quote_format, item.example)
+            } else {
+                quoteTv.visibility = View.GONE
+            }
+
+            if (!item.bookTitle.isNullOrBlank()) {
+                sourceTv.visibility = View.VISIBLE
+                sourceTv.text = ctx.getString(R.string.vocab_discovered_in, item.bookTitle)
+            } else {
+                sourceTv.visibility = View.GONE
+            }
         }
     }
 

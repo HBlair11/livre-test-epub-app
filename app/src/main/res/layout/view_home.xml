@@ -7,13 +7,17 @@
     android:clipToPadding="false"
     android:fillViewport="true"
     android:overScrollMode="never"
-    android:paddingBottom="80dp">
+    android:paddingBottom="@dimen/app_screen_end_padding">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:paddingStart="@dimen/app_row_content_padding_h"
+        android:paddingEnd="@dimen/app_row_content_padding_h"
+        android:paddingTop="@dimen/app_screen_start_below_header">
 
+        <!-- Empty State for the Home Screen -->
         <LinearLayout
             android:id="@+id/homeEmpty"
             android:layout_width="match_parent"
@@ -38,7 +42,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:text="@string/home_empty_title"
-                android:textColor="?android:textColorPrimary"
+                android:textColor="@color/palette_mint"
                 android:textSize="20sp"
                 android:textStyle="bold" />
 
@@ -48,7 +52,7 @@
                 android:layout_marginTop="6dp"
                 android:gravity="center"
                 android:text="@string/home_empty_hint"
-                android:textColor="?android:textColorSecondary" />
+                android:textColor="@color/palette_slate" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/homeEmptyAction"
@@ -58,7 +62,7 @@
                 android:text="@string/action_import_file" />
         </LinearLayout>
 
-        <!-- Continue Reading Hero Section -->
+        <!-- 1. Continue Reading Section -->
         <LinearLayout
             android:id="@+id/homeContinueSection"
             android:layout_width="match_parent"
@@ -68,20 +72,27 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/app_row_content_padding_h"
-                android:layout_marginTop="26dp"
-                android:layout_marginEnd="@dimen/app_row_content_padding_h"
+                android:layout_marginTop="@dimen/app_row_content_padding_h"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_book"
+                    app:tint="@color/accent_pop" />
 
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="@string/home_continue_heading"
-                    android:textColor="?android:textColorPrimary"
+                    android:textColor="@color/palette_mint"
+                    android:layout_marginStart="12dp"
                     android:textSize="20sp"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    />
 
                 <TextView
                     android:id="@+id/homeContinueViewAll"
@@ -89,19 +100,18 @@
                     android:layout_height="wrap_content"
                     android:clickable="true"
                     android:focusable="true"
-                    android:text="View All &gt;"
-                    android:textColor="?attr/colorPrimary"
+                    android:text="@string/home_view_all"
+                    android:textColor="@color/accent_pop"
                     android:textSize="14sp"
                     android:textStyle="bold" />
             </LinearLayout>
 
+            <!-- Continue Reading Hero section -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/homeContinueCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/app_row_content_padding_h"
                 android:layout_marginTop="12dp"
-                android:layout_marginEnd="@dimen/app_row_content_padding_h"
                 app:cardBackgroundColor="?attr/colorSurface"
                 app:cardCornerRadius="14dp"
                 app:cardElevation="1dp">
@@ -111,12 +121,12 @@
                     android:layout_height="wrap_content"
                     android:gravity="center_horizontal"
                     android:orientation="vertical"
-                    android:padding="20dp">
+                    android:padding="@dimen/app_row_content_padding_h">
 
                     <ImageView
                         android:id="@+id/homeContinueCover"
-                        android:layout_width="130dp"
-                        android:layout_height="195dp"
+                        android:layout_width="160dp"
+                        android:layout_height="250dp"
                         android:layout_gravity="center_horizontal"
                         android:background="@drawable/cover_frame"
                         android:contentDescription="@string/book_cover"
@@ -144,7 +154,7 @@
                         android:gravity="center"
                         android:ellipsize="end"
                         android:maxLines="2"
-                        android:textColor="?android:textColorPrimary"
+                        android:textColor="@color/palette_mint"
                         android:textSize="22sp"
                         android:textStyle="bold" />
 
@@ -156,7 +166,7 @@
                         android:gravity="center"
                         android:ellipsize="end"
                         android:maxLines="1"
-                        android:textColor="?android:textColorSecondary"
+                        android:textColor="@color/palette_slate"
                         android:textSize="13sp" />
 
                     <TextView
@@ -167,7 +177,7 @@
                         android:gravity="center"
                         android:ellipsize="end"
                         android:maxLines="1"
-                        android:textColor="?android:textColorPrimary"
+                        android:textColor="@color/palette_mint"
                         android:textSize="13sp"
                         android:textStyle="italic" />
 
@@ -182,8 +192,8 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Progress"
-                            android:textColor="?android:textColorPrimary"
+                            android:text="@string/home_progress"
+                            android:textColor="@color/palette_mint"
                             android:textSize="13sp"
                             android:textStyle="bold" />
 
@@ -191,7 +201,7 @@
                             android:id="@+id/homeContinueProgress"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:textColor="?attr/colorPrimary"
+                            android:textColor="@color/accent_pop"
                             android:textSize="13sp"
                             android:textStyle="bold" />
                     </LinearLayout>
@@ -217,26 +227,32 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:layout_marginEnd="6dp"
-                            android:text="Resume Reading"
+                            android:text="@string/home_resume_reading"
                             android:textSize="12sp"
-                            app:icon="@drawable/ic_menu_book" />
+                            android:textColor="@color/black"
+                            app:backgroundTint="@color/accent_pop"
+                            app:icon="@drawable/ic_menu_book"
+                            app:iconTint="@color/black" />
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/homeContinueDetailsBtn"
-                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                            style="@style/Widget.MaterialComponents.Button"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:layout_marginStart="6dp"
-                            android:text="Details"
+                            android:text="@string/home_book_details"
                             android:textSize="12sp"
-                            app:icon="@drawable/ic_info" />
+                            android:textColor="@color/white"
+                            app:backgroundTint="@color/dark_bg"
+                            app:icon="@drawable/ic_info"
+                            app:iconTint="@color/white" />
                     </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
         </LinearLayout>
 
-        <!-- Recently Added Section -->
+        <!-- 2. Recently Added Section -->
         <LinearLayout
             android:id="@+id/homeRecentlyAddedSection"
             android:layout_width="match_parent"
@@ -246,18 +262,24 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/app_row_content_padding_h"
                 android:layout_marginTop="28dp"
-                android:layout_marginEnd="@dimen/app_row_content_padding_h"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_recent"
+                    app:tint="@color/accent_pop" />
 
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="@string/home_recently_added"
-                    android:textColor="?android:textColorPrimary"
+                    android:textColor="@color/palette_mint"
+                    android:layout_marginStart="12dp"
                     android:textSize="18sp"
                     android:textStyle="bold" />
 
@@ -267,8 +289,8 @@
                     android:layout_height="wrap_content"
                     android:clickable="true"
                     android:focusable="true"
-                    android:text="View All &gt;"
-                    android:textColor="?attr/colorPrimary"
+                    android:text="@string/home_view_all"
+                    android:textColor="@color/accent_pop"
                     android:textSize="14sp"
                     android:textStyle="bold" />
             </LinearLayout>
@@ -280,13 +302,11 @@
                 android:clipToPadding="false"
                 android:nestedScrollingEnabled="false"
                 android:overScrollMode="never"
-                android:paddingStart="@dimen/app_row_content_padding_h"
-                android:paddingEnd="@dimen/app_row_content_padding_h"
                 android:paddingTop="10dp"
                 android:paddingBottom="8dp" />
         </LinearLayout>
 
-        <!-- Favorites Section -->
+        <!-- 3. Favorites Section -->
         <LinearLayout
             android:id="@+id/homeFavoritesSection"
             android:layout_width="match_parent"
@@ -296,18 +316,24 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/app_row_content_padding_h"
                 android:layout_marginTop="28dp"
-                android:layout_marginEnd="@dimen/app_row_content_padding_h"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_favorite"
+                    app:tint="@color/accent_pop" />
 
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="@string/home_favorites"
-                    android:textColor="?android:textColorPrimary"
+                    android:textColor="@color/palette_mint"
+                    android:layout_marginStart="12dp"
                     android:textSize="18sp"
                     android:textStyle="bold" />
 
@@ -317,8 +343,8 @@
                     android:layout_height="wrap_content"
                     android:clickable="true"
                     android:focusable="true"
-                    android:text="View All &gt;"
-                    android:textColor="?attr/colorPrimary"
+                    android:text="@string/home_view_all"
+                    android:textColor="@color/accent_pop"
                     android:textSize="14sp"
                     android:textStyle="bold" />
             </LinearLayout>
@@ -330,20 +356,16 @@
                 android:clipToPadding="false"
                 android:nestedScrollingEnabled="false"
                 android:overScrollMode="never"
-                android:paddingStart="@dimen/app_row_content_padding_h"
-                android:paddingEnd="@dimen/app_row_content_padding_h"
                 android:paddingTop="10dp"
                 android:paddingBottom="8dp" />
         </LinearLayout>
 
-        <!-- Browse By Author Section -->
+        <!-- 4. Browse By Author Section -->
         <LinearLayout
             android:id="@+id/homeAuthorsSection"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:layout_marginStart="@dimen/app_row_content_padding_h"
-            android:layout_marginEnd="@dimen/app_row_content_padding_h"
             android:layout_marginTop="28dp">
 
             <com.google.android.material.card.MaterialCardView
@@ -367,12 +389,20 @@
                         android:gravity="center_vertical"
                         android:orientation="horizontal">
 
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:contentDescription="@null"
+                            android:src="@drawable/ic_person"
+                            app:tint="@color/accent_pop" />
+
                         <TextView
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="BROWSE BY AUTHOR"
-                            android:textColor="?android:textColorPrimary"
+                            android:text="@string/home_browse_by_author"
+                            android:textColor="@color/palette_mint"
+                            android:layout_marginStart="12dp"
                             android:textSize="15sp"
                             android:textStyle="bold" />
 
@@ -382,8 +412,8 @@
                             android:layout_height="wrap_content"
                             android:clickable="true"
                             android:focusable="true"
-                            android:text="All Authors"
-                            android:textColor="?attr/colorPrimary"
+                            android:text="@string/home_all_authors"
+                            android:textColor="@color/accent_pop"
                             android:textSize="14sp"
                             android:textStyle="bold" />
                     </LinearLayout>
@@ -397,14 +427,12 @@
             </com.google.android.material.card.MaterialCardView>
         </LinearLayout>
 
-        <!-- Browse By Series Section -->
+        <!-- 5. Browse By Series Section -->
         <LinearLayout
             android:id="@+id/homeSeriesSection"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:layout_marginStart="@dimen/app_row_content_padding_h"
-            android:layout_marginEnd="@dimen/app_row_content_padding_h"
             android:layout_marginTop="20dp">
 
             <com.google.android.material.card.MaterialCardView
@@ -428,12 +456,20 @@
                         android:gravity="center_vertical"
                         android:orientation="horizontal">
 
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:contentDescription="@null"
+                            android:src="@drawable/ic_series"
+                            app:tint="@color/accent_pop" />
+
                         <TextView
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="BROWSE BY SERIES"
-                            android:textColor="?android:textColorPrimary"
+                            android:text="@string/home_browse_by_series"
+                            android:textColor="@color/palette_mint"
+                            android:layout_marginStart="12dp"
                             android:textSize="15sp"
                             android:textStyle="bold" />
 
@@ -443,8 +479,8 @@
                             android:layout_height="wrap_content"
                             android:clickable="true"
                             android:focusable="true"
-                            android:text="All Series"
-                            android:textColor="?attr/colorPrimary"
+                            android:text="@string/home_all_series"
+                            android:textColor="@color/accent_pop"
                             android:textSize="14sp"
                             android:textStyle="bold" />
                     </LinearLayout>
