@@ -106,48 +106,15 @@
                     android:textSize="14sp"
                     android:textStyle="bold" />
 
-                <com.google.android.material.chip.ChipGroup
-                    android:id="@+id/chipGroupGoal"
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnConfigureGoal"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    app:singleSelection="true">
-
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/goal15"
-                        style="@style/Widget.MaterialComponents.Chip.Choice"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/goal_15_mins" />
-
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/goal20"
-                        style="@style/Widget.MaterialComponents.Chip.Choice"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/goal_20_mins" />
-
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/goal30"
-                        style="@style/Widget.MaterialComponents.Chip.Choice"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/goal_30_mins" />
-
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/goal45"
-                        style="@style/Widget.MaterialComponents.Chip.Choice"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/goal_45_mins" />
-
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/goal60"
-                        style="@style/Widget.MaterialComponents.Chip.Choice"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/goal_60_mins" />
-                </com.google.android.material.chip.ChipGroup>
+                    android:layout_marginTop="12dp"
+                    android:text="Configure Daily Goal..."
+                    android:textColor="@color/white"
+                    app:strokeColor="@color/accent_pop" />
 
                 <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/goalDashboardSwitch"

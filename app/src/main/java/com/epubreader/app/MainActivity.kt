@@ -1703,48 +1703,20 @@ class MainActivity : AppCompatActivity() {
         binding.mainSettingsContent.root.visibility = View.VISIBLE
 
         // 1. Daily Reading Goal Section
-        when (prefs.dailyGoalMinutes) {
-            15 -> binding.mainSettingsContent.goal15.isChecked = true
-            20 -> binding.mainSettingsContent.goal20.isChecked = true
-            30 -> binding.mainSettingsContent.goal30.isChecked = true
-            45 -> binding.mainSettingsContent.goal45.isChecked = true
-            60 -> binding.mainSettingsContent.goal60.isChecked = true
-            else -> binding.mainSettingsContent.goal30.isChecked = true
-        }
-
-        val chipGroup = binding.mainSettingsContent.chipGroupGoal
-        val updateChipStyles = {
-            for (i in 0 until chipGroup.childCount) {
-                val chip = chipGroup.getChildAt(i) as? com.google.android.material.chip.Chip
-                if (chip != null) {
-                    if (chip.isChecked) {
-                        chip.setChipBackgroundColorResource(R.color.accent_pop)
-                        chip.setTextColor(androidx.core.content.ContextCompat.getColor(this, android.R.color.black))
-                        chip.setChipStrokeColor(android.content.res.ColorStateList.valueOf(androidx.core.content.ContextCompat.getColor(this, R.color.accent_pop)))
-                    } else {
-                        chip.setChipBackgroundColorResource(R.color.dark_surface_alt)
-                        chip.setTextColor(androidx.core.content.ContextCompat.getColor(this, android.R.color.white))
-                        chip.setChipStrokeColor(android.content.res.ColorStateList.valueOf(androidx.core.content.ContextCompat.getColor(this, R.color.palette_slate)))
-                    }
-                }
+        val updateGoalButtonText = {
+            val type = prefs.goalType
+            if (type == "pages") {
+                binding.mainSettingsContent.btnConfigureGoal.text = "Current Goal: ${prefs.dailyGoalPages} pages/day (Change)"
+            } else {
+                binding.mainSettingsContent.btnConfigureGoal.text = "Current Goal: ${prefs.dailyGoalMinutes} minutes/day (Change)"
             }
         }
-        updateChipStyles()
-
-        binding.mainSettingsContent.chipGroupGoal.setOnCheckedStateChangeListener { _, checkedIds ->
-            val checkedId = checkedIds.firstOrNull() ?: View.NO_ID
-            if (checkedId != View.NO_ID) {
-                prefs.dailyGoalMinutes = when (checkedId) {
-                    R.id.goal15 -> 15
-                    R.id.goal20 -> 20
-                    R.id.goal30 -> 30
-                    R.id.goal45 -> 45
-                    R.id.goal60 -> 60
-                    else -> 30
-                }
-            }
-            updateChipStyles()
+        updateGoalButtonText()
+        binding.mainSettingsContent.btnConfigureGoal.setOnClickListener {
+            showDailyGoalDialog()
+            binding.mainSettingsContent.btnConfigureGoal.postDelayed({ updateGoalButtonText() }, 200)
         }
+
         binding.mainSettingsContent.goalDashboardSwitch.isChecked = prefs.showGoalOnDashboard
         binding.mainSettingsContent.goalDashboardSwitch.setOnCheckedChangeListener { _, checked ->
             prefs.showGoalOnDashboard = checked
