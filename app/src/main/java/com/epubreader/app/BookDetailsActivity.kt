@@ -40,18 +40,8 @@ class BookDetailsActivity : AppCompatActivity() {
 
     private lateinit var importer: EpubImporter
 
-    // Patch 11 "Screen On" controller
-    private lateinit var keepScreenOnController:
-            com.epubreader.app.util.KeepScreenOnController
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        keepScreenOnController =
-            com.epubreader.app.util.KeepScreenOnController(
-                this,
-                com.epubreader.app.data.PrefsManager(applicationContext)
-            )
 
         binding = ActivityBookDetailsBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -431,7 +421,6 @@ class BookDetailsActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        keepScreenOnController.onResume()
 
         if (shouldRefreshOnResume) {
             shouldRefreshOnResume = false
@@ -444,12 +433,6 @@ class BookDetailsActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
-        keepScreenOnController.onPause()
-    }
-
-    override fun onUserInteraction() {
-        super.onUserInteraction()
-        keepScreenOnController.bump()
     }
 
 

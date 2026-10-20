@@ -6,7 +6,7 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_margin="@dimen/app_popup_screen_margin"
-    app:cardBackgroundColor="?attr/colorSurface"
+    app:cardBackgroundColor="@color/palette_plum"
     app:cardCornerRadius="16dp"
     app:cardElevation="@dimen/app_definition_card_elevation"
     app:contentPadding="@dimen/app_card_padding">
@@ -48,7 +48,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
-                        android:background="@drawable/rounded_square_bg"
+                        android:background="@drawable/oval_rounded_bg"
                         android:paddingHorizontal="8dp"
                         android:paddingVertical="2dp"
                         android:textColor="@color/accent_pop"
@@ -90,16 +90,17 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    android:background="@drawable/rounded_square_bg"
+                    android:background="@color/palette_eggplant"
                     android:orientation="vertical"
                     android:padding="10dp"
+                    android:radius="8dp"
                     android:visibility="gone">
 
                     <TextView
                         android:id="@+id/dictContextQuote"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:textColor="@color/palette_mint"
+                        android:textColor="@color/white"
                         android:textSize="13sp"
                         android:textStyle="italic" />
                 </LinearLayout>
@@ -133,8 +134,20 @@
                     android:textColor="@color/black"
                     app:backgroundTint="@color/accent_pop"
                     app:cornerRadius="10dp"
-                    app:icon="@drawable/ic_check"
                     app:iconTint="@color/black" />
+
+                <!-- Secondary action button when word already exists in vocabulary -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/dictRefreshExistingBtn"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/vocabulary_refresh_existing"
+                    android:textColor="@color/palette_mint"
+                    app:cornerRadius="10dp"
+                    app:strokeColor="@color/palette_slate"
+                    android:visibility="gone" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/dictExternalButton"
@@ -143,6 +156,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
                     android:text="@string/dictionary_lookup_external"
+                    android:textColor="@color/palette_slate"
                     android:visibility="gone" />
             </LinearLayout>
         </ScrollView>

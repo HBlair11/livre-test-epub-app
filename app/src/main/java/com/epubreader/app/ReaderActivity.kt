@@ -4414,6 +4414,7 @@ body *:not(mark.livre-highlight):not(.livre-tts-word):not(.livre-tts-sentence) {
         val quoteBox = card.findViewById<View>(R.id.dictQuoteBox)
         val quoteView = card.findViewById<TextView>(R.id.dictContextQuote)
         val saveBtn = card.findViewById<com.google.android.material.button.MaterialButton>(R.id.dictSaveBtn)
+        val refreshBtn = card.findViewById<com.google.android.material.button.MaterialButton>(R.id.dictRefreshExistingBtn)
         val noResult = card.findViewById<TextView>(R.id.dictNoResult)
         val entriesBox = card.findViewById<LinearLayout>(R.id.dictEntries)
         val suggestionsLabel = card.findViewById<TextView>(R.id.dictSuggestionsLabel)
@@ -4443,7 +4444,7 @@ body *:not(mark.livre-highlight):not(.livre-tts-word):not(.livre-tts-sentence) {
         }
 
         val contextText = if (selection != null) "${selection.prefix} ${selection.text} ${selection.suffix}".trim() else raw.trim()
-        val contextSentence = com.epubreader.app.epub.VocabularyBuilderEngine.extractContextSentence(contextText, raw.trim())
+        val contextSentence = com.epubreader.app.epub.VocabularyBuilderEngine.extractContextSentence(contextText, raw.trim(), selection?.prefix, selection?.suffix)
         if (contextSentence.isNotBlank() && contextSentence != "Example usage from active reading session.") {
             quoteBox?.visibility = View.VISIBLE
             quoteView?.text = "\"$contextSentence\""
@@ -4454,31 +4455,66 @@ body *:not(mark.livre-highlight):not(.livre-tts-word):not(.livre-tts-sentence) {
         val wordClean = (result.matchedWord ?: raw).trim().lowercase(java.util.Locale.US)
         val bookTitle = bookEntity?.title ?: ""
 
+        lifecycleScope.launch(Dispatchers.IO) {
+            val existing = readerViewModel.persistence.findDictionaryHistory(wordClean)
+            withContext(Dispatchers.Main) {
+                if (existing != null) {
+                    saveBtn?.text = getString(R.string.vocabulary_saved_to_sanctuary)
+                    saveBtn?.isEnabled = false
+                    refreshBtn?.visibility = View.VISIBLE
+                    refreshBtn?.setOnClickListener {
+                        val definition = firstEntry?.definition
+                        val pos = firstEntry?.partOfSpeech
+                        lifecycleScope.launch(Dispatchers.IO) {
+                            readerViewModel.persistence.refreshDictionaryHistory(
+                                existing.id, definition, pos, contextSentence, bookTitle, bookId, System.currentTimeMillis(), null
+                            )
+                            withContext(Dispatchers.Main) {
+                                android.widget.Toast.makeText(this@ReaderActivity, R.string.vocabulary_refreshed_toast, android.widget.Toast.LENGTH_SHORT).show()
+                                refreshBtn.text = "Context Updated ✓"
+                                refreshBtn.isEnabled = false
+                            }
+                        }
+                    }
+                } else {
+                    refreshBtn?.visibility = View.GONE
+                }
+            }
+        }
+
         saveBtn?.setOnClickListener {
             val definition = firstEntry?.definition
             val pos = firstEntry?.partOfSpeech
             lifecycleScope.launch(Dispatchers.IO) {
-                val existing = readerViewModel.persistence.findDictionaryHistory(wordClean)
-                if (existing == null) {
-                    readerViewModel.persistence.insertDictionaryHistory(
-                        DictionaryHistoryEntity(
-                            word = wordClean,
-                            definition = definition,
-                            partOfSpeech = pos,
-                            example = contextSentence,
-                            bookTitle = bookTitle,
-                            bookId = bookId,
-                            lookedUpAt = System.currentTimeMillis(),
+                try {
+                    val existing = readerViewModel.persistence.findDictionaryHistory(wordClean)
+                    if (existing == null) {
+                        readerViewModel.persistence.insertDictionaryHistory(
+                            DictionaryHistoryEntity(
+                                word = wordClean,
+                                definition = definition,
+                                partOfSpeech = pos,
+                                example = contextSentence,
+                                bookTitle = bookTitle,
+                                bookId = bookId,
+                                lookedUpAt = System.currentTimeMillis(),
+                            )
                         )
-                    )
-                } else {
-                    readerViewModel.persistence.refreshDictionaryHistory(
-                        existing.id, definition, pos, contextSentence, bookTitle, bookId, System.currentTimeMillis(), null
-                    )
-                }
-                withContext(Dispatchers.Main) {
-                    saveBtn.text = getString(R.string.vocabulary_saved_to_sanctuary)
-                    saveBtn.isEnabled = false
+                    } else {
+                        readerViewModel.persistence.refreshDictionaryHistory(
+                            existing.id, definition, pos, contextSentence, bookTitle, bookId, System.currentTimeMillis(), null
+                        )
+                    }
+                    withContext(Dispatchers.Main) {
+                        saveBtn.text = getString(R.string.vocabulary_saved_to_sanctuary)
+                        saveBtn.isEnabled = false
+                        android.widget.Toast.makeText(this@ReaderActivity, R.string.vocabulary_saved_to_sanctuary, android.widget.Toast.LENGTH_SHORT).show()
+                    }
+                } catch (_: Exception) {
+                    withContext(Dispatchers.Main) {
+                        saveBtn.isEnabled = true
+                        saveBtn.text = getString(R.string.vocabulary_save_to_sanctuary)
+                    }
                 }
             }
         }
@@ -4527,33 +4563,6 @@ body *:not(mark.livre-highlight):not(.livre-tts-word):not(.livre-tts-sentence) {
                 startActivity(Intent.createChooser(intent, getString(R.string.dictionary_lookup_external)))
             } catch (_: android.content.ActivityNotFoundException) {
                 Snackbar.make(binding.root, R.string.dictionary_external_none, Snackbar.LENGTH_SHORT).show()
-            }
-        }
-
-        // Persist the lookup in the offline vocabulary history (IO thread).
-        if (result.entries.isNotEmpty()) {
-            val currentBookId = bookId
-            lifecycleScope.launch(Dispatchers.IO) {
-                val definition = result.entries.firstOrNull()?.definition
-                val partOfSpeech = result.entries.firstOrNull()?.partOfSpeech
-                val existing = readerViewModel.persistence.findDictionaryHistory(wordClean)
-                if (existing == null) {
-                    readerViewModel.persistence.insertDictionaryHistory(
-                        DictionaryHistoryEntity(
-                            word = wordClean,
-                            definition = definition,
-                            partOfSpeech = partOfSpeech,
-                            example = contextSentence,
-                            bookTitle = bookTitle,
-                            bookId = currentBookId,
-                            lookedUpAt = System.currentTimeMillis(),
-                        )
-                    )
-                } else {
-                    readerViewModel.persistence.refreshDictionaryHistory(
-                        existing.id, definition, partOfSpeech, contextSentence, bookTitle, currentBookId, System.currentTimeMillis(), null
-                    )
-                }
             }
         }
 

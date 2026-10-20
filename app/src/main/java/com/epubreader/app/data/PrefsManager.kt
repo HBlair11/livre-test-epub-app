@@ -180,16 +180,35 @@ class PrefsManager(
             prefs.edit().putBoolean(KEY_TTS_BACKGROUND, value).apply()
         }
 
+    var goalType: String
+        get() = prefs.getString(KEY_GOAL_TYPE, "minutes") ?: "minutes"
+        set(value) {
+            prefs.edit().putString(KEY_GOAL_TYPE, value).apply()
+        }
+
     var dailyGoalMinutes: Int
-        get() = prefs.getInt(KEY_DAILY_GOAL, 30)
+        get() = prefs.getInt(KEY_DAILY_GOAL, 20)
         set(value) {
             prefs.edit().putInt(KEY_DAILY_GOAL, value).apply()
+        }
+
+    var dailyGoalPages: Int
+        get() = prefs.getInt(KEY_DAILY_GOAL_PAGES, 20)
+        set(value) {
+            prefs.edit().putInt(KEY_DAILY_GOAL_PAGES, value).apply()
         }
 
     var showGoalOnDashboard: Boolean
         get() = prefs.getBoolean(KEY_SHOW_GOAL_DASHBOARD, true)
         set(value) {
             prefs.edit().putBoolean(KEY_SHOW_GOAL_DASHBOARD, value).apply()
+        }
+
+    /** Toggle for Vocabulary Mastery Pills & Flashcard Practice Feature. Off by default. */
+    var enableVocabMasteryAndFlashcards: Boolean
+        get() = prefs.getBoolean(KEY_VOCAB_MASTERY_FLASHCARDS, false)
+        set(value) {
+            prefs.edit().putBoolean(KEY_VOCAB_MASTERY_FLASHCARDS, value).apply()
         }
 
     companion object {
@@ -216,7 +235,10 @@ class PrefsManager(
         const val KEY_TTS_PITCH = "tts_pitch"
         const val KEY_TTS_BACKGROUND = "tts_background"
         const val KEY_DAILY_GOAL = "daily_goal_minutes"
+        const val KEY_DAILY_GOAL_PAGES = "daily_goal_pages"
+        const val KEY_GOAL_TYPE = "goal_type"
         const val KEY_SHOW_GOAL_DASHBOARD = "show_goal_dashboard"
+        const val KEY_VOCAB_MASTERY_FLASHCARDS = "vocab_mastery_flashcards"
 
         // Patch v37 slider scales: progress N maps to 0.5 + N * 0.05 engine
         // units. Speed 0..50 -> 0.5x..3.0x (default 8 = 0.9x); pitch 0..30 ->

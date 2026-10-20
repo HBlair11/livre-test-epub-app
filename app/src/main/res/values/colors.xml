@@ -16,12 +16,29 @@
       violet   #B388FF  pop       — accent pop that needs to be highlighted on dark background
       ============================================================
     -->
+    <!-- Original App Colors -->
     <color name="palette_mint">#E0F0EA</color>
     <color name="palette_slate">#95ADBE</color>
     <color name="palette_purple">#574F7D</color>
     <color name="palette_plum">#503A65</color>
     <color name="palette_eggplant">#3C2A4D</color>
     <color name="palette_violet">#B388FF</color>
+
+    <color name="palette_china">#FFEEF2</color>
+    <color name="palette_dusty_rose">#B48EAE</color>
+    <color name="palette_rose_water">#D8A694</color>
+    <color name="palette_copper_rose">#9e6764</color>
+    <color name="palette_plum_wine">#754B4D</color>
+    <color name="palette_blush_mauve">#C6707E</color>
+
+    <!-- Test App Colors
+    <color name="palette_mint">@color/palette_china</color>
+    <color name="palette_slate">@color/palette_dusty_rose</color>
+    <color name="palette_purple">@color/palette_rose_water</color>
+    <color name="palette_plum">@color/palette_copper_rose</color>
+    <color name="palette_eggplant">@color/palette_plum_wine</color>
+    <color name="palette_violet">@color/palette_blush_mauve</color>
+    -->
 
     <!-- ===== App — light mode ===== -->
     <color name="light_bg">@color/palette_mint</color>

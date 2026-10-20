@@ -31,10 +31,14 @@ class VocabularyActivity : AppCompatActivity() {
     private var vocabFullList: List<DictionaryHistoryEntity> = emptyList()
     private var vocabFlashcardIndex: Int = 0
     private var vocabFlashcardFlipped: Boolean = false
+    private var ttsPronouncer: com.epubreader.app.util.TtsPronouncer? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.view_main_vocabulary)
+        val prefs = com.epubreader.app.data.PrefsManager(this)
+        val isFeatureEnabled = prefs.enableVocabMasteryAndFlashcards
+        val layoutRes = if (isFeatureEnabled) R.layout.view_main_vocabulary else R.layout.view_main_vocabulary_default
+        setContentView(layoutRes)
 
         findViewById<com.google.android.material.appbar.MaterialToolbar>(R.id.toolbar)
             ?.setNavigationOnClickListener { finish() }
@@ -49,7 +53,12 @@ class VocabularyActivity : AppCompatActivity() {
         val actionsRow = findViewById<View>(R.id.vocabActionsRow)
         val subtitleTv = findViewById<TextView>(R.id.vocabSubtitleText)
 
+        if (ttsPronouncer == null) {
+            ttsPronouncer = com.epubreader.app.util.TtsPronouncer(this)
+        }
+
         vocabAdapter = VocabularyAdapter(
+            showMastery = isFeatureEnabled,
             onMasteryCycle = { item ->
                 val nextMastery = (item.masteryLevel + 1) % 3
                 lifecycleScope.launch(Dispatchers.IO) {
@@ -57,7 +66,7 @@ class VocabularyActivity : AppCompatActivity() {
                 }
             },
             onPronounce = { word ->
-                Toast.makeText(this, getString(R.string.vocab_pronouncing, word), Toast.LENGTH_SHORT).show()
+                ttsPronouncer?.speak(word)
             },
             onDelete = { item ->
                 lifecycleScope.launch(Dispatchers.IO) {
@@ -72,6 +81,8 @@ class VocabularyActivity : AppCompatActivity() {
         // Dual Tab Switcher
         tabs?.addOnTabSelectedListener(object : com.google.android.material.tabs.TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: com.google.android.material.tabs.TabLayout.Tab?) {
+                hideKeyboard(searchEdit)
+                searchEdit?.clearFocus()
                 if (tab?.position == 1) {
                     wordsContainer?.visibility = View.GONE
                     flashcardContainer?.visibility = View.VISIBLE
@@ -165,17 +176,68 @@ class VocabularyActivity : AppCompatActivity() {
         val flashcardNext = findViewById<View>(R.id.flashcardNextBtn)
         val flashcardLearning = findViewById<com.google.android.material.button.MaterialButton>(R.id.flashcardLearningBtn)
         val flashcardMastered = findViewById<com.google.android.material.button.MaterialButton>(R.id.flashcardMasteredBtn)
+        val flashcardAudioBtn = findViewById<View>(R.id.flashcardAudioBtn)
+
+        flashcardLearning?.setOnClickListener {
+            if (vocabFullList.isNotEmpty() && vocabFlashcardIndex in vocabFullList.indices) {
+                val current = vocabFullList[vocabFlashcardIndex]
+                lifecycleScope.launch(Dispatchers.IO) {
+                    AppDatabase.get(applicationContext).dictionaryHistoryDao().updateMasteryLevel(current.id, 1)
+                }
+            }
+        }
+        flashcardMastered?.setOnClickListener {
+            if (vocabFullList.isNotEmpty() && vocabFlashcardIndex in vocabFullList.indices) {
+                val current = vocabFullList[vocabFlashcardIndex]
+                lifecycleScope.launch(Dispatchers.IO) {
+                    AppDatabase.get(applicationContext).dictionaryHistoryDao().updateMasteryLevel(current.id, 2)
+                }
+            }
+        }
+
+        flashcardAudioBtn?.setOnClickListener {
+            if (vocabFullList.isNotEmpty() && vocabFlashcardIndex in vocabFullList.indices) {
+                val current = vocabFullList[vocabFlashcardIndex]
+                if (ttsPronouncer == null) {
+                    ttsPronouncer = com.epubreader.app.util.TtsPronouncer(this)
+                }
+                val textToSpeak = if (vocabFlashcardFlipped && !current.definition.isNullOrBlank()) {
+                    "${current.word}. ${current.definition}"
+                } else {
+                    current.word
+                }
+                ttsPronouncer?.speak(textToSpeak)
+            }
+        }
 
         flashcardCard?.setOnClickListener {
             vocabFlashcardFlipped = !vocabFlashcardFlipped
-            flashcardCard.animate().rotationY(if (vocabFlashcardFlipped) 180f else 0f).setDuration(350).start()
             val front = findViewById<View>(R.id.flashcardFrontSide)
             val back = findViewById<View>(R.id.flashcardBackSide)
-            flashcardCard.postDelayed({
-                front?.visibility = if (vocabFlashcardFlipped) View.GONE else View.VISIBLE
-                back?.visibility = if (vocabFlashcardFlipped) View.VISIBLE else View.GONE
-                if (vocabFlashcardFlipped) back?.rotationY = 180f
-            }, 175)
+            val scale = resources.displayMetrics.density
+            flashcardCard.cameraDistance = 8000f * scale
+
+            val targetRotation = if (vocabFlashcardFlipped) 180f else 0f
+            flashcardCard.animate()
+                .rotationY(targetRotation)
+                .setDuration(350)
+                .setUpdateListener { _ ->
+                    val currentRotation = flashcardCard.rotationY
+                    if (vocabFlashcardFlipped) {
+                        if (currentRotation >= 90f) {
+                            front?.visibility = View.GONE
+                            back?.visibility = View.VISIBLE
+                            back?.rotationY = 180f
+                        }
+                    } else {
+                        if (currentRotation <= 90f) {
+                            back?.visibility = View.GONE
+                            front?.visibility = View.VISIBLE
+                            front?.rotationY = 0f
+                        }
+                    }
+                }
+                .start()
         }
 
         flashcardPrev?.setOnClickListener {
@@ -235,6 +297,8 @@ class VocabularyActivity : AppCompatActivity() {
         val posTv = findViewById<TextView>(R.id.flashcardPos)
         val defTv = findViewById<TextView>(R.id.flashcardDef)
         val exampleTv = findViewById<TextView>(R.id.flashcardExample)
+        val flashcardLearning = findViewById<com.google.android.material.button.MaterialButton>(R.id.flashcardLearningBtn)
+        val flashcardMastered = findViewById<com.google.android.material.button.MaterialButton>(R.id.flashcardMasteredBtn)
 
         progressTv?.text = getString(R.string.vocab_flashcard_progress, vocabFlashcardIndex + 1, vocabFullList.size)
         wordTv?.text = current.word.uppercase()
@@ -242,6 +306,46 @@ class VocabularyActivity : AppCompatActivity() {
         posTv?.text = current.partOfSpeech?.uppercase() ?: "WORD"
         defTv?.text = current.definition ?: getString(R.string.dictionary_not_found)
         exampleTv?.text = if (!current.example.isNullOrBlank()) getString(R.string.vocab_quote_format, current.example) else ""
+
+        updateFlashcardMasteryState(current, flashcardLearning, flashcardMastered, this)
+    }
+
+    private fun updateFlashcardMasteryState(
+        current: DictionaryHistoryEntity,
+        learningBtn: com.google.android.material.button.MaterialButton?,
+        masteredBtn: com.google.android.material.button.MaterialButton?,
+        context: android.content.Context
+    ) {
+        val accentPop = ContextCompat.getColor(context, R.color.accent_pop)
+        val black = ContextCompat.getColor(context, android.R.color.black)
+        val white = ContextCompat.getColor(context, android.R.color.white)
+        val transparent = android.graphics.Color.TRANSPARENT
+        val strokeColorState = android.content.res.ColorStateList.valueOf(accentPop)
+
+        val isLearning = current.masteryLevel == 1
+        val isMastered = current.masteryLevel == 2
+
+        learningBtn?.strokeColor = strokeColorState
+        if (isLearning) {
+            learningBtn?.backgroundTintList = android.content.res.ColorStateList.valueOf(accentPop)
+            learningBtn?.setTextColor(black)
+            learningBtn?.text = context.getString(R.string.vocab_mark_learning)
+        } else {
+            learningBtn?.backgroundTintList = android.content.res.ColorStateList.valueOf(transparent)
+            learningBtn?.setTextColor(white)
+            learningBtn?.text = context.getString(R.string.vocab_mark_learning)
+        }
+
+        masteredBtn?.strokeColor = strokeColorState
+        if (isMastered) {
+            masteredBtn?.backgroundTintList = android.content.res.ColorStateList.valueOf(accentPop)
+            masteredBtn?.setTextColor(black)
+            masteredBtn?.text = context.getString(R.string.vocab_mastered_badge)
+        } else {
+            masteredBtn?.backgroundTintList = android.content.res.ColorStateList.valueOf(transparent)
+            masteredBtn?.setTextColor(white)
+            masteredBtn?.text = context.getString(R.string.vocab_mark_mastered)
+        }
     }
 
     private fun confirmClearVocab() {
@@ -330,5 +434,34 @@ class VocabularyActivity : AppCompatActivity() {
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
         startActivity(Intent.createChooser(intent, getString(R.string.vocabulary_title)))
+    }
+
+    override fun dispatchTouchEvent(ev: android.view.MotionEvent?): Boolean {
+        if (ev?.action == android.view.MotionEvent.ACTION_DOWN) {
+            val v = currentFocus
+            if (v is android.widget.EditText) {
+                val outRect = android.graphics.Rect()
+                v.getGlobalVisibleRect(outRect)
+                if (!outRect.contains(ev.rawX.toInt(), ev.rawY.toInt())) {
+                    v.clearFocus()
+                    hideKeyboard(v)
+                }
+            }
+        }
+        return super.dispatchTouchEvent(ev)
+    }
+
+    private fun hideKeyboard(view: View? = null) {
+        val imm = getSystemService(INPUT_METHOD_SERVICE) as? android.view.inputmethod.InputMethodManager
+        val targetToken = view?.windowToken ?: currentFocus?.windowToken
+        if (targetToken != null) {
+            imm?.hideSoftInputFromWindow(targetToken, 0)
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        ttsPronouncer?.shutdown()
+        ttsPronouncer = null
     }
 }

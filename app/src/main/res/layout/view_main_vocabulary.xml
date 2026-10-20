@@ -276,14 +276,14 @@
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/flashcardMasteredBtn"
-                    style="@style/Widget.MaterialComponents.Button"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:layout_marginStart="6dp"
                     android:text="@string/vocab_mark_mastered"
-                    android:textColor="@color/black"
-                    app:backgroundTint="@color/accent_pop" />
+                    android:textColor="@color/white"
+                    app:strokeColor="@color/accent_pop" />
             </LinearLayout>
 
             <!-- Previous and Next Card Buttons on Left and Right Edges -->

@@ -56,8 +56,8 @@
     <string name="settings_about">About</string>
     <string name="settings_about_detail">The Livre Magicae · Epub Reader</string>
 
-    <string name="settings_keep_screen_on">Screen On</string>
-    <string name="settings_keep_screen_on_summary">Keep the screen on for 10 minutes longer than your current system setting.</string>
+    <string name="settings_keep_screen_on">SCREEN ON</string>
+    <string name="settings_keep_screen_on_summary">Keep the phone screen on for 10 minutes longer than your current system setting when you are actively reading.</string>
 
     <string name="search_books_hint">Search books…</string>
     <string name="search_in_book_hint">Search this book</string>
@@ -259,6 +259,9 @@
     <!-- Patch 17 (Addition #2): page-turn animation toggle. -->
     <string name="reader_page_turn_animation">Page turn animation</string>
     <string name="reader_page_turn_animation_summary">Slide pages like turning a real book</string>
+    <string name="settings_vocab_mastery_title">FLASHCARD PRACTICE &amp; MASTERY TRACKING</string>
+    <string name="settings_vocab_mastery_summary">Enable practice tabs, flashcard mode, and mastery level badges in Vocabulary Sanctuary.</string>
+    <string name="stats_goal_disabled_info">Daily Reading Goal tracking is turned off. You can enable this feature and configure your goal in Settings.</string>
 
     <string name="toc_empty">No contents</string>
     <string name="bookmarks_empty">No bookmarks</string>
@@ -308,7 +311,7 @@
     <!-- Patch v37: Vocabulary (offline dictionary lookup history) -->
     <string name="nav_vocabulary">Vocabulary</string>
     <string name="vocabulary_title">Vocabulary</string>
-    <string name="vocabulary_empty">Words you look up with Define will be saved here.</string>
+    <string name="vocabulary_empty">While reading any book in the reader, select any unfamiliar word and tap \"Define\" to look up its definition and save it to your personal Vocabulary list.</string>
     <string name="vocabulary_export_csv">Export as CSV</string>
     <string name="vocabulary_export_markdown">Export as Markdown</string>
     <string name="vocabulary_exported">Vocabulary exported</string>
@@ -409,7 +412,7 @@
     <string name="settings_section_define">DEFINE</string>
     <string name="settings_section_dictionary_attribution">Offline dictionary bundled with the app.\nEnglish definitions are derived from WordNet 3.1 (wordnet.princeton.edu), used under its permissive license.\nSee assets/dict/WORDNET_LICENSE.txt for details.</string>
 
-    <string name="settings_section_app_title">The Livre Magicae</string>
+    <string name="settings_section_app_title">THE LIVRE MAGICAE</string>
     <string name="settings_section_app_version">Version 1.36</string>
     <string name="settings_section_description">The Livre Magicae · EPUB Reader\nA calm, offline-first reading companion.</string>
     <string name="settings_section_info">Version 1.36\n\nThe Livre Magicae · EPUB Reader\nA calm, offline-first reading companion.</string>
@@ -446,6 +449,8 @@
     <string name="reading_heading_subtitle">Books you are actively reading right now.</string>
     <string name="vocabulary_save_to_sanctuary">Save to Vocabulary Sanctuary</string>
     <string name="vocabulary_saved_to_sanctuary">Saved to Sanctuary ✓</string>
+    <string name="vocabulary_refresh_existing">Update Context in Sanctuary</string>
+    <string name="vocabulary_refreshed_toast">Vocabulary context updated ✓</string>
     <string name="vocab_tab_sanctuary">Word Sanctuary</string>
     <string name="vocab_tab_practice">Flashcard Practice</string>
     <string name="vocab_search_hint">Search saved words, definitions, sources…</string>

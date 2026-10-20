@@ -2,6 +2,7 @@ package com.epubreader.app
 
 import com.epubreader.app.util.SystemBarController
 
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -12,6 +13,7 @@ import android.widget.TextView
 import android.widget.Toast
 import android.view.MenuItem
 import android.view.View
+import androidx.core.content.ContextCompat
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -80,9 +82,6 @@ class MainActivity : AppCompatActivity() {
     private var currentBooks: List<BookEntity> = emptyList()
     private var touchHelper: ItemTouchHelper? = null
     private var scrollToTopOnNextContent = false
-
-    // Patch 11 "Screen On" controller (see util/KeepScreenOnController.kt).
-    private lateinit var keepScreenOnController: com.epubreader.app.util.KeepScreenOnController
 
     // ---------------------------------------------------------------- scroll restoration
     // Patch 11: the bookshelf must remember the exact scroll position of the
@@ -250,7 +249,6 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         prefs = PrefsManager(applicationContext)
         importer = EpubImporter(applicationContext)
-        keepScreenOnController = com.epubreader.app.util.KeepScreenOnController(this, prefs)
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -370,7 +368,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        keepScreenOnController.onResume()
         if (pendingReadingTopReset) {
             pendingReadingTopReset = false
             recycler?.post {
@@ -393,7 +390,12 @@ class MainActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
-        keepScreenOnController.onPause()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        ttsPronouncer?.shutdown()
+        ttsPronouncer = null
     }
 
     // ---------------------------------------------------------------- drawer
@@ -553,7 +555,7 @@ class MainActivity : AppCompatActivity() {
             } else {
                 "$pct%"
             }
-            binding.homeContent.homeContinueProgressBar.progress = pct
+            binding.homeContent.homeContinueProgressBar.progress = if (book.progress >= 0.90f) 100 else pct
 
             loadHomeCover(book, binding.homeContent.homeContinueCover)
             binding.homeContent.homeContinueResumeBtn.setOnClickListener { openBook(book) }
@@ -1759,7 +1761,12 @@ class MainActivity : AppCompatActivity() {
         binding.mainSettingsContent.screenOnSwitch.isChecked = prefs.keepScreenOn
         binding.mainSettingsContent.screenOnSwitch.setOnCheckedChangeListener { _, isChecked ->
             prefs.keepScreenOn = isChecked
-            keepScreenOnController.refresh()
+        }
+
+        // 5. Flashcards & Mastery Tracking Feature
+        binding.mainSettingsContent.vocabMasterySwitch.isChecked = prefs.enableVocabMasteryAndFlashcards
+        binding.mainSettingsContent.vocabMasterySwitch.setOnCheckedChangeListener { _, isChecked ->
+            prefs.enableVocabMasteryAndFlashcards = isChecked
         }
 
         // 5. Full Backup and Restore Section
@@ -1773,7 +1780,29 @@ class MainActivity : AppCompatActivity() {
 
     override fun onUserInteraction() {
         super.onUserInteraction()
-        keepScreenOnController.bump()
+    }
+
+    override fun dispatchTouchEvent(ev: android.view.MotionEvent?): Boolean {
+        if (ev?.action == android.view.MotionEvent.ACTION_DOWN) {
+            val v = currentFocus
+            if (v is android.widget.EditText) {
+                val outRect = android.graphics.Rect()
+                v.getGlobalVisibleRect(outRect)
+                if (!outRect.contains(ev.rawX.toInt(), ev.rawY.toInt())) {
+                    v.clearFocus()
+                    hideKeyboard(v)
+                }
+            }
+        }
+        return super.dispatchTouchEvent(ev)
+    }
+
+    private fun hideKeyboard(view: View? = null) {
+        val imm = getSystemService(INPUT_METHOD_SERVICE) as? android.view.inputmethod.InputMethodManager
+        val targetToken = view?.windowToken ?: currentFocus?.windowToken
+        if (targetToken != null) {
+            imm?.hideSoftInputFromWindow(targetToken, 0)
+        }
     }
 
     private fun themeColor(attr: Int): Int {
@@ -1868,6 +1897,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun showStatsView() {
         val statsRoot = binding.root.findViewById<View>(R.id.mainStatsContent) ?: return
+        statsRoot.findViewById<View>(R.id.cardStatsGoal)?.setOnClickListener { showDailyGoalDialog() }
         val now = System.currentTimeMillis()
         val weekStart = java.util.Calendar.getInstance().apply {
             firstDayOfWeek = java.util.Calendar.MONDAY
@@ -1908,16 +1938,41 @@ class MainActivity : AppCompatActivity() {
                     chapters = dao.chaptersSince(yearStart),
                     pages = dao.pagesSince(yearStart),
                     finished = db.bookDao().getFinishedCount(),
-                    streak = streak
+                    streak = streak,
+                    todayPages = dao.pagesSince(todayStart)
                 )
             }
-            val todayMinutes = stats.todaySeconds / 60
-            val goalMinutes = prefs.dailyGoalMinutes.coerceAtLeast(1)
-            val percent = ((todayMinutes * 100) / goalMinutes).coerceIn(0, 100)
+            val isGoalEnabled = prefs.showGoalOnDashboard
+            val goalFractionTv = statsRoot.findViewById<TextView>(R.id.statsGoalFraction)
+            val goalProgressRow = statsRoot.findViewById<View>(R.id.statsGoalProgressRow)
+            val goalDisabledInfo = statsRoot.findViewById<TextView>(R.id.statsGoalDisabledInfo)
 
-            statsRoot.findViewById<TextView>(R.id.statsGoalFraction)?.text = getString(R.string.stats_goal_fraction, todayMinutes, goalMinutes)
-            statsRoot.findViewById<ProgressBar>(R.id.statsGoalProgressBar)?.progress = percent
-            statsRoot.findViewById<TextView>(R.id.statsGoalPercent)?.text = "$percent%"
+            if (isGoalEnabled) {
+                goalFractionTv?.visibility = View.VISIBLE
+                goalProgressRow?.visibility = View.VISIBLE
+                goalDisabledInfo?.visibility = View.GONE
+
+                val goalType = prefs.goalType
+                if (goalType == "pages") {
+                    val todayPages = stats.todayPages
+                    val goalPages = prefs.dailyGoalPages.coerceAtLeast(1)
+                    val percent = ((todayPages * 100) / goalPages).coerceIn(0, 100)
+                    goalFractionTv?.text = "$todayPages of $goalPages pages completed today"
+                    statsRoot.findViewById<ProgressBar>(R.id.statsGoalProgressBar)?.progress = percent
+                    statsRoot.findViewById<TextView>(R.id.statsGoalPercent)?.text = "$percent%"
+                } else {
+                    val todayMinutes = stats.todaySeconds / 60
+                    val goalMinutes = prefs.dailyGoalMinutes.coerceAtLeast(1)
+                    val percent = ((todayMinutes * 100) / goalMinutes).coerceIn(0, 100)
+                    goalFractionTv?.text = "$todayMinutes of $goalMinutes minutes completed today"
+                    statsRoot.findViewById<ProgressBar>(R.id.statsGoalProgressBar)?.progress = percent
+                    statsRoot.findViewById<TextView>(R.id.statsGoalPercent)?.text = "$percent%"
+                }
+            } else {
+                goalFractionTv?.visibility = View.GONE
+                goalProgressRow?.visibility = View.GONE
+                goalDisabledInfo?.visibility = View.VISIBLE
+            }
 
             statsRoot.findViewById<TextView>(R.id.statsWeek)?.text = formatStatsMinutes(stats.weekSeconds)
             statsRoot.findViewById<TextView>(R.id.statsYear)?.text = formatStatsMinutes(stats.yearSeconds)
@@ -1929,8 +1984,138 @@ class MainActivity : AppCompatActivity() {
     }
 
     private data class StatsValues(
-        val weekSeconds: Int, val yearSeconds: Int, val todaySeconds: Int, val chapters: Int, val pages: Int, val finished: Int, val streak: Int
+        val weekSeconds: Int, val yearSeconds: Int, val todaySeconds: Int, val chapters: Int, val pages: Int, val finished: Int, val streak: Int, val todayPages: Int
     )
+
+    private fun showDailyGoalDialog() {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_daily_goal, null, false)
+        val toggleGroup = dialogView.findViewById<com.google.android.material.button.MaterialButtonToggleGroup>(R.id.goalTypeToggleGroup)
+        val radioGroup = dialogView.findViewById<android.widget.RadioGroup>(R.id.goalRadioGroup)
+        val customLayout = dialogView.findViewById<com.google.android.material.textfield.TextInputLayout>(R.id.goalCustomInputLayout)
+        val customEdit = dialogView.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.goalCustomEdit)
+        val saveBtn = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.goalSaveBtn)
+        val remindLaterBtn = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.goalRemindLaterBtn)
+
+        val dialog = AlertDialog.Builder(this)
+            .setView(dialogView)
+            .create()
+
+        var currentType = prefs.goalType
+        var selectedValue = if (currentType == "minutes") prefs.dailyGoalMinutes else prefs.dailyGoalPages
+
+        if (currentType == "pages") {
+            toggleGroup?.check(R.id.btnPages)
+        } else {
+            toggleGroup?.check(R.id.btnMinutes)
+        }
+
+        val populateOptions: (String) -> Unit = { type ->
+            radioGroup?.removeAllViews()
+            val options = if (type == "minutes") {
+                listOf(
+                    Triple(10, "10 min", "Quick Read • Perfect for busy days."),
+                    Triple(20, "20 min", "The Sweet Spot • Great for building a lasting habit. (Recommended)"),
+                    Triple(30, "30 min", "Deep Dive • For steady, focused progress."),
+                    Triple(45, "45 min", "Bookworm • Swap out screen time for reading."),
+                    Triple(60, "60 min", "Marathon • For dedicated, heavy readers.")
+                )
+            } else {
+                listOf(
+                    Triple(5, "5 pages", "Easy Start"),
+                    Triple(10, "10 pages", "Casual Pace"),
+                    Triple(20, "20 pages", "Steady Progress (Recommended)"),
+                    Triple(30, "30 pages", "Active Reader"),
+                    Triple(50, "50 pages", "Fast Track")
+                )
+            }
+
+            var matchedPreset = false
+            options.forEach { (value, label, subtext) ->
+                val rb = android.widget.RadioButton(this).apply {
+                    text = "$label\n$subtext"
+                    textSize = 14f
+                    setTextColor(ContextCompat.getColor(context, android.R.color.white))
+                    setPadding(12, 12, 12, 12)
+                    tag = value
+                }
+                radioGroup?.addView(rb)
+                if (value == selectedValue) {
+                    rb.isChecked = true
+                    matchedPreset = true
+                }
+            }
+
+            val customRb = android.widget.RadioButton(this).apply {
+                text = "Custom\nEnter ${if (type == "minutes") "minutes" else "pages"}..."
+                textSize = 14f
+                setTextColor(ContextCompat.getColor(context, android.R.color.white))
+                setPadding(12, 12, 12, 12)
+                tag = -1
+            }
+            radioGroup?.addView(customRb)
+
+            if (!matchedPreset) {
+                customRb.isChecked = true
+                customLayout?.visibility = View.VISIBLE
+                customEdit?.setText(selectedValue.toString())
+                customLayout?.hint = if (type == "minutes") "Enter minutes..." else "Enter pages..."
+            } else {
+                customLayout?.visibility = View.GONE
+            }
+
+            radioGroup?.setOnCheckedChangeListener { _: android.widget.RadioGroup, checkedId: Int ->
+                val checkedRb = dialogView.findViewById<android.widget.RadioButton>(checkedId)
+                if (checkedRb?.tag == -1) {
+                    customLayout?.visibility = View.VISIBLE
+                    customEdit?.hint = if (type == "minutes") "Enter minutes..." else "Enter pages..."
+                } else {
+                    customLayout?.visibility = View.GONE
+                    val tagObj = checkedRb?.tag
+                    if (tagObj is Int && tagObj > 0) {
+                        selectedValue = tagObj
+                    }
+                }
+            }
+        }
+
+        populateOptions(currentType)
+
+        toggleGroup?.addOnButtonCheckedListener { _: com.google.android.material.button.MaterialButtonToggleGroup, checkedId: Int, isChecked: Boolean ->
+            if (isChecked) {
+                currentType = if (checkedId == R.id.btnPages) "pages" else "minutes"
+                selectedValue = if (currentType == "minutes") prefs.dailyGoalMinutes else prefs.dailyGoalPages
+                populateOptions(currentType)
+            }
+        }
+
+        remindLaterBtn?.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        saveBtn?.setOnClickListener {
+            val checkedId = radioGroup?.checkedRadioButtonId ?: -1
+            val checkedRb = dialogView.findViewById<android.widget.RadioButton>(checkedId)
+            if (checkedRb?.tag == -1) {
+                val customVal = customEdit?.text?.toString()?.toIntOrNull()
+                if (customVal != null && customVal > 0) {
+                    selectedValue = customVal
+                }
+            }
+
+            prefs.goalType = currentType
+            if (currentType == "minutes") {
+                prefs.dailyGoalMinutes = selectedValue
+            } else {
+                prefs.dailyGoalPages = selectedValue
+            }
+
+            dialog.dismiss()
+            showStatsView()
+            Snackbar.make(binding.root, "Daily reading goal updated!", Snackbar.LENGTH_SHORT).show()
+        }
+
+        dialog.show()
+    }
 
     private fun formatStatsMinutes(seconds: Int): String {
         val minutes = seconds / 60
@@ -1942,9 +2127,25 @@ class MainActivity : AppCompatActivity() {
     private var vocabFullList: List<com.epubreader.app.data.DictionaryHistoryEntity> = emptyList()
     private var vocabFlashcardIndex: Int = 0
     private var vocabFlashcardFlipped: Boolean = false
+    private var ttsPronouncer: com.epubreader.app.util.TtsPronouncer? = null
 
     private fun showVocabularyView() {
-        val vocabRoot = binding.root.findViewById<View>(R.id.mainVocabularyContent) ?: return
+        val isFeatureEnabled = prefs.enableVocabMasteryAndFlashcards
+        val vocabContainer = binding.root.findViewById<android.view.ViewGroup>(R.id.mainVocabularyContent) ?: return
+
+        val requiredTag = if (isFeatureEnabled) "vocab_full" else "vocab_default"
+        if (vocabContainer.tag != requiredTag) {
+            vocabContainer.removeAllViews()
+            val layoutRes = if (isFeatureEnabled) R.layout.view_main_vocabulary else R.layout.view_main_vocabulary_default
+            layoutInflater.inflate(layoutRes, vocabContainer, true)
+            vocabContainer.tag = requiredTag
+            vocabAdapter = null
+        }
+
+        val vocabRoot = vocabContainer
+        if (ttsPronouncer == null) {
+            ttsPronouncer = com.epubreader.app.util.TtsPronouncer(this)
+        }
         val tabs = vocabRoot.findViewById<com.google.android.material.tabs.TabLayout>(R.id.vocabTabs)
         val wordsContainer = vocabRoot.findViewById<View>(R.id.vocabWordsTabContainer)
         val flashcardContainer = vocabRoot.findViewById<View>(R.id.vocabFlashcardContainer)
@@ -1954,8 +2155,9 @@ class MainActivity : AppCompatActivity() {
         val emptyText = vocabRoot.findViewById<View>(R.id.vocabEmptyText)
         val actionsRow = vocabRoot.findViewById<View>(R.id.vocabActionsRow)
 
-        if (vocabAdapter == null) {
+        if (vocabAdapter == null || vocabAdapter?.showMastery != isFeatureEnabled) {
             vocabAdapter = com.epubreader.app.ui.VocabularyAdapter(
+                showMastery = isFeatureEnabled,
                 onMasteryCycle = { item ->
                     val nextMastery = (item.masteryLevel + 1) % 3
                     lifecycleScope.launch(Dispatchers.IO) {
@@ -1963,7 +2165,7 @@ class MainActivity : AppCompatActivity() {
                     }
                 },
                 onPronounce = { word ->
-                    Toast.makeText(this, "Pronouncing $word", Toast.LENGTH_SHORT).show()
+                    ttsPronouncer?.speak(word)
                 },
                 onDelete = { item ->
                     lifecycleScope.launch(Dispatchers.IO) {
@@ -1978,6 +2180,8 @@ class MainActivity : AppCompatActivity() {
         // Dual Tab Switcher
         tabs?.addOnTabSelectedListener(object : com.google.android.material.tabs.TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: com.google.android.material.tabs.TabLayout.Tab?) {
+                hideKeyboard(searchEdit)
+                searchEdit?.clearFocus()
                 if (tab?.position == 1) {
                     wordsContainer?.visibility = View.GONE
                     flashcardContainer?.visibility = View.VISIBLE
@@ -2062,17 +2266,69 @@ class MainActivity : AppCompatActivity() {
         val flashcardNext = vocabRoot.findViewById<View>(R.id.flashcardNextBtn)
         val flashcardLearning = vocabRoot.findViewById<com.google.android.material.button.MaterialButton>(R.id.flashcardLearningBtn)
         val flashcardMastered = vocabRoot.findViewById<com.google.android.material.button.MaterialButton>(R.id.flashcardMasteredBtn)
+        val flashcardAudioBtn = vocabRoot.findViewById<View>(R.id.flashcardAudioBtn)
+
+        flashcardLearning?.setOnClickListener {
+            if (vocabFullList.isNotEmpty() && vocabFlashcardIndex in vocabFullList.indices) {
+                val current = vocabFullList[vocabFlashcardIndex]
+                lifecycleScope.launch(Dispatchers.IO) {
+                    AppDatabase.get(applicationContext).dictionaryHistoryDao().updateMasteryLevel(current.id, 1)
+                }
+            }
+        }
+
+        flashcardMastered?.setOnClickListener {
+            if (vocabFullList.isNotEmpty() && vocabFlashcardIndex in vocabFullList.indices) {
+                val current = vocabFullList[vocabFlashcardIndex]
+                lifecycleScope.launch(Dispatchers.IO) {
+                    AppDatabase.get(applicationContext).dictionaryHistoryDao().updateMasteryLevel(current.id, 2)
+                }
+            }
+        }
+
+        flashcardAudioBtn?.setOnClickListener {
+            if (vocabFullList.isNotEmpty() && vocabFlashcardIndex in vocabFullList.indices) {
+                val current = vocabFullList[vocabFlashcardIndex]
+                if (ttsPronouncer == null) {
+                    ttsPronouncer = com.epubreader.app.util.TtsPronouncer(this)
+                }
+                val textToSpeak = if (vocabFlashcardFlipped && !current.definition.isNullOrBlank()) {
+                    "${current.word}. ${current.definition}"
+                } else {
+                    current.word
+                }
+                ttsPronouncer?.speak(textToSpeak)
+            }
+        }
 
         flashcardCard?.setOnClickListener {
             vocabFlashcardFlipped = !vocabFlashcardFlipped
-            flashcardCard.animate().rotationY(if (vocabFlashcardFlipped) 180f else 0f).setDuration(350).start()
             val front = vocabRoot.findViewById<View>(R.id.flashcardFrontSide)
             val back = vocabRoot.findViewById<View>(R.id.flashcardBackSide)
-            flashcardCard.postDelayed({
-                front?.visibility = if (vocabFlashcardFlipped) View.GONE else View.VISIBLE
-                back?.visibility = if (vocabFlashcardFlipped) View.VISIBLE else View.GONE
-                if (vocabFlashcardFlipped) back?.rotationY = 180f
-            }, 175)
+            val scale = vocabRoot.resources.displayMetrics.density
+            flashcardCard.cameraDistance = 8000f * scale
+
+            val targetRotation = if (vocabFlashcardFlipped) 180f else 0f
+            flashcardCard.animate()
+                .rotationY(targetRotation)
+                .setDuration(350)
+                .setUpdateListener { _ ->
+                    val currentRotation = flashcardCard.rotationY
+                    if (vocabFlashcardFlipped) {
+                        if (currentRotation >= 90f) {
+                            front?.visibility = View.GONE
+                            back?.visibility = View.VISIBLE
+                            back?.rotationY = 180f
+                        }
+                    } else {
+                        if (currentRotation <= 90f) {
+                            back?.visibility = View.GONE
+                            front?.visibility = View.VISIBLE
+                            front?.rotationY = 0f
+                        }
+                    }
+                }
+                .start()
         }
 
         flashcardPrev?.setOnClickListener {
@@ -2137,6 +2393,8 @@ class MainActivity : AppCompatActivity() {
         val posTv = vocabRoot.findViewById<TextView>(R.id.flashcardPos)
         val defTv = vocabRoot.findViewById<TextView>(R.id.flashcardDef)
         val exampleTv = vocabRoot.findViewById<TextView>(R.id.flashcardExample)
+        val flashcardLearning = vocabRoot.findViewById<com.google.android.material.button.MaterialButton>(R.id.flashcardLearningBtn)
+        val flashcardMastered = vocabRoot.findViewById<com.google.android.material.button.MaterialButton>(R.id.flashcardMasteredBtn)
 
         progressTv?.text = vocabRoot.context.getString(R.string.vocab_flashcard_progress, vocabFlashcardIndex + 1, vocabFullList.size)
 
@@ -2145,6 +2403,46 @@ class MainActivity : AppCompatActivity() {
         posTv?.text = current.partOfSpeech?.uppercase() ?: "WORD"
         defTv?.text = current.definition ?: getString(R.string.dictionary_not_found)
         exampleTv?.text = if (!current.example.isNullOrBlank()) "\"${current.example}\"" else ""
+
+        updateFlashcardMasteryState(current, flashcardLearning, flashcardMastered, vocabRoot.context)
+    }
+
+    private fun updateFlashcardMasteryState(
+        current: com.epubreader.app.data.DictionaryHistoryEntity,
+        learningBtn: com.google.android.material.button.MaterialButton?,
+        masteredBtn: com.google.android.material.button.MaterialButton?,
+        context: Context
+    ) {
+        val accentPop = ContextCompat.getColor(context, R.color.accent_pop)
+        val black = ContextCompat.getColor(context, android.R.color.black)
+        val white = ContextCompat.getColor(context, android.R.color.white)
+        val transparent = android.graphics.Color.TRANSPARENT
+        val strokeColorState = android.content.res.ColorStateList.valueOf(accentPop)
+
+        val isLearning = current.masteryLevel == 1
+        val isMastered = current.masteryLevel == 2
+
+        learningBtn?.strokeColor = strokeColorState
+        if (isLearning) {
+            learningBtn?.backgroundTintList = android.content.res.ColorStateList.valueOf(accentPop)
+            learningBtn?.setTextColor(black)
+            learningBtn?.text = context.getString(R.string.vocab_mark_learning)
+        } else {
+            learningBtn?.backgroundTintList = android.content.res.ColorStateList.valueOf(transparent)
+            learningBtn?.setTextColor(white)
+            learningBtn?.text = context.getString(R.string.vocab_mark_learning)
+        }
+
+        masteredBtn?.strokeColor = strokeColorState
+        if (isMastered) {
+            masteredBtn?.backgroundTintList = android.content.res.ColorStateList.valueOf(accentPop)
+            masteredBtn?.setTextColor(black)
+            masteredBtn?.text = context.getString(R.string.vocab_mastered_badge)
+        } else {
+            masteredBtn?.backgroundTintList = android.content.res.ColorStateList.valueOf(transparent)
+            masteredBtn?.setTextColor(white)
+            masteredBtn?.text = context.getString(R.string.vocab_mark_mastered)
+        }
     }
 
     private fun confirmClearVocab() {

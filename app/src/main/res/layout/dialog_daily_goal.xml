@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/palette_plum"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Daily Reading Goal"
+        android:textColor="@color/palette_mint"
+        android:textSize="20sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:text="Set a gentle daily reading milestone to celebrate your reading habit without high-pressure streaks."
+        android:textColor="@color/palette_slate"
+        android:textSize="13sp"
+        android:lineSpacingMultiplier="1.2" />
+
+    <!-- Toggle: Minutes | Pages -->
+    <com.google.android.material.button.MaterialButtonToggleGroup
+        android:id="@+id/goalTypeToggleGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp"
+        app:checkedButton="@+id/btnMinutes"
+        app:singleSelection="true">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnMinutes"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Minutes"
+            android:textColor="@color/white"
+            app:strokeColor="@color/accent_pop" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnPages"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Pages"
+            android:textColor="@color/white"
+            app:strokeColor="@color/accent_pop" />
+    </com.google.android.material.button.MaterialButtonToggleGroup>
+
+    <!-- Scrollable Goal Options Container -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:maxHeight="280dp"
+        android:scrollbars="none">
+
+        <RadioGroup
+            android:id="@+id/goalRadioGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+    </ScrollView>
+
+    <!-- Custom Input Container -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/goalCustomInputLayout"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:hint="Enter minutes..."
+        android:visibility="gone"
+        app:boxStrokeColor="@color/accent_pop"
+        app:hintTextColor="@color/accent_pop">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/goalCustomEdit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:singleLine="true"
+            android:textColor="@color/white"
+            android:textSize="14sp" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Action Buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:orientation="horizontal">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/goalRemindLaterBtn"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginEnd="8dp"
+            android:text="Remind Me Later"
+            android:textColor="@color/palette_slate" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/goalSaveBtn"
+            style="@style/Widget.MaterialComponents.Button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:text="Save Goal"
+            android:textColor="@color/black"
+            app:backgroundTint="@color/accent_pop" />
+    </LinearLayout>
+
+</LinearLayout>

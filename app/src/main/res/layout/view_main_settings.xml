@@ -70,7 +70,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            app:cardBackgroundColor="?attr/colorSurface"
+            app:cardBackgroundColor="@color/palette_plum"
             app:cardCornerRadius="14dp"
             app:cardElevation="1dp">
 
@@ -94,7 +94,8 @@
                     android:layout_marginTop="4dp"
                     android:text="@string/settings_section_daily_goal_subtitle"
                     android:textColor="@color/palette_slate"
-                    android:textSize="13sp" />
+                    android:textSize="13sp"
+                    android:lineSpacingMultiplier="1.2"/>
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -154,6 +155,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
                     android:text="@string/settings_show_goal_stats"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
                     android:textColor="@color/palette_slate" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
@@ -167,7 +170,7 @@
             android:layout_marginBottom="16dp"
             android:clickable="true"
             android:focusable="true"
-            app:cardBackgroundColor="?attr/colorSurface"
+            app:cardBackgroundColor="@color/palette_plum"
             app:cardCornerRadius="14dp"
             app:cardElevation="1dp">
 
@@ -181,17 +184,18 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/settings_section_scanned_folder"
-                    android:textColor="@color/palette_slate"
-                    android:textSize="12sp" />
+                    android:textColor="@color/palette_mint"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/tvScannedFolderValue"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:textColor="@color/palette_mint"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
+                    android:textColor="@color/palette_slate"
+                    android:textSize="13sp"
+                    android:lineSpacingMultiplier="1.2"/>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -201,7 +205,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            app:cardBackgroundColor="?attr/colorSurface"
+            app:cardBackgroundColor="@color/palette_plum"
             app:cardCornerRadius="14dp"
             app:cardElevation="1dp">
 
@@ -236,7 +240,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            app:cardBackgroundColor="?attr/colorSurface"
+            app:cardBackgroundColor="@color/palette_plum"
             app:cardCornerRadius="14dp"
             app:cardElevation="1dp">
 
@@ -267,11 +271,61 @@
                         android:layout_marginTop="4dp"
                         android:text="@string/settings_keep_screen_on_summary"
                         android:textColor="@color/palette_slate"
-                        android:textSize="12sp" />
+                        android:textSize="12sp"
+                        android:lineSpacingMultiplier="1.2"/>
                 </LinearLayout>
 
                 <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/screenOnSwitch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- 6. Vocabulary Flashcards & Mastery Feature Section -->
+        <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.MaterialComponents.CardView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:cardBackgroundColor="@color/palette_plum"
+            app:cardCornerRadius="14dp"
+            app:cardElevation="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="16dp">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/settings_vocab_mastery_title"
+                        android:textColor="@color/palette_mint"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="@string/settings_vocab_mastery_summary"
+                        android:textColor="@color/palette_slate"
+                        android:textSize="13sp"
+                        android:lineSpacingMultiplier="1.2"/>
+                </LinearLayout>
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/vocabMasterySwitch"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="12dp" />
@@ -284,7 +338,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            app:cardBackgroundColor="?attr/colorSurface"
+            app:cardBackgroundColor="@color/palette_plum"
             app:cardCornerRadius="14dp"
             app:cardElevation="1dp">
 
@@ -308,7 +362,8 @@
                     android:layout_marginTop="4dp"
                     android:text="@string/settings_section_backup_summary"
                     android:textColor="@color/palette_slate"
-                    android:textSize="13sp" />
+                    android:textSize="13sp"
+                    android:lineSpacingMultiplier="1.2"/>
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -354,7 +409,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            app:cardBackgroundColor="?attr/colorSurface"
+            app:cardBackgroundColor="@color/palette_plum"
             app:cardCornerRadius="14dp"
             app:cardElevation="1dp">
 
@@ -396,8 +451,8 @@
                     android:layout_marginTop="12dp"
                     android:text="@string/settings_privacy_body"
                     android:textColor="@color/palette_slate"
-                    android:textSize="14sp"
-                    android:lineSpacingExtra="4dp" />
+                    android:textSize="13sp"
+                    android:lineSpacingMultiplier="1.2" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -407,7 +462,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            app:cardBackgroundColor="?attr/colorSurface"
+            app:cardBackgroundColor="@color/palette_plum"
             app:cardCornerRadius="14dp"
             app:cardElevation="1dp">
 
@@ -442,7 +497,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            app:cardBackgroundColor="?attr/colorSurface"
+            app:cardBackgroundColor="@color/palette_plum"
             app:cardCornerRadius="14dp"
             app:cardElevation="1dp">
 
