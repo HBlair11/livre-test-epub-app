@@ -10,16 +10,16 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Daily Reading Goal"
+        android:text="@string/daily_goal_dialog_title"
         android:textColor="@color/palette_mint"
-        android:textSize="20sp"
+        android:textSize="16sp"
         android:textStyle="bold" />
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="6dp"
-        android:text="Set a gentle daily reading milestone to celebrate your reading habit without high-pressure streaks."
+        android:text="@string/daily_goal_dialog_subtitle"
         android:textColor="@color/palette_slate"
         android:textSize="13sp"
         android:lineSpacingMultiplier="1.2" />
@@ -29,8 +29,8 @@
         android:id="@+id/goalTypeToggleGroup"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="16dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="12dp"
         app:checkedButton="@+id/btnMinutes"
         app:singleSelection="true">
 
@@ -40,7 +40,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Minutes"
+            android:text="@string/goal_type_minutes"
             android:textColor="@color/white"
             app:strokeColor="@color/accent_pop" />
 
@@ -50,7 +50,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Pages"
+            android:text="@string/goal_type_pages"
             android:textColor="@color/white"
             app:strokeColor="@color/accent_pop" />
     </com.google.android.material.button.MaterialButtonToggleGroup>
@@ -76,7 +76,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
-        android:hint="Enter minutes..."
+        android:hint="@string/goal_hint_enter_minutes"
         android:visibility="gone"
         app:boxStrokeColor="@color/accent_pop"
         app:hintTextColor="@color/accent_pop">
@@ -99,25 +99,48 @@
         android:orientation="horizontal">
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/goalRemindLaterBtn"
-            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:id="@+id/goalResetBtn"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:layout_marginEnd="8dp"
-            android:text="Remind Me Later"
-            android:textColor="@color/palette_slate" />
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
+            android:text="@string/goal_reset_btn"
+            android:textColor="@color/white"
+            app:strokeColor="@color/accent_pop" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/goalRemindLaterBtn"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
+            android:text="@string/goal_remind_later"
+            android:textColor="@color/white"
+            app:strokeColor="@color/accent_pop" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:orientation="horizontal">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/goalSaveBtn"
             style="@style/Widget.MaterialComponents.Button"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:layout_marginStart="8dp"
-            android:text="Save Goal"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
+            android:text="@string/goal_save"
             android:textColor="@color/black"
             app:backgroundTint="@color/accent_pop" />
+
     </LinearLayout>
 
 </LinearLayout>

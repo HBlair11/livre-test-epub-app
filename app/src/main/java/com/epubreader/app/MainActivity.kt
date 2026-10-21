@@ -1706,9 +1706,9 @@ class MainActivity : AppCompatActivity() {
         val updateGoalButtonText = {
             val type = prefs.goalType
             if (type == "pages") {
-                binding.mainSettingsContent.btnConfigureGoal.text = "Current Goal: ${prefs.dailyGoalPages} pages/day (Change)"
+                binding.mainSettingsContent.btnConfigureGoal.text = getString(R.string.settings_current_goal_pages, prefs.dailyGoalPages)
             } else {
-                binding.mainSettingsContent.btnConfigureGoal.text = "Current Goal: ${prefs.dailyGoalMinutes} minutes/day (Change)"
+                binding.mainSettingsContent.btnConfigureGoal.text = getString(R.string.settings_current_goal_minutes, prefs.dailyGoalMinutes)
             }
         }
         updateGoalButtonText()
@@ -1929,14 +1929,14 @@ class MainActivity : AppCompatActivity() {
                     val todayPages = stats.todayPages
                     val goalPages = prefs.dailyGoalPages.coerceAtLeast(1)
                     val percent = ((todayPages * 100) / goalPages).coerceIn(0, 100)
-                    goalFractionTv?.text = "$todayPages of $goalPages pages completed today"
+                    goalFractionTv?.text = getString(R.string.stats_goal_fraction_pages, todayPages, goalPages)
                     statsRoot.findViewById<ProgressBar>(R.id.statsGoalProgressBar)?.progress = percent
                     statsRoot.findViewById<TextView>(R.id.statsGoalPercent)?.text = "$percent%"
                 } else {
                     val todayMinutes = stats.todaySeconds / 60
                     val goalMinutes = prefs.dailyGoalMinutes.coerceAtLeast(1)
                     val percent = ((todayMinutes * 100) / goalMinutes).coerceIn(0, 100)
-                    goalFractionTv?.text = "$todayMinutes of $goalMinutes minutes completed today"
+                    goalFractionTv?.text = getString(R.string.stats_goal_fraction_minutes, todayMinutes, goalMinutes)
                     statsRoot.findViewById<ProgressBar>(R.id.statsGoalProgressBar)?.progress = percent
                     statsRoot.findViewById<TextView>(R.id.statsGoalPercent)?.text = "$percent%"
                 }
@@ -1967,6 +1967,9 @@ class MainActivity : AppCompatActivity() {
         val customEdit = dialogView.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.goalCustomEdit)
         val saveBtn = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.goalSaveBtn)
         val remindLaterBtn = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.goalRemindLaterBtn)
+        val resetBtn = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.goalResetBtn)
+        val btnMinutes = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnMinutes)
+        val btnPages = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnPages)
 
         val dialog = AlertDialog.Builder(this)
             .setView(dialogView)
@@ -1975,89 +1978,131 @@ class MainActivity : AppCompatActivity() {
         var currentType = prefs.goalType
         var selectedValue = if (currentType == "minutes") prefs.dailyGoalMinutes else prefs.dailyGoalPages
 
-        if (currentType == "pages") {
-            toggleGroup?.check(R.id.btnPages)
-        } else {
-            toggleGroup?.check(R.id.btnMinutes)
+        val accentPop = ContextCompat.getColor(this, R.color.accent_pop)
+        val white = ContextCompat.getColor(this, android.R.color.white)
+        val black = ContextCompat.getColor(this, android.R.color.black)
+        val slate = ContextCompat.getColor(this, R.color.palette_slate)
+
+        val updateToggleStyles = { type: String ->
+            if (type == "minutes") {
+                toggleGroup?.check(R.id.btnMinutes)
+                btnMinutes?.backgroundTintList = android.content.res.ColorStateList.valueOf(accentPop)
+                btnMinutes?.setTextColor(black)
+                btnPages?.backgroundTintList = android.content.res.ColorStateList.valueOf(android.graphics.Color.TRANSPARENT)
+                btnPages?.setTextColor(white)
+            } else {
+                toggleGroup?.check(R.id.btnPages)
+                btnPages?.backgroundTintList = android.content.res.ColorStateList.valueOf(accentPop)
+                btnPages?.setTextColor(black)
+                btnMinutes?.backgroundTintList = android.content.res.ColorStateList.valueOf(android.graphics.Color.TRANSPARENT)
+                btnMinutes?.setTextColor(white)
+            }
         }
 
-        val populateOptions: (String) -> Unit = { type ->
+        val standardMinutes = setOf(10, 20, 30, 45, 60)
+        val standardPages = setOf(5, 10, 20, 30, 50)
+
+        var populateOptions: ((String) -> Unit)? = null
+        populateOptions = { type ->
             radioGroup?.removeAllViews()
             val options = if (type == "minutes") {
                 listOf(
-                    Triple(10, "10 min", "Quick Read • Perfect for busy days."),
-                    Triple(20, "20 min", "The Sweet Spot • Great for building a lasting habit. (Recommended)"),
-                    Triple(30, "30 min", "Deep Dive • For steady, focused progress."),
-                    Triple(45, "45 min", "Bookworm • Swap out screen time for reading."),
-                    Triple(60, "60 min", "Marathon • For dedicated, heavy readers.")
+                    Triple(10, "10 min", getString(R.string.goal_sub_10_min)),
+                    Triple(20, "20 min", getString(R.string.goal_sub_20_min)),
+                    Triple(30, "30 min", getString(R.string.goal_sub_30_min)),
+                    Triple(45, "45 min", getString(R.string.goal_sub_45_min)),
+                    Triple(60, "60 min", getString(R.string.goal_sub_60_min))
                 )
             } else {
                 listOf(
-                    Triple(5, "5 pages", "Easy Start"),
-                    Triple(10, "10 pages", "Casual Pace"),
-                    Triple(20, "20 pages", "Steady Progress (Recommended)"),
-                    Triple(30, "30 pages", "Active Reader"),
-                    Triple(50, "50 pages", "Fast Track")
+                    Triple(5, "5 pages", getString(R.string.goal_sub_5_pages)),
+                    Triple(10, "10 pages", getString(R.string.goal_sub_10_pages)),
+                    Triple(20, "20 pages", getString(R.string.goal_sub_20_pages)),
+                    Triple(30, "30 pages", getString(R.string.goal_sub_30_pages)),
+                    Triple(50, "50 pages", getString(R.string.goal_sub_50_pages))
                 )
             }
 
-            var matchedPreset = false
+            val isCustom = if (type == "minutes") !standardMinutes.contains(selectedValue) else !standardPages.contains(selectedValue)
+
             options.forEach { (value, label, subtext) ->
-                val rb = android.widget.RadioButton(this).apply {
-                    text = "$label\n$subtext"
-                    textSize = 14f
-                    setTextColor(ContextCompat.getColor(context, android.R.color.white))
-                    setPadding(12, 12, 12, 12)
-                    tag = value
-                }
-                radioGroup?.addView(rb)
-                if (value == selectedValue) {
-                    rb.isChecked = true
-                    matchedPreset = true
-                }
-            }
+                val itemView = layoutInflater.inflate(R.layout.item_goal_option, radioGroup, false)
+                val rb = itemView.findViewById<android.widget.RadioButton>(R.id.optionRadioButton)
+                val titleTv = itemView.findViewById<TextView>(R.id.optionTitle)
+                val subTv = itemView.findViewById<TextView>(R.id.optionSubtext)
 
-            val customRb = android.widget.RadioButton(this).apply {
-                text = "Custom\nEnter ${if (type == "minutes") "minutes" else "pages"}..."
-                textSize = 14f
-                setTextColor(ContextCompat.getColor(context, android.R.color.white))
-                setPadding(12, 12, 12, 12)
-                tag = -1
-            }
-            radioGroup?.addView(customRb)
+                val isChecked = (value == selectedValue)
+                rb.isChecked = isChecked
+                rb.buttonTintList = android.content.res.ColorStateList.valueOf(if (isChecked) accentPop else slate)
+                titleTv.text = label
+                titleTv.setTextColor(if (isChecked) accentPop else white)
+                subTv.text = subtext
 
-            if (!matchedPreset) {
-                customRb.isChecked = true
-                customLayout?.visibility = View.VISIBLE
-                customEdit?.setText(selectedValue.toString())
-                customLayout?.hint = if (type == "minutes") "Enter minutes..." else "Enter pages..."
-            } else {
-                customLayout?.visibility = View.GONE
-            }
-
-            radioGroup?.setOnCheckedChangeListener { _: android.widget.RadioGroup, checkedId: Int ->
-                val checkedRb = dialogView.findViewById<android.widget.RadioButton>(checkedId)
-                if (checkedRb?.tag == -1) {
-                    customLayout?.visibility = View.VISIBLE
-                    customEdit?.hint = if (type == "minutes") "Enter minutes..." else "Enter pages..."
-                } else {
+                itemView.setOnClickListener {
+                    selectedValue = value
                     customLayout?.visibility = View.GONE
-                    val tagObj = checkedRb?.tag
-                    if (tagObj is Int && tagObj > 0) {
-                        selectedValue = tagObj
+                    customEdit?.setText("")
+                    populateOptions?.invoke(type)
+                }
+
+                radioGroup?.addView(itemView)
+            }
+
+            // Custom Item
+            val customItemView = layoutInflater.inflate(R.layout.item_goal_option, radioGroup, false)
+            val customRb = customItemView.findViewById<android.widget.RadioButton>(R.id.optionRadioButton)
+            val customTitleTv = customItemView.findViewById<TextView>(R.id.optionTitle)
+            val customSubTv = customItemView.findViewById<TextView>(R.id.optionSubtext)
+
+            customRb.isChecked = isCustom
+            customRb.buttonTintList = android.content.res.ColorStateList.valueOf(if (isCustom) accentPop else slate)
+            customTitleTv.text = getString(R.string.goal_label_custom)
+            customTitleTv.setTextColor(if (isCustom) accentPop else white)
+
+            val unitName = if (type == "minutes") getString(R.string.goal_type_minutes).lowercase() else getString(R.string.goal_type_pages).lowercase()
+            customSubTv.text = if (isCustom && selectedValue > 0) "$selectedValue $unitName" else "Enter $unitName..."
+
+            customItemView.setOnClickListener {
+                val wasVisible = customLayout?.visibility == View.VISIBLE
+                if (wasVisible) {
+                    customLayout?.visibility = View.VISIBLE
+                } else {
+                    customLayout?.visibility = View.VISIBLE
+                    if (selectedValue > 0) {
+                        customEdit?.setText(selectedValue.toString())
+                    } else {
+                        customEdit?.setText("")
                     }
                 }
+                customEdit?.hint = if (type == "minutes") getString(R.string.goal_hint_enter_minutes) else getString(R.string.goal_hint_enter_pages)
+                customEdit?.requestFocus()
             }
+
+            radioGroup?.addView(customItemView)
+
+            customLayout?.visibility = View.GONE
         }
 
+        updateToggleStyles(currentType)
         populateOptions(currentType)
 
         toggleGroup?.addOnButtonCheckedListener { _: com.google.android.material.button.MaterialButtonToggleGroup, checkedId: Int, isChecked: Boolean ->
             if (isChecked) {
                 currentType = if (checkedId == R.id.btnPages) "pages" else "minutes"
                 selectedValue = if (currentType == "minutes") prefs.dailyGoalMinutes else prefs.dailyGoalPages
+                customEdit?.setText("")
+                updateToggleStyles(currentType)
                 populateOptions(currentType)
             }
+        }
+
+        resetBtn?.setOnClickListener {
+            prefs.goalType = "minutes"
+            prefs.dailyGoalMinutes = 20
+            prefs.dailyGoalPages = 20
+            dialog.dismiss()
+            showStatsView()
+            Snackbar.make(binding.root, getString(R.string.goal_reset_toast), Snackbar.LENGTH_SHORT).show()
         }
 
         remindLaterBtn?.setOnClickListener {
@@ -2065,9 +2110,8 @@ class MainActivity : AppCompatActivity() {
         }
 
         saveBtn?.setOnClickListener {
-            val checkedId = radioGroup?.checkedRadioButtonId ?: -1
-            val checkedRb = dialogView.findViewById<android.widget.RadioButton>(checkedId)
-            if (checkedRb?.tag == -1) {
+            val isCustomActive = customLayout?.visibility == View.VISIBLE
+            if (isCustomActive) {
                 val customVal = customEdit?.text?.toString()?.toIntOrNull()
                 if (customVal != null && customVal > 0) {
                     selectedValue = customVal
@@ -2083,7 +2127,7 @@ class MainActivity : AppCompatActivity() {
 
             dialog.dismiss()
             showStatsView()
-            Snackbar.make(binding.root, "Daily reading goal updated!", Snackbar.LENGTH_SHORT).show()
+            Snackbar.make(binding.root, getString(R.string.goal_updated_toast), Snackbar.LENGTH_SHORT).show()
         }
 
         dialog.show()
