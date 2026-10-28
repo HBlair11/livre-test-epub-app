@@ -5,90 +5,117 @@
     android:layout_height="wrap_content"
     android:layout_marginStart="4dp"
     android:layout_marginEnd="4dp"
-    android:layout_marginBottom="10dp"
+    android:layout_marginBottom="8dp"
     app:cardBackgroundColor="@color/palette_plum"
-    app:cardCornerRadius="6dp"
+    app:cardCornerRadius="10dp"
     app:cardElevation="1dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="6dp">
+        android:padding="8dp">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-            <!-- Kindle-style tall cover: height = 1.5 * width (portrait) -->
-            <ImageView
-                android:id="@+id/cover"
+            <!-- CardView holding the Cover image -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/coverCard"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:background="@drawable/cover_frame"
-                android:contentDescription="@string/book_author"
-                android:scaleType="centerCrop"
+                android:layout_marginTop="@dimen/app_chrome_padding_v"
+                android:layout_marginBottom="@dimen/app_chrome_padding_v"
+                app:cardElevation="0dp"
+                app:cardPreventCornerOverlap="false"
+                app:strokeWidth="0dp"
+                app:shapeAppearanceOverlay="@style/ShapeAppearance.TopRounded"
                 app:layout_constraintDimensionRatio="H,1:1.5"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="parent">
 
-            <!-- Progress % badge, top-right corner of cover -->
+                <ImageView
+                    android:id="@+id/cover"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/cover_frame"
+                    android:contentDescription="@string/book_author"
+                    android:scaleType="centerCrop" />
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Favorites badge: top-right corner of cover card -->
+            <ImageView
+                android:id="@+id/favoriteBadge"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:layout_marginTop="6dp"
+                android:layout_marginEnd="6dp"
+                android:background="@drawable/favorite_badge_bg"
+                android:contentDescription="@string/option_favorite"
+                android:padding="6dp"
+                android:src="@drawable/ic_favorite"
+                android:visibility="gone"
+                app:tint="@color/palette_violet"
+                app:layout_constraintEnd_toEndOf="@id/coverCard"
+                app:layout_constraintTop_toTopOf="@id/coverCard" />
+
+            <!-- Progress bar: bottom of cover card -->
+            <ProgressBar
+                android:id="@+id/progressBar"
+                style="@android:style/Widget.ProgressBar.Horizontal"
+                android:layout_width="0dp"
+                android:layout_height="3dp"
+                android:max="100"
+                android:progress="0"
+                android:progressDrawable="@drawable/progress_line_rounded_book_grid"
+                app:layout_constraintBottom_toBottomOf="@id/coverCard"
+                app:layout_constraintEnd_toEndOf="@id/coverCard"
+                app:layout_constraintStart_toStartOf="@id/coverCard" />
+
+            <!-- Progress % badge: bottom-left of cover card -->
             <TextView
                 android:id="@+id/progressBadge"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
-                android:layout_marginEnd="6dp"
-                android:background="@drawable/badge_bg"
-                android:paddingStart="6dp"
+                android:layout_marginStart="6dp"
+                android:layout_marginBottom="4dp"
+                android:background="@drawable/badge_bg_violet"
+                android:paddingStart="8dp"
                 android:paddingTop="2dp"
-                android:paddingEnd="6dp"
+                android:paddingEnd="8dp"
                 android:paddingBottom="2dp"
-                android:textColor="@color/white"
-                android:textSize="10sp"
+                android:textColor="@color/palette_eggplant"
+                android:textSize="11sp"
                 android:textStyle="bold"
                 android:visibility="gone"
-                app:layout_constraintEnd_toEndOf="@id/cover"
-                app:layout_constraintTop_toTopOf="@id/cover" />
+                app:layout_constraintBottom_toTopOf="@id/progressBar"
+                app:layout_constraintStart_toStartOf="@id/coverCard" />
 
-            <!-- Thin progress bar along the bottom of the cover -->
-            <View
-                android:id="@+id/progressTrack"
-                android:layout_width="0dp"
-                android:layout_height="3dp"
-                android:background="@color/progress_track"
-                app:layout_constraintBottom_toBottomOf="@id/cover"
-                app:layout_constraintStart_toStartOf="@id/cover"
-                app:layout_constraintEnd_toEndOf="@id/cover" />
-
-            <View
-                android:id="@+id/progressFill"
-                android:layout_width="0dp"
-                android:layout_height="3dp"
-                android:background="@color/progress_fill"
-                app:layout_constraintBottom_toBottomOf="@id/cover"
-                app:layout_constraintStart_toStartOf="@id/cover"
-                app:layout_constraintEnd_toEndOf="@id/progressTrack" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <TextView
             android:id="@+id/title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="7dp"
+            android:layout_marginTop="@dimen/app_chrome_padding_v"
             android:ellipsize="end"
+            android:minLines="2"
             android:maxLines="2"
             android:textColor="@color/palette_mint"
-            android:textSize="12sp"
+            android:textSize="13sp"
             android:textStyle="bold" />
 
         <TextView
             android:id="@+id/author"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="1dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="@dimen/app_chrome_padding_v"
             android:ellipsize="end"
             android:maxLines="1"
             android:textColor="@color/palette_slate"
             android:textSize="11sp" />
+
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

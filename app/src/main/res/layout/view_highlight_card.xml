@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="@dimen/app_row_content_padding_h"
+    android:layout_marginEnd="@dimen/app_row_content_padding_h"
+    android:layout_marginTop="8dp"
+    android:layout_marginBottom="8dp"
+    app:cardBackgroundColor="@color/palette_eggplant"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="2dp"
+    app:strokeColor="@color/palette_plum"
+    app:strokeWidth="1dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Top row: color dot + chapter info (left) + edit & delete buttons (right) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <View
+                android:id="@+id/colorDot"
+                android:layout_width="10dp"
+                android:layout_height="10dp"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/oval_rounded_bg" />
+
+            <TextView
+                android:id="@+id/tvChapterInfo"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textColor="@color/palette_mint"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+
+            <ImageButton
+                android:id="@+id/btnEdit"
+                style="@style/EpubReaderIconButton"
+                android:contentDescription="@string/edit"
+                app:srcCompat="@drawable/ic_edit"
+                app:tint="@color/palette_plum" />
+
+            <ImageButton
+                android:id="@+id/btnDelete"
+                style="@style/EpubReaderIconButton"
+                android:contentDescription="@string/highlight_delete"
+                app:srcCompat="@drawable/ic_delete"
+                app:tint="@color/palette_plum" />
+        </LinearLayout>
+
+        <!-- Highlighted text container with left accent slice and rounded light background -->
+        <LinearLayout
+            android:id="@+id/textContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/reader_search_input_bg"
+            android:orientation="horizontal"
+            android:padding="0dp">
+
+            <View
+                android:id="@+id/leftAccentBar"
+                android:layout_width="4dp"
+                android:layout_height="match_parent"
+                android:background="@color/palette_violet" />
+
+            <TextView
+                android:id="@+id/highlightText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="3"
+                android:padding="12dp"
+                android:textColor="@color/palette_mint"
+                android:textSize="14sp"
+                android:textStyle="italic" />
+        </LinearLayout>
+
+        <!-- Attached note container (visible when note exists and not editing) -->
+        <LinearLayout
+            android:id="@+id/layoutAttachedNote"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/reader_search_input_bg"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="12dp"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:layout_marginEnd="8dp"
+                android:contentDescription="@string/personal_note"
+                app:srcCompat="@drawable/ic_note"
+                app:tint="@color/palette_violet" />
+
+            <TextView
+                android:id="@+id/tvAttachedNoteText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textColor="@color/palette_mint"
+                android:textSize="13sp" />
+        </LinearLayout>
+
+        <!-- Personal note button (+ Add a personal note) -->
+        <TextView
+            android:id="@+id/btnAddPersonalNote"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:padding="4dp"
+            android:text="@string/highlight_add_personal_note"
+            android:textColor="@color/palette_violet"
+            android:textSize="12sp" />
+
+        <!-- Collapsible note input layout -->
+        <LinearLayout
+            android:id="@+id/layoutNoteInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <EditText
+                android:id="@+id/etNoteInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/reader_search_input_bg"
+                android:gravity="top"
+                android:hint="@string/highlight_note_hint"
+                android:maxLines="2"
+                android:minLines="2"
+                android:padding="10dp"
+                android:textColor="@color/palette_mint"
+                android:textColorHint="@color/palette_slate"
+                android:textSize="13sp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:gravity="end"
+                android:orientation="horizontal">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnCancelNote"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/cancel"
+                    android:textColor="@color/palette_slate" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnSaveNote"
+                    style="@style/Widget.MaterialComponents.Button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:backgroundTint="@color/palette_violet"
+                    android:text="@string/save_note"
+                    android:textColor="@color/white" />
+            </LinearLayout>
+        </LinearLayout>
+
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

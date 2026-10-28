@@ -35,6 +35,8 @@ import android.widget.SeekBar
 import android.widget.ImageView
 import android.widget.ImageButton
 import android.widget.TextView
+import android.widget.EditText
+import com.google.android.material.button.MaterialButton
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -48,6 +50,7 @@ import com.epubreader.app.data.AppDatabase
 import com.epubreader.app.data.BookEntity
 import com.epubreader.app.data.BookmarkEntity
 import com.epubreader.app.data.DictionaryHistoryEntity
+import com.epubreader.app.data.HighlightEntity
 import com.epubreader.app.data.PrefsManager
 import com.epubreader.app.data.TtsSettingsEntity
 import com.epubreader.app.epub.ReaderSelectionBridge
@@ -79,6 +82,37 @@ class ReaderActivity : AppCompatActivity() {
 
 
     private lateinit var binding: ActivityReaderBinding
+    private val topBar get() = binding.readerChrome.topBar
+    private val bottomBar get() = binding.readerChrome.bottomBar
+    private val btnBack get() = binding.readerChrome.btnBack
+    private val btnToc get() = binding.readerChrome.btnToc
+    private val btnBookmarks get() = binding.readerChrome.btnBookmarks
+    private val btnHighlights get() = binding.readerChrome.btnHighlights
+    private val btnSearch get() = binding.readerChrome.btnSearch
+    private val btnReadAloud get() = binding.readerChrome.btnReadAloud
+    private val btnSettings get() = binding.readerChrome.btnSettings
+    private val tvBookTitle get() = binding.readerChrome.tvBookTitle
+    private val tvAuthorSeries get() = binding.readerChrome.tvAuthorSeries
+    private val tvSectionPages get() = binding.readerChrome.tvSectionPages
+    private val readerHistory get() = binding.readerChrome.readerHistory
+    private val readerHistoryBack get() = binding.readerChrome.readerHistoryBack
+    private val readerHistoryClear get() = binding.readerChrome.readerHistoryClear
+    private val readerHistoryForward get() = binding.readerChrome.readerHistoryForward
+    private val tvPageInfo get() = binding.readerChrome.tvPageInfo
+    private val seekChapter get() = binding.readerChrome.seekChapter
+    private val tvPercent get() = binding.readerChrome.tvPercent
+    private val tvAddBookmark get() = binding.readerChrome.tvAddBookmark
+    private val ttsOverlay get() = binding.ttsOverlayInclude.ttsOverlay
+    private val btnTtsClose get() = binding.ttsOverlayInclude.btnTtsClose
+    private val btnTtsSettings get() = binding.ttsOverlayInclude.btnTtsSettings
+    private val tvTtsOverlayTitle get() = binding.ttsOverlayInclude.tvTtsOverlayTitle
+    private val tvTtsBookTitle get() = binding.ttsOverlayInclude.tvTtsBookTitle
+    private val tvTtsSection get() = binding.ttsOverlayInclude.tvTtsSection
+    private val tvTtsStatus get() = binding.ttsOverlayInclude.tvTtsStatus
+    private val btnTtsPrev get() = binding.ttsOverlayInclude.btnTtsPrev
+    private val btnTtsPlayPause get() = binding.ttsOverlayInclude.btnTtsPlayPause
+    private val btnTtsNext get() = binding.ttsOverlayInclude.btnTtsNext
+    private val btnTtsStop get() = binding.ttsOverlayInclude.btnTtsStop
     private lateinit var prefs: PrefsManager
     private var pendingSelectionCallback: ((ReaderSelectionLocator?) -> Unit)? = null
     private var definitionPopup: PopupWindow? = null
@@ -312,7 +346,7 @@ class ReaderActivity : AppCompatActivity() {
                     goToSpine(spineIndex + 1)
                     handler.postDelayed({ startTtsForCurrentChapter() }, 450)
                 } else {
-                    binding.tvTtsStatus.text = getString(R.string.action_read_aloud)
+                    tvTtsStatus.text = getString(R.string.action_read_aloud)
                 }
             }
         }, { segment, start, end ->
@@ -322,7 +356,7 @@ class ReaderActivity : AppCompatActivity() {
         }, { remainingMs ->
             runOnUiThread {
                 if (isFinishing || isDestroyed) return@runOnUiThread
-                binding.tvTtsStatus.text = getString(R.string.tts_sleep_remaining, (remainingMs / 60000L).toInt() + 1)
+                tvTtsStatus.text = getString(R.string.tts_sleep_remaining, (remainingMs / 60000L).toInt() + 1)
             }
         }, {
             runOnUiThread {
@@ -357,8 +391,8 @@ class ReaderActivity : AppCompatActivity() {
         binding.root.setBackgroundColor(Color.BLACK)
         binding.webView.setBackgroundColor(bg)
         binding.measureWebView.setBackgroundColor(bg)
-        binding.topBar.setBackgroundColor(readerSurface())
-        binding.bottomBar.setBackgroundColor(readerSurface())
+        topBar.setBackgroundColor(readerSurface())
+        bottomBar.setBackgroundColor(readerSurface())
         binding.tocBookmarkOverlay.setBackgroundColor(readerSurface())
         binding.searchOverlay.setBackgroundColor(readerSurface())
         // Page indicator: no background pill — ink-colored text (contrasts with
@@ -378,7 +412,7 @@ class ReaderActivity : AppCompatActivity() {
     /** Reader chrome background — STATIC (eggplant) for every reading theme and
      *  for app day/night. Read from the color resource so palette changes in
      *  colors.xml propagate here (single source of truth). */
-    private fun readerSurface(): Int = getColor(R.color.reader_chrome_bg)
+    private fun readerSurface(): Int = getColor(R.color.palette_eggplant)
 
     private fun inkColor(): Int = Color.parseColor(readerColors().second)
 
@@ -708,7 +742,7 @@ class ReaderActivity : AppCompatActivity() {
         chapterPageCounts = cached
         perPageSeekerActive = cached.size > 1 && ReaderPageMapping.totalPages(cached) > 1
         if (perPageSeekerActive) {
-            binding.seekChapter.max = ReaderPageMapping.totalPages(cached) - 1
+            seekChapter.max = ReaderPageMapping.totalPages(cached) - 1
             syncSeekBarFromCurrentPage()
             updatePageIndicator()
             updateSectionPages()
@@ -852,9 +886,9 @@ class ReaderActivity : AppCompatActivity() {
      *  by the speaker icon, closed by the back / stop controls); this only
      *  refreshes the play/pause icon and the status line. */
     private fun updateTtsControlsUi(playing: Boolean) {
-        binding.btnTtsPlayPause.setImageResource(if (playing) R.drawable.ic_pause else R.drawable.ic_play)
-        binding.btnTtsPlayPause.contentDescription = getString(if (playing) R.string.tts_pause else R.string.tts_play)
-        binding.tvTtsStatus.text = when (ttsController?.state) {
+        btnTtsPlayPause.setImageResource(if (playing) R.drawable.ic_pause else R.drawable.ic_play)
+        btnTtsPlayPause.contentDescription = getString(if (playing) R.string.tts_pause else R.string.tts_play)
+        tvTtsStatus.text = when (ttsController?.state) {
             ReaderTtsController.State.PLAYING -> getString(R.string.tts_status_reading)
             ReaderTtsController.State.PAUSED -> getString(R.string.tts_status_paused)
             else -> getString(R.string.tts_status_reading)
@@ -868,14 +902,14 @@ class ReaderActivity : AppCompatActivity() {
         clearReaderSelection()
         ttsOverlayRestoresChrome = chromeVisible
         chromeVisible = false
-        binding.topBar.visibility = View.GONE
-        binding.bottomBar.visibility = View.GONE
+        topBar.visibility = View.GONE
+        bottomBar.visibility = View.GONE
         binding.tvPageIndicator.visibility = View.GONE
-        binding.ttsOverlay.visibility = View.VISIBLE
-        binding.tvTtsBookTitle.text = epub?.metadata?.title?.ifBlank { null }
+        ttsOverlay.visibility = View.VISIBLE
+        tvTtsBookTitle.text = epub?.metadata?.title?.ifBlank { null }
             ?: bookEntity?.title
             ?: getString(R.string.app_name)
-        binding.tvTtsSection.text = sectionLabel()
+        tvTtsSection.text = sectionLabel()
         val playing = ttsController?.state == ReaderTtsController.State.PLAYING
         updateTtsControlsUi(playing)
         updateHistoryUi()
@@ -885,10 +919,10 @@ class ReaderActivity : AppCompatActivity() {
      *  visibility state it had when TTS was opened. Read-aloud itself is not
      *  stopped here. */
     private fun hideTtsOverlay() {
-        binding.ttsOverlay.visibility = View.GONE
+        ttsOverlay.visibility = View.GONE
         chromeVisible = ttsOverlayRestoresChrome
-        binding.topBar.visibility = if (chromeVisible) View.VISIBLE else View.GONE
-        binding.bottomBar.visibility = if (chromeVisible) View.VISIBLE else View.GONE
+        topBar.visibility = if (chromeVisible) View.VISIBLE else View.GONE
+        bottomBar.visibility = if (chromeVisible) View.VISIBLE else View.GONE
         binding.tvPageIndicator.visibility =
             if (!chromeVisible && !overlayVisible()) View.VISIBLE else View.GONE
         updateHistoryUi()
@@ -919,7 +953,7 @@ class ReaderActivity : AppCompatActivity() {
         ttsController?.stop()
         clearSpokenWordHighlight()
         ReaderTtsService.stop(this)
-        binding.tvTtsStatus.text = getString(R.string.action_read_aloud)
+        tvTtsStatus.text = getString(R.string.action_read_aloud)
         hideTtsOverlay()
     }
 
@@ -1264,12 +1298,12 @@ class ReaderActivity : AppCompatActivity() {
     }
 
     private fun setupChrome() {
-        binding.btnBack.setOnClickListener { finish() }
-        binding.btnToc.setOnClickListener { showTocBookmarks() }
-        binding.btnBookmarks.setOnClickListener { showTocBookmarks(selectBookmarks = true) }
-        binding.btnHighlights.setOnClickListener { showTocBookmarks(selectHighlights = true) }
-        binding.btnSearch.setOnClickListener { showSearchOverlay() }
-        binding.btnSettings.setOnClickListener { showSettings() }
+        btnBack.setOnClickListener { finish() }
+        btnToc.setOnClickListener { showTocBookmarks() }
+        btnBookmarks.setOnClickListener { showTocBookmarks(selectBookmarks = true) }
+        btnHighlights.setOnClickListener { showTocBookmarks(selectHighlights = true) }
+        btnSearch.setOnClickListener { showSearchOverlay() }
+        btnSettings.setOnClickListener { showSettings() }
         // Patch v37: the TTS transport lives in its own full-screen overlay now
         // (see showTtsOverlay / hideTtsOverlay). The top bar's speaker button
         // only opens that overlay (or starts playback if idle) — it no longer
@@ -1277,7 +1311,7 @@ class ReaderActivity : AppCompatActivity() {
         // button. The overlay's transport (play/pause, prev/next sentence, stop,
         // settings) is wired here. Speed + pitch sliders moved into
         // showTtsSettingsSheet so the overlay stays clean.
-        binding.btnReadAloud.setOnClickListener {
+        btnReadAloud.setOnClickListener {
             val state = ttsController?.state
             if (state == ReaderTtsController.State.PLAYING || state == ReaderTtsController.State.PAUSED) {
                 // Already running: bring the overlay back (it may have been
@@ -1288,29 +1322,29 @@ class ReaderActivity : AppCompatActivity() {
                 startTtsForCurrentChapter()
             }
         }
-        binding.btnTtsClose.setOnClickListener { hideTtsOverlay() }
-        binding.btnTtsPlayPause.setOnClickListener { ttsController?.togglePauseResume() }
-        binding.btnTtsPrev.setOnClickListener {
+        btnTtsClose.setOnClickListener { hideTtsOverlay() }
+        btnTtsPlayPause.setOnClickListener { ttsController?.togglePauseResume() }
+        btnTtsPrev.setOnClickListener {
             ttsController?.skipSentence(forward = false)
         }
-        binding.btnTtsNext.setOnClickListener {
+        btnTtsNext.setOnClickListener {
             ttsController?.skipSentence(forward = true)
         }
-        binding.btnTtsStop.setOnClickListener { stopTtsCompletely() }
-        binding.btnTtsSettings.setOnClickListener { showTtsSettingsSheet() }
+        btnTtsStop.setOnClickListener { stopTtsCompletely() }
+        btnTtsSettings.setOnClickListener { showTtsSettingsSheet() }
 
         // Seed the engine rate/pitch from app prefs as a fallback before the
         // per-book Room settings load (applyTtsSettings). The settings sheet is
         // the single place sliders are shown now.
         ttsController?.speechRate = ttsRateFor(prefs.ttsSpeedProgress)
         ttsController?.pitch = ttsPitchFor(prefs.ttsPitchProgress)
-        binding.tvAddBookmark.setOnClickListener { addBookmark() }
-        binding.readerHistoryBack.setOnClickListener { goBackInReaderHistory() }
-        binding.readerHistoryForward.setOnClickListener { goForwardInReaderHistory() }
-        binding.readerHistoryClear.setOnClickListener { clearReaderHistory() }
+        tvAddBookmark.setOnClickListener { addBookmark() }
+        readerHistoryBack.setOnClickListener { goBackInReaderHistory() }
+        readerHistoryForward.setOnClickListener { goForwardInReaderHistory() }
+        readerHistoryClear.setOnClickListener { clearReaderHistory() }
         updateHistoryUi()
 
-        binding.seekChapter.setOnSeekBarChangeListener(
+        seekChapter.setOnSeekBarChangeListener(
             object : SeekBar.OnSeekBarChangeListener {
 
                 override fun onStartTrackingTouch(sb: SeekBar?) {
@@ -1344,7 +1378,7 @@ class ReaderActivity : AppCompatActivity() {
         // actual touch coordinate before the normal OnStopTrackingTouch callback
         // resolves the seek. This preserves the existing tap behavior and avoids
         // intercepting the drag stream or issuing repeated WebView navigations.
-        binding.seekChapter.setOnTouchListener { view, event ->
+        seekChapter.setOnTouchListener { view, event ->
             val sb = view as SeekBar
             when (event.actionMasked) {
                 MotionEvent.ACTION_DOWN -> {
@@ -1508,7 +1542,7 @@ class ReaderActivity : AppCompatActivity() {
     }
 
     private fun sbProgressFallback(): Int? =
-        binding.seekChapter.progress.takeIf { binding.seekChapter.max >= 0 }
+        seekChapter.progress.takeIf { seekChapter.max >= 0 }
 
     private fun captureReaderLocation(): ReaderLocation? {
         if (spineIndex < 0 || spineIndex >= (epub?.spine?.size ?: 0)) return null
@@ -1597,13 +1631,13 @@ class ReaderActivity : AppCompatActivity() {
     private fun updateHistoryUi() {
         val hasBack = backHistory.isNotEmpty()
         val hasForward = forwardHistory.isNotEmpty()
-        binding.readerHistory.setBackgroundColor(readerColors().first)
+        readerHistory.setBackgroundColor(readerColors().first)
         val showHistory = (hasBack || hasForward) && chromeVisible && !overlayVisible()
-        binding.readerHistory.visibility = if (showHistory) View.VISIBLE else View.GONE
-        binding.readerHistoryBack.visibility = if (hasBack) View.VISIBLE else View.INVISIBLE
-        binding.readerHistoryForward.visibility = if (hasForward) View.VISIBLE else View.INVISIBLE
-        if (hasBack) binding.readerHistoryBack.text = getString(R.string.reader_history_back, historyPageLabel(backHistory.last()))
-        if (hasForward) binding.readerHistoryForward.text = getString(R.string.reader_history_forward, historyPageLabel(forwardHistory.last()))
+        readerHistory.visibility = if (showHistory) View.VISIBLE else View.GONE
+        readerHistoryBack.visibility = if (hasBack) View.VISIBLE else View.INVISIBLE
+        readerHistoryForward.visibility = if (hasForward) View.VISIBLE else View.INVISIBLE
+        if (hasBack) readerHistoryBack.text = getString(R.string.reader_history_back, historyPageLabel(backHistory.last()))
+        if (hasForward) readerHistoryForward.text = getString(R.string.reader_history_forward, historyPageLabel(forwardHistory.last()))
     }
     // Patch 16 (Issue #2): returns true if the confirmed tap landed on a link
     // inside the WebView. hitTestResult is queried immediately (the touch is
@@ -1675,8 +1709,8 @@ class ReaderActivity : AppCompatActivity() {
 
     private fun toggleChrome() {
         chromeVisible = !chromeVisible
-        binding.topBar.visibility = if (chromeVisible) View.VISIBLE else View.GONE
-        binding.bottomBar.visibility = if (chromeVisible) View.VISIBLE else View.GONE
+        topBar.visibility = if (chromeVisible) View.VISIBLE else View.GONE
+        bottomBar.visibility = if (chromeVisible) View.VISIBLE else View.GONE
         updateHistoryUi()
         binding.tvPageIndicator.visibility =
             if (!chromeVisible && !overlayVisible()) View.VISIBLE else View.GONE
@@ -1734,8 +1768,8 @@ class ReaderActivity : AppCompatActivity() {
                 // plus the book's language for multilingual TTS + dictionary.
                 applyTtsSettings()
                 perPageSeekerActive = false
-                binding.seekChapter.max = (parsed.spine.size - 1).coerceAtLeast(0)
-                binding.seekChapter.progress = spineIndex
+                seekChapter.max = (parsed.spine.size - 1).coerceAtLeast(0)
+                seekChapter.progress = spineIndex
                 loadChapter(spineIndex, resetRatio = false)
                 binding.tvPageIndicator.visibility = View.VISIBLE
 
@@ -1762,7 +1796,7 @@ class ReaderActivity : AppCompatActivity() {
 
     private fun bindBookHeader(book: EpubBook) {
         val m = book.metadata
-        binding.tvBookTitle.text = m.title.ifBlank { getString(R.string.reader_contents) }
+        tvBookTitle.text = m.title.ifBlank { getString(R.string.reader_contents) }
         val authorSeries = buildString {
             append(m.authorString)
             val s = m.series
@@ -1774,7 +1808,7 @@ class ReaderActivity : AppCompatActivity() {
                 }
             }
         }
-        binding.tvAuthorSeries.text = authorSeries
+        tvAuthorSeries.text = authorSeries
         binding.tvOverlayTitle.text = m.title.ifBlank { getString(R.string.reader_contents) }
     }
 
@@ -1930,7 +1964,7 @@ class ReaderActivity : AppCompatActivity() {
         // While per-page seeking is active the seeker's max is total pages, so
         // don't reset progress to a raw spine index here — syncSeekBarFromCurrentPage()
         // (called via the poller / reveal) keeps it on the right absolute page.
-        if (!perPageSeekerActive) binding.seekChapter.progress = index
+        if (!perPageSeekerActive) seekChapter.progress = index
         if (resetRatio) currentScrollRatio = 0f
         handler.removeCallbacks(alphaFallback)
 
@@ -1950,7 +1984,7 @@ class ReaderActivity : AppCompatActivity() {
             "UTF-8",
             null
         )
-        binding.tvSectionPages.text = sectionLabel()
+        tvSectionPages.text = sectionLabel()
 
         if (binding.tocBookmarkOverlay.visibility == View.VISIBLE) {
             highlightCurrentTocEntry()
@@ -2817,7 +2851,7 @@ body *:not(mark.livre-highlight):not(.livre-tts-word):not(.livre-tts-sentence) {
         val total = ReaderPageMapping.totalPages(counts)
         if (total <= 1) return
         perPageSeekerActive = true
-        binding.seekChapter.max = total - 1
+        seekChapter.max = total - 1
         syncSeekBarFromCurrentPage()
     }
 
@@ -2828,7 +2862,7 @@ body *:not(mark.livre-highlight):not(.livre-tts-word):not(.livre-tts-sentence) {
         // Seeker position = absolute synthetic book page (prefix + ratio-derived
         // page within the current spine), so it tracks reading position smoothly.
         val abs = currentAbsoluteBookPage()
-        binding.seekChapter.progress = abs.coerceIn(0, binding.seekChapter.max)
+        seekChapter.progress = abs.coerceIn(0, seekChapter.max)
     }
 
     /** Dragging the whole-book seeker: resolve the absolute rendered page to an
@@ -3202,7 +3236,7 @@ body *:not(mark.livre-highlight):not(.livre-tts-word):not(.livre-tts-sentence) {
         } else {
             ((spineIndex + currentScrollRatio) / book.spine.size).toFloat().coerceIn(0f, 1f)
         }
-        binding.tvPercent.text = "${(progress * 100).toInt()}%"
+        tvPercent.text = "${(progress * 100).toInt()}%"
         pendingProgressValue = progress
         pendingProgressSpine = spineIndex
         pendingProgressRatio = currentScrollRatio
@@ -3260,7 +3294,7 @@ body *:not(mark.livre-highlight):not(.livre-tts-word):not(.livre-tts-sentence) {
 
     private fun setPageText(text: String) {
         binding.tvPageIndicator.text = text
-        binding.tvPageInfo.text = text
+        tvPageInfo.text = text
     }
 
     /** Current rendered page within the current spine, using the page count that
@@ -3307,7 +3341,7 @@ body *:not(mark.livre-highlight):not(.livre-tts-word):not(.livre-tts-sentence) {
             val cur = (prior + current + 1).coerceIn(1, total)
             "$label - $cur/$total"
         }
-        binding.tvSectionPages.text = text
+        tvSectionPages.text = text
     }
 
     // ---------------------------------------------------------------- TOC + Bookmarks overlay
@@ -3320,6 +3354,9 @@ body *:not(mark.livre-highlight):not(.livre-tts-word):not(.livre-tts-sentence) {
     private var highlightRv: RecyclerView? = null
     private var highlightEmpty: TextView? = null
     private var highlightObserverStarted = false
+    private var tocContainer: View? = null
+    private var bookmarkContainer: View? = null
+    private var highlightContainer: View? = null
     private var pendingHighlightId: Long? = null
     private var pendingHighlightHistoryLocation: ReaderLocation? = null
     private var activeOverlayTab: Int = 0
@@ -3335,6 +3372,7 @@ body *:not(mark.livre-highlight):not(.livre-tts-word):not(.livre-tts-sentence) {
         val root = binding.overlayContent
         if (tocRv == null) {
             val tocView = LayoutInflater.from(this).inflate(R.layout.overlay_list, root, false)
+            tocContainer = tocView
             tocRv = tocView.findViewById(R.id.recycler)
             tocEmpty = tocView.findViewById(R.id.emptyText)
             tocRv!!.layoutManager = LinearLayoutManager(this)
@@ -3345,6 +3383,7 @@ body *:not(mark.livre-highlight):not(.livre-tts-word):not(.livre-tts-sentence) {
             root.addView(tocView)
 
             val bmView = LayoutInflater.from(this).inflate(R.layout.overlay_list, root, false)
+            bookmarkContainer = bmView
             bookmarkRv = bmView.findViewById(R.id.recycler)
             bookmarkEmpty = bmView.findViewById(R.id.emptyText)
             bookmarkRv!!.layoutManager = LinearLayoutManager(this)
@@ -3369,14 +3408,37 @@ body *:not(mark.livre-highlight):not(.livre-tts-word):not(.livre-tts-sentence) {
             root.addView(bmView)
 
             // Highlights list
-            val hlView = LayoutInflater.from(this).inflate(R.layout.overlay_list, root, false)
+            val hlView = LayoutInflater.from(this).inflate(R.layout.overlay_highlights, root, false)
             highlightRv = hlView.findViewById(R.id.recycler)
             highlightEmpty = hlView.findViewById(R.id.emptyText)
             highlightRv!!.layoutManager = LinearLayoutManager(this)
-            highlightRv!!.adapter = HighlightListAdapter(
+
+            val filterAll = hlView.findViewById<com.google.android.material.button.MaterialButton>(R.id.filterAll)
+            val filterYellow = hlView.findViewById<View>(R.id.filterYellow)
+            val filterRed = hlView.findViewById<View>(R.id.filterRed)
+            val filterGreen = hlView.findViewById<View>(R.id.filterGreen)
+            val filterPurple = hlView.findViewById<View>(R.id.filterPurple)
+            val btnCopyAll = hlView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnCopyAll)
+
+            var selectedColorFilter: Int? = null
+
+            var allHighlights: List<HighlightEntity> = emptyList()
+
+            val adapter = HighlightListAdapter(
                 onClick = { h ->
                     goToHighlight(h)
                     hideOverlays()
+                },
+                onEditNote = { h, note ->
+                    lifecycleScope.launch(Dispatchers.IO) {
+                        readerViewModel.persistence.updateHighlightNote(h.id, note)
+                    }
+                    Snackbar.make(binding.root, R.string.highlight_note_saved, Snackbar.LENGTH_SHORT).show()
+                },
+                getChapterInfo = { h ->
+                    val book = epub
+                    val idx = book?.spine?.indexOfFirst { it.href == h.spineHref } ?: 0
+                    tocSectionMap[idx] ?: getString(R.string.reader_chapter, idx + 1)
                 },
                 onDelete = { h ->
                     lifecycleScope.launch(Dispatchers.IO) {
@@ -3399,8 +3461,93 @@ body *:not(mark.livre-highlight):not(.livre-tts-word):not(.livre-tts-sentence) {
                                 .show()
                         }
                     }
-                },
+                }
             )
+            highlightRv!!.adapter = adapter
+
+            fun updateFilterUi(activeView: View) {
+                val filters = listOf(filterAll, filterYellow, filterRed, filterGreen, filterPurple)
+                filters.forEach { v ->
+                    val isSelected = (v === activeView)
+                    v.alpha = if (isSelected) 1.0f else 0.6f
+                    if (v !== filterAll) {
+                        val baseColor = when (v.id) {
+                            R.id.filterYellow -> HIGHLIGHT_YELLOW
+                            R.id.filterRed -> HIGHLIGHT_PURPLE
+                            R.id.filterGreen -> HIGHLIGHT_GREEN
+                            R.id.filterPurple -> HIGHLIGHT_BLUE
+                            else -> HIGHLIGHT_YELLOW
+                        }
+                        val drawable = android.graphics.drawable.GradientDrawable().apply {
+                            shape = android.graphics.drawable.GradientDrawable.OVAL
+                            setColor(baseColor)
+                            if (isSelected) {
+                                setStroke(4, getColor(R.color.palette_violet))
+                            }
+                        }
+                        v.background = drawable
+                    }
+                }
+            }
+            updateFilterUi(filterAll)
+
+            if (!highlightObserverStarted) {
+                highlightObserverStarted = true
+                readerViewModel.persistence.observeHighlights(bookId).asLiveData().observe(this) { list ->
+                    allHighlights = list
+                    val filtered = if (selectedColorFilter == null) list else list.filter { it.color == selectedColorFilter }
+                    adapter.submitList(filtered)
+                    filterAll.text = getString(R.string.filter_all_count, list.size)
+                    if (activeOverlayTab == binding.btnTabHighlights.id) {
+                        highlightEmpty?.visibility = if (filtered.isEmpty()) View.VISIBLE else View.GONE
+                    }
+                }
+            }
+
+            filterAll.setOnClickListener {
+                selectedColorFilter = null
+                adapter.submitList(allHighlights)
+                highlightEmpty?.visibility = if (allHighlights.isEmpty()) View.VISIBLE else View.GONE
+                updateFilterUi(filterAll)
+            }
+            filterYellow.setOnClickListener {
+                selectedColorFilter = HIGHLIGHT_YELLOW
+                val filtered = allHighlights.filter { it.color == HIGHLIGHT_YELLOW }
+                adapter.submitList(filtered)
+                highlightEmpty?.visibility = if (filtered.isEmpty()) View.VISIBLE else View.GONE
+                updateFilterUi(filterYellow)
+            }
+            filterRed.setOnClickListener {
+                selectedColorFilter = HIGHLIGHT_PURPLE
+                val filtered = allHighlights.filter { it.color == HIGHLIGHT_PURPLE }
+                adapter.submitList(filtered)
+                highlightEmpty?.visibility = if (filtered.isEmpty()) View.VISIBLE else View.GONE
+                updateFilterUi(filterRed)
+            }
+            filterGreen.setOnClickListener {
+                selectedColorFilter = HIGHLIGHT_GREEN
+                val filtered = allHighlights.filter { it.color == HIGHLIGHT_GREEN }
+                adapter.submitList(filtered)
+                highlightEmpty?.visibility = if (filtered.isEmpty()) View.VISIBLE else View.GONE
+                updateFilterUi(filterGreen)
+            }
+            filterPurple.setOnClickListener {
+                selectedColorFilter = HIGHLIGHT_BLUE
+                val filtered = allHighlights.filter { it.color == HIGHLIGHT_BLUE }
+                adapter.submitList(filtered)
+                highlightEmpty?.visibility = if (filtered.isEmpty()) View.VISIBLE else View.GONE
+                updateFilterUi(filterPurple)
+            }
+            btnCopyAll.setOnClickListener {
+                val list = adapter.currentList
+                val sb = StringBuilder()
+                list.forEach { h -> sb.append("\"").append(h.text).append("\"\n\n") }
+                val clipboard = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
+                clipboard.setPrimaryClip(ClipData.newPlainText("Highlights", sb.toString()))
+                Snackbar.make(binding.root, "All highlights copied to clipboard", Snackbar.LENGTH_SHORT).show()
+            }
+
+            highlightContainer = hlView
             root.addView(hlView)
         }
         val tocAdapter =
@@ -3448,8 +3595,8 @@ body *:not(mark.livre-highlight):not(.livre-tts-word):not(.livre-tts-sentence) {
         applyOverlayTab(initialTab)
 
         chromeVisible = false
-        binding.topBar.visibility = View.GONE
-        binding.bottomBar.visibility = View.GONE
+        topBar.visibility = View.GONE
+        bottomBar.visibility = View.GONE
         binding.tvPageIndicator.visibility = View.GONE
         binding.tocBookmarkOverlay.visibility = View.VISIBLE
         updateHistoryUi()
@@ -3465,33 +3612,30 @@ body *:not(mark.livre-highlight):not(.livre-tts-word):not(.livre-tts-sentence) {
     }
 
     private fun applyOverlayTab(checkedId: Int) {
+        (highlightRv?.adapter as? HighlightListAdapter)?.clearEditingState(this)
+        val imm = getSystemService(INPUT_METHOD_SERVICE) as? android.view.inputmethod.InputMethodManager
+        imm?.hideSoftInputFromWindow(binding.root.windowToken, 0)
+
         activeOverlayTab = checkedId
         val isBookmarks = checkedId == binding.btnTabBookmarks.id
         val isHighlights = checkedId == binding.btnTabHighlights.id
         bookmarksTabActive = isBookmarks
         val tocEmpty = epub?.toc.isNullOrEmpty()
+
+        tocContainer?.visibility = View.GONE
+        bookmarkContainer?.visibility = View.GONE
+        highlightContainer?.visibility = View.GONE
+
         if (isBookmarks) {
-            tocRv?.visibility = View.GONE
-            this.tocEmpty?.visibility = View.GONE
-            highlightRv?.visibility = View.GONE
-            highlightEmpty?.visibility = View.GONE
-            bookmarkRv?.visibility = View.VISIBLE
+            bookmarkContainer?.visibility = View.VISIBLE
             val bmEmpty = (bookmarkAdapter?.currentList?.isEmpty() != false)
             this.bookmarkEmpty?.visibility = if (bmEmpty) View.VISIBLE else View.GONE
         } else if (isHighlights) {
-            tocRv?.visibility = View.GONE
-            this.tocEmpty?.visibility = View.GONE
-            bookmarkRv?.visibility = View.GONE
-            this.bookmarkEmpty?.visibility = View.GONE
-            highlightRv?.visibility = View.VISIBLE
+            highlightContainer?.visibility = View.VISIBLE
             val hlEmpty = ((highlightRv?.adapter as? HighlightListAdapter)?.currentList?.isEmpty() != false)
             highlightEmpty?.visibility = if (hlEmpty) View.VISIBLE else View.GONE
         } else {
-            bookmarkRv?.visibility = View.GONE
-            this.bookmarkEmpty?.visibility = View.GONE
-            highlightRv?.visibility = View.GONE
-            highlightEmpty?.visibility = View.GONE
-            tocRv?.visibility = View.VISIBLE
+            tocContainer?.visibility = View.VISIBLE
             this.tocEmpty?.visibility = if (tocEmpty) View.VISIBLE else View.GONE
         }
     }
@@ -3531,8 +3675,8 @@ body *:not(mark.livre-highlight):not(.livre-tts-word):not(.livre-tts-sentence) {
             true
         }
         chromeVisible = false
-        binding.topBar.visibility = View.GONE
-        binding.bottomBar.visibility = View.GONE
+        topBar.visibility = View.GONE
+        bottomBar.visibility = View.GONE
         binding.tvPageIndicator.visibility = View.GONE
         binding.searchOverlay.visibility = View.VISIBLE
         updateHistoryUi()
@@ -3763,6 +3907,10 @@ body *:not(mark.livre-highlight):not(.livre-tts-word):not(.livre-tts-sentence) {
         binding.tocBookmarkOverlay.visibility == View.VISIBLE || binding.searchOverlay.visibility == View.VISIBLE
 
     private fun hideOverlays() {
+        (highlightRv?.adapter as? HighlightListAdapter)?.clearEditingState(this)
+        val imm = getSystemService(INPUT_METHOD_SERVICE) as? android.view.inputmethod.InputMethodManager
+        imm?.hideSoftInputFromWindow(binding.root.windowToken, 0)
+
         binding.tocBookmarkOverlay.visibility = View.GONE
         binding.searchOverlay.visibility = View.GONE
         bookmarksTabActive = false
@@ -3786,8 +3934,12 @@ body *:not(mark.livre-highlight):not(.livre-tts-word):not(.livre-tts-sentence) {
         binding.overlayTabGroup.addOnButtonCheckedListener { group, checkedId, isChecked ->
             if (isChecked && checkedId != View.NO_ID) applyOverlayTab(checkedId)
         }
-        // Capture taps so they don't fall through to the WebView.
-        binding.tocBookmarkOverlay.setOnClickListener { }
+        // Capture taps so they don't fall through to the WebView, and dismiss keyboard/note input.
+        binding.tocBookmarkOverlay.setOnClickListener {
+            (highlightRv?.adapter as? HighlightListAdapter)?.clearEditingState(this)
+            val imm = getSystemService(INPUT_METHOD_SERVICE) as? android.view.inputmethod.InputMethodManager
+            imm?.hideSoftInputFromWindow(binding.root.windowToken, 0)
+        }
         binding.searchOverlay.setOnClickListener { }
     }
 
@@ -3798,7 +3950,7 @@ body *:not(mark.livre-highlight):not(.livre-tts-word):not(.livre-tts-sentence) {
                     hideOverlays()
                 } else if (binding.tocBookmarkOverlay.visibility == View.VISIBLE) {
                     hideOverlays()
-                } else if (binding.ttsOverlay.visibility == View.VISIBLE) {
+                } else if (ttsOverlay.visibility == View.VISIBLE) {
                     hideTtsOverlay()
                 } else if (chromeVisible) {
                     toggleChrome()
@@ -3886,8 +4038,8 @@ body *:not(mark.livre-highlight):not(.livre-tts-word):not(.livre-tts-sentence) {
         chapterPageCounts = IntArray(spineSize) { -1 }
         perPageSeekerActive = false
         if (spineSize > 0) {
-            binding.seekChapter.max = (spineSize - 1).coerceAtLeast(0)
-            binding.seekChapter.progress = spineIndex.coerceIn(0, spineSize - 1)
+            seekChapter.max = (spineSize - 1).coerceAtLeast(0)
+            seekChapter.progress = spineIndex.coerceIn(0, spineSize - 1)
         }
         restoreRatio = if (pendingReflowAnchor == null) currentScrollRatio else null
         loadChapter(spineIndex, resetRatio = false)
@@ -3944,13 +4096,13 @@ body *:not(mark.livre-highlight):not(.livre-tts-word):not(.livre-tts-sentence) {
         // top/bottom bars don't appear alongside the overlay.
         if (overlayVisible()) {
             chromeVisible = false
-            binding.topBar.visibility = View.GONE
-            binding.bottomBar.visibility = View.GONE
+            topBar.visibility = View.GONE
+            bottomBar.visibility = View.GONE
             binding.tvPageIndicator.visibility = View.GONE
         }
         // Same for the TTS panel: if it's visible, keep the bottom bar hidden.
-        if (binding.ttsOverlay.visibility == View.VISIBLE) {
-            binding.bottomBar.visibility = View.GONE
+        if (ttsOverlay.visibility == View.VISIBLE) {
+            bottomBar.visibility = View.GONE
         }
     }
 
@@ -4621,7 +4773,15 @@ body *:not(mark.livre-highlight):not(.livre-tts-word):not(.livre-tts-sentence) {
             // Patch v37: suppress the page-turn / chrome-toggle that the
             // GestureDetector would otherwise fire for this tap.
             suppressReaderTap()
-            runOnUiThread { showHighlightNoteSheet(id) }
+            lifecycleScope.launch(Dispatchers.IO) {
+                val repo = com.epubreader.app.data.BookRepository(applicationContext)
+                val href = epub?.spine?.getOrNull(spineIndex)?.href ?: return@launch
+                val highlights = repo.getHighlightsForChapter(bookId, href)
+                val highlight = highlights.find { it.id == id } ?: return@launch
+                withContext(Dispatchers.Main) {
+                    showHighlightDetailDialog(highlight)
+                }
+            }
         }
     }
 
@@ -5096,101 +5256,122 @@ body *:not(mark.livre-highlight):not(.livre-tts-word):not(.livre-tts-sentence) {
         )
     }
 
-    /** Shows a bottom sheet for viewing a highlight and adding/editing a note. */
-    private fun showHighlightNoteSheet(highlightId: Long) {
-        lifecycleScope.launch(Dispatchers.IO) {
-            val repo = com.epubreader.app.data.BookRepository(applicationContext)
-            // Find the highlight by loading all highlights for this book and finding by id.
-            val href = epub?.spine?.getOrNull(spineIndex)?.href ?: return@launch
-            val highlights = repo.getHighlightsForChapter(bookId, href)
-            val highlight = highlights.find { it.id == highlightId } ?: return@launch
-            withContext(Dispatchers.Main) {
-                val dialog = BottomSheetDialog(this@ReaderActivity)
-                val root = LinearLayout(this@ReaderActivity).apply {
-                    orientation = LinearLayout.VERTICAL
-                    val pad = (16 * resources.displayMetrics.density).roundToInt()
-                    setPadding(pad, pad, pad, pad)
-                }
-                // Highlighted text
-                root.addView(TextView(this@ReaderActivity).apply {
-                    text = highlight.text
-                    textSize = 15f
-                    setTextColor(themeColor(android.R.attr.textColorPrimary))
-                    setPadding(0, 0, 0, (12 * resources.displayMetrics.density).roundToInt())
-                })
-                // Existing note (if any)
-                if (!highlight.note.isNullOrBlank()) {
-                    root.addView(TextView(this@ReaderActivity).apply {
-                        text = highlight.note
-                        textSize = 14f
-                        setTextColor(themeColor(android.R.attr.textColorSecondary))
-                        setPadding(0, 0, 0, (12 * resources.displayMetrics.density).roundToInt())
-                    })
-                }
-                // Note input
-                val input = android.widget.EditText(this@ReaderActivity).apply {
-                    hint = getString(R.string.highlight_note_hint)
-                    setText(highlight.note ?: "")
-                    setSingleLine(false)
-                    minLines = 2
-                    maxLines = 4
-                }
-                root.addView(input)
-                // Button row
-                val btnRow = LinearLayout(this@ReaderActivity).apply {
-                    orientation = LinearLayout.HORIZONTAL
-                    gravity = android.view.Gravity.END
-                    setPadding(0, (12 * resources.displayMetrics.density).roundToInt(), 0, 0)
-                }
-                btnRow.addView(com.google.android.material.button.MaterialButton(this@ReaderActivity).apply {
-                    text = getString(R.string.delete)
-                    setOnClickListener {
-                        dialog.dismiss()
-                        lifecycleScope.launch(Dispatchers.IO) {
-                            repo.deleteHighlight(highlight)
-                            withContext(Dispatchers.Main) {
-                                removeHighlightDecorationsFromWebView(highlightId)
-                                Snackbar
-                                    .make(binding.root, R.string.highlight_deleted, Snackbar.LENGTH_LONG)
-                                    .setAction(R.string.undo) {
-                                        lifecycleScope.launch(Dispatchers.IO) {
-                                            repo.addHighlight(highlight)
-                                            withContext(Dispatchers.Main) {
-                                                val currentHref = epub?.spine?.getOrNull(spineIndex)?.href
-                                                if (currentHref == highlight.spineHref) {
-                                                    injectHighlightIntoWebView(highlight.id, highlight.text, highlight.prefix, highlight.suffix, highlight.color, highlight.startPath, highlight.endPath, highlight.startOffset, highlight.endOffset)
-                                                }
-                                            }
-                                        }
-                                    }
-                                    .show()
-                            }
-                        }
-                    }
-                })
-                btnRow.addView(com.google.android.material.button.MaterialButton(this@ReaderActivity).apply {
-                    text = getString(R.string.ok)
-                    // Patch v37: add spacing between Delete and OK so they're
-                    // not cramped together.
-                    layoutParams = LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.WRAP_CONTENT,
-                        LinearLayout.LayoutParams.WRAP_CONTENT,
-                    ).apply {
-                        marginStart = resources.getDimensionPixelSize(R.dimen.app_section_spacing)
-                    }
-                    setOnClickListener {
-                        val note = input.text.toString().trim().ifEmpty { null }
-                        dialog.dismiss()
-                        lifecycleScope.launch(Dispatchers.IO) {
-                            repo.updateHighlightNote(highlightId, note)
-                        }
-                        Snackbar.make(binding.root, R.string.highlight_note_saved, Snackbar.LENGTH_SHORT).show()
-                    }
-                })
-                root.addView(btnRow)
-                dialog.setContentView(root)
-                dialog.show()
+    /** Shows a popup card for viewing a highlight and adding/editing a note. */
+    private fun showHighlightDetailDialog(h: HighlightEntity) {
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_highlight_detail, null)
+        val dialog = androidx.appcompat.app.AlertDialog.Builder(this)
+            .setView(dialogView)
+            .create()
+        dialog.window?.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(Color.TRANSPARENT))
+
+        val colorDot: View = dialogView.findViewById(R.id.detailColorDot)
+        val detailLeftAccentBar: View = dialogView.findViewById(R.id.detailLeftAccentBar)
+        val detailTextContainer: View = dialogView.findViewById(R.id.detailTextContainer)
+        val detailHighlightText: TextView = dialogView.findViewById(R.id.detailHighlightText)
+        val btnAddEditNote: TextView = dialogView.findViewById(R.id.btnAddEditNote)
+        val detailNoNoteText: TextView = dialogView.findViewById(R.id.detailNoNoteText)
+        val detailNoteTextContainer: View = dialogView.findViewById(R.id.detailNoteTextContainer)
+        val detailNoteTextDisplay: TextView = dialogView.findViewById(R.id.detailNoteTextDisplay)
+        val layoutDetailNoteInput: LinearLayout = dialogView.findViewById(R.id.layoutDetailNoteInput)
+        val etDetailNoteInput: EditText = dialogView.findViewById(R.id.etDetailNoteInput)
+        val btnDetailCancelNote: MaterialButton = dialogView.findViewById(R.id.btnDetailCancelNote)
+        val btnDetailSaveNote: MaterialButton = dialogView.findViewById(R.id.btnDetailSaveNote)
+        val btnDetailDelete: MaterialButton = dialogView.findViewById(R.id.btnDetailDelete)
+        val btnDetailClose: MaterialButton = dialogView.findViewById(R.id.btnDetailClose)
+        val btnCloseDetail: ImageButton = dialogView.findViewById(R.id.btnCloseDetail)
+
+        val r = android.graphics.Color.red(h.color)
+        val g = android.graphics.Color.green(h.color)
+        val b = android.graphics.Color.blue(h.color)
+        val baseColor = android.graphics.Color.rgb(r, g, b)
+
+        val dotShape = android.graphics.drawable.GradientDrawable().apply {
+            shape = android.graphics.drawable.GradientDrawable.OVAL
+            setColor(baseColor)
+        }
+        colorDot.background = dotShape
+        detailLeftAccentBar.setBackgroundColor(baseColor)
+
+        val lightTint = (h.color and 0x00FFFFFF) or 0x33000000
+        detailTextContainer.background = android.graphics.drawable.GradientDrawable().apply {
+            cornerRadius = 8f * resources.displayMetrics.density
+            setColor(lightTint)
+        }
+
+        val formatted = "\"${h.text}\""
+        detailHighlightText.text = android.text.Html.fromHtml("<i>$formatted</i>", android.text.Html.FROM_HTML_MODE_LEGACY)
+
+        val imm = getSystemService(INPUT_METHOD_SERVICE) as? android.view.inputmethod.InputMethodManager
+
+        fun updateNoteUi(noteStr: String?) {
+            layoutDetailNoteInput.visibility = View.GONE
+            if (!noteStr.isNullOrBlank()) {
+                detailNoNoteText.visibility = View.GONE
+                detailNoteTextContainer.visibility = View.VISIBLE
+                detailNoteTextDisplay.text = noteStr
+                btnAddEditNote.text = getString(R.string.edit_note)
+            } else {
+                detailNoNoteText.visibility = View.VISIBLE
+                detailNoteTextContainer.visibility = View.GONE
+                btnAddEditNote.text = getString(R.string.add_note)
             }
         }
+        updateNoteUi(h.note)
+
+        btnAddEditNote.setOnClickListener {
+            layoutDetailNoteInput.visibility = View.VISIBLE
+            detailNoNoteText.visibility = View.GONE
+            detailNoteTextContainer.visibility = View.GONE
+            etDetailNoteInput.setText(h.note ?: "")
+            etDetailNoteInput.requestFocus()
+            imm?.showSoftInput(etDetailNoteInput, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT)
+        }
+        btnDetailCancelNote.setOnClickListener {
+            imm?.hideSoftInputFromWindow(etDetailNoteInput.windowToken, 0)
+            updateNoteUi(h.note)
+        }
+        btnDetailSaveNote.setOnClickListener {
+            imm?.hideSoftInputFromWindow(etDetailNoteInput.windowToken, 0)
+            val newNote = etDetailNoteInput.text.toString().trim().ifEmpty { null }
+            lifecycleScope.launch(Dispatchers.IO) {
+                readerViewModel.persistence.updateHighlightNote(h.id, newNote)
+            }
+            Snackbar.make(binding.root, R.string.highlight_note_saved, Snackbar.LENGTH_SHORT).show()
+            dialog.dismiss()
+        }
+        btnDetailDelete.setOnClickListener {
+            imm?.hideSoftInputFromWindow(etDetailNoteInput.windowToken, 0)
+            dialog.dismiss()
+            lifecycleScope.launch(Dispatchers.IO) {
+                readerViewModel.persistence.deleteHighlight(h)
+                withContext(Dispatchers.Main) {
+                    removeHighlightDecorationsFromWebView(h.id)
+                    Snackbar
+                        .make(binding.root, R.string.highlight_deleted, Snackbar.LENGTH_LONG)
+                        .setAction(R.string.undo) {
+                            lifecycleScope.launch(Dispatchers.IO) {
+                                readerViewModel.persistence.addHighlight(h)
+                                withContext(Dispatchers.Main) {
+                                    val currentHref = epub?.spine?.getOrNull(spineIndex)?.href
+                                    if (currentHref == h.spineHref) {
+                                        injectHighlightIntoWebView(h.id, h.text, h.prefix, h.suffix, h.color, h.startPath, h.endPath, h.startOffset, h.endOffset)
+                                    }
+                                }
+                            }
+                        }
+                        .show()
+                }
+            }
+        }
+        btnCloseDetail.setOnClickListener {
+            imm?.hideSoftInputFromWindow(etDetailNoteInput.windowToken, 0)
+            dialog.dismiss()
+        }
+        btnDetailClose.setOnClickListener {
+            imm?.hideSoftInputFromWindow(etDetailNoteInput.windowToken, 0)
+            dialog.dismiss()
+        }
+
+        dialog.show()
     }
 }

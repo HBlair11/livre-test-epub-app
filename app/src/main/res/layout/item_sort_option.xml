@@ -4,13 +4,13 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:background="?attr/selectableItemBackground"
+    android:background="@drawable/item_background_borderless_material"
     android:clickable="true"
     android:focusable="true"
     android:gravity="center_vertical"
     android:minHeight="48dp"
-    android:paddingStart="24dp"
-    android:paddingEnd="24dp">
+    android:paddingStart="@dimen/app_row_content_padding_h"
+    android:paddingEnd="@dimen/app_row_content_padding_h">
 
     <TextView
         android:id="@+id/title"
@@ -20,11 +20,20 @@
         android:textColor="@color/palette_mint"
         android:textSize="15sp" />
 
+    <TextView
+        android:id="@+id/direction"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/palette_violet"
+        android:textSize="13sp"
+        android:visibility="gone" />
+
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/check"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
+        android:layout_width="@dimen/app_row_content_padding_h"
+        android:layout_height="@dimen/app_row_content_padding_h"
         android:contentDescription="@string/confirm"
         app:srcCompat="@drawable/ic_check"
-        app:tint="@color/accent" />
+        app:tint="@color/palette_violet"
+        android:visibility="gone" />
 </LinearLayout>

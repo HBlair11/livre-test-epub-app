@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    android:background="?android:colorBackground">
+    android:background="@color/palette_eggplant">
 
     <!-- ========================================================= -->
     <!-- TOOLBAR -->
@@ -14,7 +14,7 @@
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="?attr/colorSurface"
+        android:background="@color/palette_plum"
         app:elevation="0dp">
 
         <com.google.android.material.appbar.MaterialToolbar
@@ -30,416 +30,641 @@
 
 
     <!-- ========================================================= -->
-    <!-- CONTENT -->
+    <!-- MAIN CONTENT -->
     <!-- ========================================================= -->
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fillViewport="true"
-        android:background="?android:colorBackground"
+        android:background="@color/palette_eggplant"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingBottom="24dp">
+            android:paddingStart="@dimen/app_row_content_padding_h"
+            android:paddingEnd="@dimen/app_row_content_padding_h"
+            android:paddingTop="16dp"
+            android:paddingBottom="36dp">
 
-
-            <!-- ================================================= -->
-            <!-- BOOK COVER -->
-            <!-- ================================================= -->
-
-            <FrameLayout
-                android:layout_width="match_parent"
+            <!-- Hidden / legacy compatibility labels -->
+            <TextView
+                android:id="@+id/bookNameLabel"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:paddingStart="@dimen/app_row_content_padding_h"
-                android:paddingEnd="@dimen/app_row_content_padding_h"
-                android:paddingTop="8dp"
-                android:paddingBottom="4dp">
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/bookValue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/bookAuthorLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/bookSeriesLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/bookFilenameLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/bookSizeLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/bookLanguageLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/publishYearLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/subjectsLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/bookAddedLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone" />
+
+            <!-- ================================================= -->
+            <!-- SECTION A TOP: HERO COVER, TITLE, AUTHOR, SERIES -->
+            <!-- ================================================= -->
+
+            <!-- Book Cover Thumbnail with Material Card Wrapper -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="250dp"
+                android:layout_height="400dp"
+                android:layout_gravity="center_horizontal"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="6dp"
+                app:cardUseCompatPadding="true"
+                app:strokeWidth="0dp"
+                app:shapeAppearanceOverlay="@style/ShapeAppearance.LeftSideRounded"
+                app:cardPreventCornerOverlap="false">
 
                 <ImageView
                     android:id="@+id/cover"
-                    android:layout_width="wrap_content"
-                    android:layout_height="450dp"
-                    android:layout_gravity="start"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
                     android:adjustViewBounds="true"
                     android:contentDescription="@string/book_cover"
-                    android:scaleType="fitCenter" />
+                    android:scaleType="centerCrop" />
 
-            </FrameLayout>
+            </com.google.android.material.card.MaterialCardView>
 
-
-            <!-- ================================================= -->
-            <!-- BOOK TITLE -->
-            <!-- ================================================= -->
-
+            <!-- Book Title -->
             <TextView
                 android:id="@+id/title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/app_row_content_padding_h"
-                android:layout_marginTop="12dp"
-                android:layout_marginEnd="@dimen/app_row_content_padding_h"
-                android:gravity="start"
+                android:layout_marginTop="16dp"
+                android:gravity="center"
                 android:textColor="@color/palette_mint"
-                android:textSize="26sp"
+                android:textSize="24sp"
                 android:textStyle="bold"
                 android:textAllCaps="true" />
 
-
-            <!-- ================================================= -->
-            <!-- ACTIONS -->
-            <!-- ================================================= -->
-
-            <LinearLayout
+            <!-- Book Author -->
+            <TextView
+                android:id="@+id/authorValue"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/app_row_content_padding_h"
-                android:layout_marginTop="10dp"
-                android:layout_marginEnd="@dimen/app_row_content_padding_h"
-                android:gravity="start"
-                android:orientation="horizontal">
+                android:layout_marginTop="6dp"
+                android:gravity="center"
+                android:textColor="@color/palette_slate"
+                android:textSize="16sp"
+                android:textStyle="bold" />
 
-                <!-- Read -->
-
-                <ImageButton
-                    android:id="@+id/btnRead"
-                    android:layout_width="0dp"
-                    android:layout_height="48dp"
-                    android:layout_weight="1"
-                    android:background="@drawable/item_background_borderless_material"
-                    android:contentDescription="@string/option_open"
-                    android:padding="10dp"
-                    android:src="@drawable/ic_menu_book"
-                    app:tint="@color/palette_mint" />
-
-                <!-- Favorite -->
-
-                <ImageButton
-                    android:id="@+id/btnFavorite"
-                    android:layout_width="0dp"
-                    android:layout_height="48dp"
-                    android:layout_weight="1"
-                    android:background="@drawable/item_background_borderless_material"
-                    android:contentDescription="@string/option_favorite"
-                    android:padding="10dp"
-                    android:src="@drawable/ic_favorite_border"
-                    app:tint="@color/palette_mint" />
-
-                <!-- Remove from Reading -->
-
-                <ImageButton
-                    android:id="@+id/btnEditDetails"
-                    android:layout_width="0dp"
-                    android:layout_height="48dp"
-                    android:layout_weight="1"
-                    android:background="@drawable/item_background_borderless_material"
-                    android:contentDescription="@string/option_edit_details"
-                    android:padding="10dp"
-                    android:src="@drawable/ic_edit"
-                    app:tint="@color/palette_mint" />
-
-                <ImageButton
-                    android:id="@+id/btnRemoveReading"
-                    android:layout_width="0dp"
-                    android:layout_height="48dp"
-                    android:layout_weight="1"
-                    android:background="@drawable/item_background_borderless_material"
-                    android:contentDescription="@string/option_remove_reading"
-                    android:padding="10dp"
-                    android:src="@drawable/ic_remove_reading"
-                    app:tint="@color/palette_mint" />
-
-                <!-- Remove from Library -->
-
-                <ImageButton
-                    android:id="@+id/btnRemove"
-                    android:layout_width="0dp"
-                    android:layout_height="48dp"
-                    android:layout_weight="1"
-                    android:background="@drawable/item_background_borderless_material"
-                    android:contentDescription="@string/option_remove"
-                    android:padding="10dp"
-                    android:src="@drawable/ic_delete"
-                    app:tint="@color/pop" />
-
-            </LinearLayout>
-
-
-            <!-- ================================================= -->
-            <!-- BORDER -->
-            <!-- ================================================= -->
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="0.5dp"
-                android:layout_marginStart="@dimen/app_row_content_padding_h"
-                android:layout_marginTop="12dp"
-                android:layout_marginEnd="@dimen/app_row_content_padding_h"
-                android:background="@color/light_border" />
-
-
-            <!-- ================================================= -->
-            <!-- BOOK INFORMATION -->
-            <!-- ================================================= -->
-
+            <!-- Series Container -->
             <LinearLayout
+                android:id="@+id/seriesContainer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/app_row_content_padding_h"
-                android:layout_marginTop="8dp"
-                android:layout_marginEnd="@dimen/app_row_content_padding_h"
-                android:orientation="vertical">
-
-
-                <!-- BOOK -->
-
-                <TextView
-                    android:id="@+id/bookNameLabel"
-                    style="@style/ReaderSettingLabel"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="@string/book_name" />
-
-                <TextView
-                    android:id="@+id/bookValue"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:textColor="@color/palette_mint"
-                    android:textSize="15sp" />
-
-
-                <!-- AUTHOR -->
-
-                <TextView
-                    android:id="@+id/bookAuthorLabel"
-                    style="@style/ReaderSettingLabel"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:text="@string/book_author" />
-
-                <TextView
-                    android:id="@+id/authorValue"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:textColor="@color/palette_mint"
-                    android:textSize="15sp" />
-
-
-                <!-- SERIES -->
-
-                <LinearLayout
-                    android:id="@+id/seriesContainer"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:id="@+id/bookSeriesLabel"
-                        style="@style/ReaderSettingLabel"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:text="@string/book_series" />
-
-                    <TextView
-                        android:id="@+id/seriesValue"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="2dp"
-                        android:textColor="@color/palette_mint"
-                        android:textSize="15sp" />
-
-                </LinearLayout>
-
-
-                <!-- FILENAME -->
-
-                <TextView
-                    android:id="@+id/bookFilenameLabel"
-                    style="@style/ReaderSettingLabel"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:text="@string/book_filename" />
-
-                <TextView
-                    android:id="@+id/filenameValue"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:textColor="@color/palette_mint"
-                    android:textSize="15sp" />
-
-
-                <!-- FILE SIZE -->
-
-                <TextView
-                    android:id="@+id/bookSizeLabel"
-                    style="@style/ReaderSettingLabel"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:text="@string/book_size" />
-
-                <TextView
-                    android:id="@+id/filesizeValue"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:textColor="@color/palette_mint"
-                    android:textSize="15sp" />
-
-
-                <!-- LANGUAGE -->
-
-                <TextView
-                    android:id="@+id/bookLanguageLabel"
-                    style="@style/ReaderSettingLabel"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:text="@string/book_language" />
-
-                <TextView
-                    android:id="@+id/languageValue"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:textColor="@color/palette_mint"
-                    android:textSize="15sp" />
-
-                <TextView
-                    android:id="@+id/publishYearLabel"
-                    style="@style/ReaderSettingLabel"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:text="@string/book_publish_year" />
-
-                <TextView
-                    android:id="@+id/publishYearValue"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:textColor="@color/palette_mint"
-                    android:textSize="15sp" />
-
-                <TextView
-                    android:id="@+id/subjectsLabel"
-                    style="@style/ReaderSettingLabel"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:text="@string/book_subjects" />
-
-                <TextView
-                    android:id="@+id/subjectsValue"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:textColor="@color/palette_mint"
-                    android:textSize="15sp" />
-
-
-                <!-- DATE ADDED -->
-
-                <TextView
-                    android:id="@+id/bookAddedLabel"
-                    style="@style/ReaderSettingLabel"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:text="@string/book_added" />
-
-                <TextView
-                    android:id="@+id/dateAddedValue"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:textColor="@color/palette_mint"
-                    android:textSize="15sp" />
-
-
-                <!-- LAST READ + CURRENT BOOKMARK -->
-
-                <LinearLayout
-                    android:id="@+id/lastReadContainer"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:id="@+id/lastReadLabel"
-                        style="@style/ReaderSettingLabel"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:text="@string/book_last_read_and_bookmark" />
-
-                    <TextView
-                        android:id="@+id/lastReadValue"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="2dp"
-                        android:textColor="@color/palette_mint"
-                        android:textSize="15sp" />
-
-                </LinearLayout>
-
-            </LinearLayout>
-
-
-            <!-- ================================================= -->
-            <!-- BORDER -->
-            <!-- ================================================= -->
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="0.5dp"
-                android:layout_marginStart="@dimen/app_row_content_padding_h"
-                android:layout_marginTop="16dp"
-                android:layout_marginEnd="@dimen/app_row_content_padding_h"
-                android:background="@color/light_border" />
-
-
-            <!-- ================================================= -->
-            <!-- DESCRIPTION -->
-            <!-- ================================================= -->
-
-            <LinearLayout
-                android:id="@+id/descriptionContainer"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/app_row_content_padding_h"
-                android:layout_marginTop="8dp"
-                android:layout_marginEnd="@dimen/app_row_content_padding_h"
+                android:layout_marginTop="4dp"
+                android:gravity="center"
                 android:orientation="vertical">
 
                 <TextView
-                    android:id="@+id/descriptionLabel"
-                    style="@style/ReaderSettingLabel"
-                    android:layout_width="match_parent"
+                    android:id="@+id/seriesValue"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="@string/book_description" />
-
-                <TextView
-                    android:id="@+id/description"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:lineSpacingExtra="3dp"
-                    android:textColor="@color/palette_mint"
-                    android:textSize="15sp" />
+                    android:textColor="@color/palette_slate"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
 
             </LinearLayout>
+
+
+            <!-- ========================================================= -->
+            <!-- SINGLE OUTER PALETTE_PLUM CONTAINER FOR PROGRESS CARD, -->
+            <!-- SYNOPSIS, METADATA GRID, AND ACTIONS TOOLBAR -->
+            <!-- ========================================================= -->
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="0dp"
+                app:cardBackgroundColor="@color/palette_plum">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <!-- Reading Progress Card (Individual eggplant card with stroke) -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/lastReadContainer"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:cardCornerRadius="16dp"
+                        app:cardElevation="0dp"
+                        app:strokeColor="@color/palette_plum"
+                        app:strokeWidth="1dp"
+                        app:cardBackgroundColor="@color/palette_eggplant">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="16dp">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical">
+
+                                <TextView
+                                    android:id="@+id/lastReadLabel"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="@string/home_progress"
+                                    android:textColor="@color/palette_mint"
+                                    android:textSize="14sp"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:id="@+id/progressPercentText"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:textColor="@color/palette_violet"
+                                    android:textSize="14sp"
+                                    android:textStyle="bold" />
+
+                            </LinearLayout>
+
+                            <ProgressBar
+                                android:id="@+id/progressBar"
+                                style="?android:attr/progressBarStyleHorizontal"
+                                android:layout_width="match_parent"
+                                android:layout_height="8dp"
+                                android:layout_marginTop="10dp"
+                                android:layout_marginBottom="8dp"
+                                android:progressDrawable="@drawable/progress_line_rounded_book_list" />
+
+                            <TextView
+                                android:id="@+id/lastReadValue"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="start"
+                                android:textColor="@color/palette_mint"
+                                android:textSize="13sp" />
+
+                        </LinearLayout>
+
+                    </com.google.android.material.card.MaterialCardView>
+
+
+                    <!-- ================================================= -->
+                    <!-- SECTION B: SYNOPSIS / DESCRIPTION -->
+                    <!-- ================================================= -->
+
+                    <LinearLayout
+                        android:id="@+id/descriptionContainer"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/descriptionLabel"
+                            style="@style/ReaderSettingLabel"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="0dp"
+                            android:layout_marginBottom="8dp"
+                            android:text="@string/book_description"
+                            android:textColor="@color/palette_slate"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:textAllCaps="true"
+                            android:letterSpacing="0.08" />
+
+                        <com.google.android.material.card.MaterialCardView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            app:cardCornerRadius="16dp"
+                            app:cardElevation="0dp"
+                            app:strokeColor="@color/palette_plum"
+                            app:strokeWidth="1dp"
+                            app:cardBackgroundColor="@color/palette_eggplant">
+
+                            <TextView
+                                android:id="@+id/description"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:padding="16dp"
+                                android:maxLines="4"
+                                android:ellipsize="end"
+                                android:scrollbars="vertical"
+                                android:lineSpacingExtra="4dp"
+                                android:textColor="@color/palette_mint"
+                                android:textSize="14sp" />
+
+                        </com.google.android.material.card.MaterialCardView>
+
+                    </LinearLayout>
+
+
+                    <!-- ================================================= -->
+                    <!-- SECTION C: DETAILED METADATA GRID -->
+                    <!-- ================================================= -->
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        app:cardCornerRadius="16dp"
+                        app:cardElevation="0dp"
+                        app:strokeColor="@color/palette_plum"
+                        app:strokeWidth="1dp"
+                        app:cardBackgroundColor="@color/palette_eggplant">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="16dp">
+
+                            <!-- 2-Column Row 1: Publisher & Publish Year -->
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:baselineAligned="false">
+
+                                <!-- Publisher Column -->
+                                <LinearLayout
+                                    android:id="@+id/publisherContainer"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:orientation="horizontal"
+                                    android:gravity="center_vertical"
+                                    android:paddingStart="0dp"
+                                    android:paddingEnd="8dp">
+
+                                    <ImageView
+                                        android:layout_width="18dp"
+                                        android:layout_height="18dp"
+                                        android:src="@drawable/ic_building"
+                                        app:tint="@color/palette_purple"
+                                        android:contentDescription="@null" />
+
+                                    <TextView
+                                        android:id="@+id/publisherValue"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginStart="8dp"
+                                        android:textColor="@color/palette_mint"
+                                        android:textSize="13sp"
+                                        android:ellipsize="end"
+                                        android:maxLines="1" />
+
+                                </LinearLayout>
+
+                                <!-- Publish Year Column -->
+                                <LinearLayout
+                                    android:id="@+id/publishYearContainer"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:orientation="horizontal"
+                                    android:gravity="center_vertical"
+                                    android:paddingStart="8dp"
+                                    android:paddingEnd="0dp">
+
+                                    <ImageView
+                                        android:layout_width="18dp"
+                                        android:layout_height="18dp"
+                                        android:src="@drawable/ic_calendar"
+                                        app:tint="@color/palette_purple"
+                                        android:contentDescription="@null" />
+
+                                    <TextView
+                                        android:id="@+id/publishYearValue"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginStart="8dp"
+                                        android:textColor="@color/palette_mint"
+                                        android:textSize="13sp" />
+
+                                </LinearLayout>
+
+                            </LinearLayout>
+
+                            <!-- 2-Column Row 2: Language & File Size -->
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:layout_marginTop="12dp"
+                                android:baselineAligned="false">
+
+                                <!-- Language Column -->
+                                <LinearLayout
+                                    android:id="@+id/languageContainer"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:orientation="horizontal"
+                                    android:gravity="center_vertical"
+                                    android:paddingStart="0dp"
+                                    android:paddingEnd="8dp">
+
+                                    <ImageView
+                                        android:layout_width="18dp"
+                                        android:layout_height="18dp"
+                                        android:src="@drawable/ic_globe"
+                                        app:tint="@color/palette_purple"
+                                        android:contentDescription="@null" />
+
+                                    <TextView
+                                        android:id="@+id/languageValue"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginStart="8dp"
+                                        android:textColor="@color/palette_mint"
+                                        android:textSize="13sp" />
+
+                                </LinearLayout>
+
+                                <!-- File Size Column -->
+                                <LinearLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:orientation="horizontal"
+                                    android:gravity="center_vertical"
+                                    android:paddingStart="8dp"
+                                    android:paddingEnd="0dp">
+
+                                    <ImageView
+                                        android:layout_width="18dp"
+                                        android:layout_height="18dp"
+                                        android:src="@drawable/ic_file"
+                                        app:tint="@color/palette_purple"
+                                        android:contentDescription="@null" />
+
+                                    <TextView
+                                        android:id="@+id/filesizeValue"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginStart="8dp"
+                                        android:textColor="@color/palette_mint"
+                                        android:textSize="13sp" />
+
+                                </LinearLayout>
+
+                            </LinearLayout>
+
+                            <!-- Date Added Row -->
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical"
+                                android:layout_marginTop="12dp">
+
+                                <ImageView
+                                    android:layout_width="18dp"
+                                    android:layout_height="18dp"
+                                    android:src="@drawable/ic_calendar_add"
+                                    app:tint="@color/palette_purple"
+                                    android:contentDescription="@null" />
+
+                                <TextView
+                                    android:id="@+id/dateAddedValue"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="8dp"
+                                    android:textColor="@color/palette_mint"
+                                    android:textSize="13sp" />
+
+                            </LinearLayout>
+
+                            <!-- Full-Width Spanning Row: Subject Tags -->
+                            <LinearLayout
+                                android:id="@+id/subjectsContainer"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical"
+                                android:layout_marginTop="12dp">
+
+                                <ImageView
+                                    android:layout_width="18dp"
+                                    android:layout_height="18dp"
+                                    android:src="@drawable/ic_tag"
+                                    app:tint="@color/palette_purple"
+                                    android:contentDescription="@null" />
+
+                                <TextView
+                                    android:id="@+id/subjectsValue"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="8dp"
+                                    android:textColor="@color/palette_mint"
+                                    android:textSize="13sp" />
+
+                            </LinearLayout>
+
+                            <!-- Full-Width Spanning Row: Source Filename -->
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical"
+                                android:layout_marginTop="12dp">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/book_details_file_prefix"
+                                    android:textColor="@color/palette_purple"
+                                    android:textSize="13sp" />
+
+                                <TextView
+                                    android:id="@+id/filenameValue"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:textColor="@color/palette_purple"
+                                    android:textSize="13sp" />
+
+                            </LinearLayout>
+
+                        </LinearLayout>
+
+                    </com.google.android.material.card.MaterialCardView>
+
+
+                    <!-- ================================================= -->
+                    <!-- SECTION D: ACTIONS TOOLBAR -->
+                    <!-- ================================================= -->
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_marginTop="16dp">
+
+                        <!-- Primary: Resume Reading -->
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnRead"
+                            style="@style/Widget.MaterialComponents.Button"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/home_resume_reading"
+                            android:textSize="12sp"
+                            android:textColor="@color/black"
+                            app:backgroundTint="@color/palette_violet"
+                            app:icon="@drawable/ic_menu_book"
+                            app:iconTint="@color/black" />
+
+                        <!-- Secondary: Open Reading Nook Workspace -->
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnReadingNook"
+                            style="@style/Widget.MaterialComponents.Button"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:text="@string/book_details_nook_workspace"
+                            android:textSize="12sp"
+                            android:textColor="@color/white"
+                            app:backgroundTint="@color/palette_eggplant"
+                            app:icon="@drawable/ic_reading_nook"
+                            app:iconTint="@color/white" />
+
+                        <!-- 2-Column Utility Row 1: Favorite Toggle & Remove from Reading -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:layout_marginTop="10dp"
+                            android:baselineAligned="false">
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnFavorite"
+                                style="@style/Widget.MaterialComponents.Button"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:layout_marginEnd="6dp"
+                                android:text="@string/book_details_favorite_add"
+                                android:textSize="12sp"
+                                android:textColor="@color/white"
+                                app:backgroundTint="@color/palette_eggplant"
+                                app:icon="@drawable/ic_favorite_border"
+                                app:iconTint="@color/white" />
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnRemoveReading"
+                                style="@style/Widget.MaterialComponents.Button"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:layout_marginStart="6dp"
+                                android:text="@string/book_details_drop_reading"
+                                android:textSize="12sp"
+                                android:textColor="@color/white"
+                                app:backgroundTint="@color/palette_eggplant"
+                                app:icon="@drawable/ic_remove_reading"
+                                app:iconTint="@color/white" />
+
+                        </LinearLayout>
+
+                        <!-- 2-Column Utility Row 2: Edit Metadata & Delete Book -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:layout_marginTop="10dp"
+                            android:baselineAligned="false">
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnEditDetails"
+                                style="@style/Widget.MaterialComponents.Button"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:layout_marginEnd="6dp"
+                                android:text="@string/book_details_edit_metadata"
+                                android:textSize="12sp"
+                                android:textColor="@color/white"
+                                app:backgroundTint="@color/palette_eggplant"
+                                app:icon="@drawable/ic_edit"
+                                app:iconTint="@color/white" />
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnRemove"
+                                style="@style/Widget.MaterialComponents.Button"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:layout_marginStart="6dp"
+                                android:text="@string/book_details_delete_book"
+                                android:textSize="12sp"
+                                android:textColor="@color/white"
+                                app:backgroundTint="@color/palette_eggplant"
+                                app:icon="@drawable/ic_delete"
+                                app:iconTint="@color/white" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
 
         </LinearLayout>
 

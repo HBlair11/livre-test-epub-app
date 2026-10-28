@@ -19,9 +19,9 @@ import java.util.Calendar
 class ReadingStatsActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_reading_stats)
+        setContentView(R.layout.view_main_stats)
         SystemBarController.apply(this)
-        val root = findViewById<android.view.View>(R.id.statsRootLayout)
+        val root = findViewById<android.view.View>(R.id.statsScroll)
         ViewCompat.setOnApplyWindowInsetsListener(root) { v, insets ->
             val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(v.paddingLeft, bars.top, v.paddingRight, bars.bottom)
@@ -30,8 +30,9 @@ class ReadingStatsActivity : AppCompatActivity() {
         ViewCompat.requestApplyInsets(root)
         val content = findViewById<LinearLayout>(R.id.statsRoot)
         // Patch v37: standard MaterialToolbar back navigation.
-        findViewById<com.google.android.material.appbar.MaterialToolbar>(R.id.statsToolbar)
-            .setNavigationOnClickListener { finish() }
+        val toolbar = findViewById<com.google.android.material.appbar.MaterialToolbar>(R.id.statsToolbar)
+        toolbar.visibility = android.view.View.VISIBLE
+        toolbar.setNavigationOnClickListener { finish() }
         val now = System.currentTimeMillis()
         val weekStart = Calendar.getInstance().apply {
             firstDayOfWeek = Calendar.MONDAY

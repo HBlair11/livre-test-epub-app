@@ -62,13 +62,16 @@ class BookAdapter(
 
             loadCover(book, b.cover)
 
+            // Favorites badge on top right corner of cover
+            b.favoriteBadge.visibility = if (book.isFavorite) View.VISIBLE else View.GONE
+
             // Clamp progress to a safe 0.0 - 1.0 range.
             val progress = book.progress.coerceIn(0f, 1f)
             val pct = (progress * 100).toInt()
             val statusDesc = if (progress >= 0.90f) "finished" else if (pct > 0) "$pct percent read" else "unread"
             b.root.contentDescription = "${book.title}, $authorStr, $statusDesc"
 
-            // Progress badge
+            // Progress badge above progress bar on bottom left of cover
             if (progress >= 0.90f) {
                 b.progressBadge.visibility = View.VISIBLE
                 b.progressBadge.text = "✓"
@@ -79,22 +82,14 @@ class BookAdapter(
                 b.progressBadge.visibility = View.GONE
             }
 
-            // Progress bar: completed books show only the checkmark.
-            if (progress > 0f && progress < 0.90f) {
-                b.progressTrack.visibility = View.VISIBLE
-                b.progressFill.visibility = View.VISIBLE
-
-                // The fill is always the full track width.
-                // scaleX visually represents the percentage read.
-                b.progressFill.scaleX = progress
-                b.progressFill.pivotX = 0f
-                b.progressFill.pivotY = 0.5f
+            // Progress bar
+            b.progressBar.progress = pct
+            if (progress >= 0.90f) {
+                b.progressBar.visibility = View.GONE
+            } else if (progress > 0f) {
+                b.progressBar.visibility = View.VISIBLE
             } else {
-                b.progressTrack.visibility = View.GONE
-                b.progressFill.visibility = View.GONE
-
-                // Reset recycled ViewHolder state.
-                b.progressFill.scaleX = 0f
+                b.progressBar.visibility = View.GONE
             }
         }
     }
@@ -126,20 +121,22 @@ class BookAdapter(
         fun bind(book: BookEntity) {
             b.title.text = book.title
             val authorStr = book.author.ifBlank { itemView.context.getString(com.epubreader.app.R.string.unknown_author) }
-            b.author.text = authorStr
+
+            // Favorites badge next to title on top right
+            b.favoriteBadge.visibility = if (book.isFavorite) View.VISIBLE else View.GONE
+
             if (!book.series.isNullOrBlank()) {
-                b.series.visibility = View.VISIBLE
-                b.series.text = book.seriesIndex?.let { index ->
+                val seriesStr = book.seriesIndex?.let { index ->
                     val formattedIndex = if (index % 1.0 == 0.0) {
                         index.toInt().toString()
                     } else {
                         index.toString()
                     }
-
                     "${book.series} #$formattedIndex"
                 } ?: book.series
+                b.authorAndSeries.text = "$authorStr • $seriesStr"
             } else {
-                b.series.visibility = View.GONE
+                b.authorAndSeries.text = authorStr
             }
             val progress = book.progress.coerceIn(0f, 1f)
             val pct = (progress * 100).toInt()

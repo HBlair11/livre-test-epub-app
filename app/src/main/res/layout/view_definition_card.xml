@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Patch v37: contextual dictionary card shown near the text selection.
-     Anchored above/below the selection with smart screen-boundary positioning. -->
+<!-- Contextual dictionary card shown near the text selection.
+     Styled to match the highlight details popup card with stroke border and bottom close button. -->
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_margin="@dimen/app_popup_screen_margin"
-    app:cardBackgroundColor="@color/palette_plum"
-    app:cardCornerRadius="16dp"
+    app:cardBackgroundColor="@color/palette_eggplant"
+    app:cardCornerRadius="20dp"
     app:cardElevation="@dimen/app_definition_card_elevation"
+    app:strokeColor="@color/palette_plum"
+    app:strokeWidth="1dp"
     app:contentPadding="@dimen/app_card_padding">
 
     <LinearLayout
@@ -48,12 +50,14 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
-                        android:background="@drawable/oval_rounded_bg"
-                        android:paddingHorizontal="8dp"
-                        android:paddingVertical="2dp"
-                        android:textColor="@color/accent_pop"
+                        android:background="@drawable/pill_bg_purple"
+                        android:paddingStart="10dp"
+                        android:paddingTop="3dp"
+                        android:paddingEnd="10dp"
+                        android:paddingBottom="3dp"
+                        android:textColor="@color/palette_eggplant"
                         android:textSize="11sp"
-                        android:textStyle="italic|bold"
+                        android:textStyle="bold"
                         android:visibility="gone" />
 
                     <ImageButton
@@ -66,6 +70,15 @@
                         android:src="@drawable/ic_volume"
                         app:tint="@color/palette_mint" />
                 </LinearLayout>
+
+                <!-- Light divider -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@color/palette_plum"
+                    android:alpha="0.4"
+                    android:layout_marginTop="@dimen/app_definition_row_spacing"
+                    android:layout_marginBottom="16dp" />
 
                 <TextView
                     android:id="@+id/dictNoResult"
@@ -90,17 +103,18 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    android:background="@color/palette_eggplant"
                     android:orientation="vertical"
                     android:padding="10dp"
-                    android:radius="8dp"
                     android:visibility="gone">
 
                     <TextView
                         android:id="@+id/dictContextQuote"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:textColor="@color/white"
+                        android:background="@drawable/reader_search_input_bg"
+                        android:padding="10dp"
+                        app:cornerRadius="10dp"
+                        android:textColor="@color/palette_slate"
                         android:textSize="13sp"
                         android:textStyle="italic" />
                 </LinearLayout>
@@ -123,16 +137,25 @@
                     android:layout_marginTop="@dimen/app_definition_row_spacing"
                     android:orientation="vertical" />
 
+                <!-- Light divider -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@color/palette_plum"
+                    android:alpha="0.4"
+                    android:layout_marginTop="@dimen/app_definition_row_spacing"
+                    android:layout_marginBottom="16dp" />
+
                 <!-- Action Button: Save to Vocabulary Sanctuary -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/dictSaveBtn"
                     style="@style/Widget.MaterialComponents.Button"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
+                    android:layout_marginTop="@dimen/app_definition_row_spacing"
                     android:text="@string/vocabulary_save_to_sanctuary"
                     android:textColor="@color/black"
-                    app:backgroundTint="@color/accent_pop"
+                    app:backgroundTint="@color/palette_violet"
                     app:cornerRadius="10dp"
                     app:iconTint="@color/black" />
 
@@ -142,7 +165,7 @@
                     style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="@dimen/app_definition_row_spacing"
                     android:text="@string/vocabulary_refresh_existing"
                     android:textColor="@color/palette_mint"
                     app:cornerRadius="10dp"
@@ -154,10 +177,11 @@
                     style="@style/Widget.MaterialComponents.Button.TextButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
+                    android:layout_marginTop="@dimen/app_definition_row_spacing"
                     android:text="@string/dictionary_lookup_external"
                     android:textColor="@color/palette_slate"
                     android:visibility="gone" />
+
             </LinearLayout>
         </ScrollView>
     </LinearLayout>

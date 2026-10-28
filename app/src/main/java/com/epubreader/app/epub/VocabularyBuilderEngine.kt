@@ -13,16 +13,26 @@ object VocabularyBuilderEngine {
 
     fun extractContextSentence(fullText: String, targetWord: String, prefix: String? = null, suffix: String? = null): String {
         val cleanWord = targetWord.trim()
-        if (cleanWord.isBlank() || fullText.isBlank()) return "Example usage from active reading session."
+        if (cleanWord.isBlank()) return "Example usage from active reading session."
 
-        val index = fullText.indexOf(cleanWord, ignoreCase = true)
-        if (index == -1) return "Example usage from active reading session."
+        val textToSearch: String
+        val index: Int
+
+        if (!prefix.isNullOrEmpty()) {
+            textToSearch = "$prefix$cleanWord${suffix ?: ""}"
+            index = prefix.length
+        } else {
+            textToSearch = fullText
+            index = fullText.indexOf(cleanWord, ignoreCase = true)
+        }
+
+        if (index == -1 || textToSearch.isBlank()) return "Example usage from active reading session."
 
         // Search backward for sentence starter
         var start = index
         var hitSentenceTerminatorAtStart = false
         while (start > 0) {
-            val prev = fullText[start - 1]
+            val prev = textToSearch[start - 1]
             if (isSentenceTerminator(prev) || prev == '\n' || prev == '\r') {
                 hitSentenceTerminatorAtStart = true
                 break
@@ -33,8 +43,8 @@ object VocabularyBuilderEngine {
         // Search forward for sentence end
         var end = index + cleanWord.length
         var hitSentenceTerminatorAtEnd = false
-        while (end < fullText.length) {
-            val curr = fullText[end]
+        while (end < textToSearch.length) {
+            val curr = textToSearch[end]
             if (isSentenceTerminator(curr) || curr == '\n' || curr == '\r') {
                 end++ // include terminator
                 hitSentenceTerminatorAtEnd = true
@@ -43,7 +53,7 @@ object VocabularyBuilderEngine {
             end++
         }
 
-        var rawSentence = fullText.substring(start, end).replace(Regex("\\s+"), " ").trim()
+        var rawSentence = textToSearch.substring(start, end).replace(Regex("\\s+"), " ").trim()
         if (rawSentence.isBlank()) return "From chapter reading: '$cleanWord'"
 
         // If start was bounded by snippet start (start == 0) without a sentence terminator,
@@ -59,9 +69,9 @@ object VocabularyBuilderEngine {
             }
         }
 
-        // If end was bounded by snippet end (end == fullText.length) without a sentence terminator,
+        // If end was bounded by snippet end (end == textToSearch.length) without a sentence terminator,
         // clean up any trailing partial word fragment after the last space.
-        if (!hitSentenceTerminatorAtEnd && end == fullText.length) {
+        if (!hitSentenceTerminatorAtEnd && end == textToSearch.length) {
             val lastSpace = rawSentence.lastIndexOf(' ')
             val targetWordEndInRaw = rawSentence.indexOf(cleanWord, ignoreCase = true) + cleanWord.length
             if (lastSpace != -1 && lastSpace > targetWordEndInRaw) {

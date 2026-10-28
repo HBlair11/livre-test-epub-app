@@ -124,7 +124,10 @@ class BookshelfViewModel(
             kotlinx.coroutines.flow.flowOf(emptyList<DisplayItem>())
 
         is ShelfView.Reading ->
-            repo.observeCurrentlyReading().map { applySort(it, sort, asc).map { DisplayItem.Book(it) } }
+            repo.observeCurrentlyReading().map { list ->
+                list.sortedWith(compareByDescending<BookEntity> { it.lastOpenedDate ?: 0L }.thenByDescending { it.id })
+                    .map { DisplayItem.Book(it) }
+            }
 
         is ShelfView.Library ->
             repo.observeBooks().map { applySort(it, sort, asc).map { DisplayItem.Book(it) } }
@@ -139,11 +142,10 @@ class BookshelfViewModel(
             repo.observeToBeRead().map { applySort(it, sort, asc).map { DisplayItem.Book(it) } }
 
         is ShelfView.RecentlyAdded ->
-            // Patch 16 (Issue #3): the temp screen ignores the sort selector and
-            // always shows newest-import first (the DAO query already orders by
-            // added_date DESC); the user's chosen sort is still applied on top so
-            // tapping the sort chip behaves consistently with other shelves.
-            repo.observeByIds(view.ids).map { applySort(it, sort, asc).map { DisplayItem.Book(it) } }
+            repo.observeHomeRecentlyAddedTop50().map { list ->
+                list.sortedWith(compareByDescending<BookEntity> { it.addedDate }.thenByDescending { it.id })
+                    .map { DisplayItem.Book(it) }
+            }
 
         is ShelfView.AuthorsList ->
             repo.observeAuthors().map { it.map { DisplayItem.GroupRow(it.name, it.count, false) } }
@@ -162,6 +164,13 @@ class BookshelfViewModel(
     }
 
     fun setView(view: ShelfView) {
+        // Clear temporary sort for Library, AuthorDetail, SeriesDetail when leaving them
+        val previousView = _view.value
+        if (previousView != null && previousView != view) {
+            if (previousView is ShelfView.Library || previousView is ShelfView.AuthorDetail || previousView is ShelfView.SeriesDetail) {
+                sessionSorts.remove(sortKeyFor(previousView))
+            }
+        }
         // Patch 16 (Issue #3): RecentlyAdded is a transient view — never persist
         // it as the last-opened shelf, otherwise a relaunch would land on an empty
         // (stale id set) screen instead of the user's Library. Persist the
@@ -201,6 +210,9 @@ class BookshelfViewModel(
     fun isDetailOpen(): Boolean = _view.value is ShelfView.AuthorDetail || _view.value is ShelfView.SeriesDetail
     fun clearDetail() {
         val v = _view.value
+        if (v is ShelfView.AuthorDetail || v is ShelfView.SeriesDetail) {
+            sessionSorts.remove(sortKeyFor(v))
+        }
         val parent = when (v) {
             is ShelfView.AuthorDetail -> ShelfView.AuthorsList
             is ShelfView.SeriesDetail -> ShelfView.SeriesList
@@ -319,11 +331,7 @@ class BookshelfViewModel(
     }
 
     private fun applySort(list: List<BookEntity>, sort: String, asc: Boolean): List<BookEntity> {
-        // Modified is represented by the existing RECENTLY_ADDED sort key to keep
-        // persisted/session state and the existing architecture unchanged. Its
-        // ordering is based only on sourceLastModified, with id as a stable
-        // tie-breaker. addedDate is intentionally not used for this sort.
-        val sorted = when (sort) {
+        return when (sort) {
             PrefsManager.SortOption.RECENTLY_ADDED ->
                 if (asc) {
                     list.sortedWith(compareByDescending<BookEntity> { it.sourceLastModified }.thenByDescending { it.id })
@@ -331,29 +339,36 @@ class BookshelfViewModel(
                     list.sortedWith(compareBy<BookEntity> { it.sourceLastModified }.thenBy { it.id })
                 }
 
-            PrefsManager.SortOption.RECENTLY_READ ->
-                list.sortedWith(compareBy<BookEntity> { it.lastOpenedDate ?: 0L }.thenBy { it.sortTitle })
+            PrefsManager.SortOption.RECENTLY_READ -> {
+                val opened = list.filter { (it.lastOpenedDate ?: 0L) > 0L }
+                    .sortedWith(compareByDescending<BookEntity> { it.lastOpenedDate ?: 0L }.thenByDescending { it.id })
+                val unopened = list.filter { (it.lastOpenedDate ?: 0L) <= 0L }
+                    .sortedWith(compareByDescending<BookEntity> { it.sourceLastModified }.thenByDescending { it.id })
+                val newestToOldest = opened + unopened
+                if (asc) newestToOldest else newestToOldest.reversed()
+            }
 
-            PrefsManager.SortOption.TITLE ->
-                list.sortedWith(compareBy<BookEntity> { it.sortTitle }.thenBy { it.sortAuthor })
+            PrefsManager.SortOption.TITLE -> {
+                val sorted = list.sortedWith(compareBy<BookEntity> { it.sortTitle }.thenBy { it.sortAuthor })
+                if (asc) sorted else sorted.reversed()
+            }
 
-            PrefsManager.SortOption.AUTHOR ->
-                list.sortedWith(compareBy<BookEntity> { it.sortAuthor }.thenBy { it.sortTitle })
+            PrefsManager.SortOption.AUTHOR -> {
+                val sorted = list.sortedWith(compareBy<BookEntity> { it.sortAuthor }.thenBy { it.sortTitle })
+                if (asc) sorted else sorted.reversed()
+            }
 
-            PrefsManager.SortOption.SERIES ->
-                list.sortedWith(compareBy<BookEntity> { it.series ?: "\uFFFF" }.thenBy {
+            PrefsManager.SortOption.SERIES -> {
+                val sorted = list.sortedWith(compareBy<BookEntity> { it.series ?: "\uFFFF" }.thenBy {
                     it.seriesIndex ?: Double.MAX_VALUE
                 }.thenBy { it.sortTitle })
+                if (asc) sorted else sorted.reversed()
+            }
 
-            else ->
-                list.sortedWith(compareBy<BookEntity> { it.sortTitle }.thenBy { it.sortAuthor })
-        }
-        // For all sorts except RECENTLY_ADDED/Modified (which uses explicit
-        // direction comparators above), apply the ascending/descending toggle by reversing.
-        return if (sort == PrefsManager.SortOption.RECENTLY_ADDED) {
-            sorted
-        } else {
-            if (asc) sorted else sorted.reversed()
+            else -> {
+                val sorted = list.sortedWith(compareBy<BookEntity> { it.sortTitle }.thenBy { it.sortAuthor })
+                if (asc) sorted else sorted.reversed()
+            }
         }
     }
 

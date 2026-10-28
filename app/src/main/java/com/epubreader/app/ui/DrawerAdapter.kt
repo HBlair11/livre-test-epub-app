@@ -82,8 +82,8 @@ class DrawerAdapter(
         holder.itemView.setBackgroundColor(android.graphics.Color.TRANSPARENT)
 
         val context = holder.itemView.context
-        val activeColor = androidx.core.content.ContextCompat.getColor(context, R.color.accent_pop)
-        val defaultColor = androidx.core.content.ContextCompat.getColor(context, android.R.color.white)
+        val activeColor = androidx.core.content.ContextCompat.getColor(context, R.color.palette_violet)
+        val defaultColor = androidx.core.content.ContextCompat.getColor(context, R.color.white)
 
         holder.label.setTextColor(if (active) activeColor else defaultColor)
         androidx.core.widget.ImageViewCompat.setImageTintList(

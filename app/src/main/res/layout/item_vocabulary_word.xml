@@ -4,10 +4,10 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="12dp"
-    app:cardBackgroundColor="@color/dark_surface"
+    app:cardBackgroundColor="@color/palette_plum"
     app:cardCornerRadius="14dp"
     app:cardElevation="2dp"
-    app:strokeColor="@color/dark_border"
+    app:strokeColor="@color/palette_purple"
     app:strokeWidth="1dp">
 
     <LinearLayout
@@ -50,7 +50,7 @@
                     android:background="@drawable/oval_rounded_bg"
                     android:paddingHorizontal="8dp"
                     android:paddingVertical="3dp"
-                    android:textColor="@color/accent_pop"
+                    android:textColor="@color/palette_violet"
                     android:textSize="12sp"
                     android:textStyle="bold|italic"
                     android:visibility="gone" />
@@ -83,7 +83,7 @@
                     android:background="@drawable/rounded_square_bg"
                     android:paddingHorizontal="12dp"
                     android:paddingVertical="5dp"
-                    android:textColor="@color/white"
+                    android:textColor="@color/black"
                     android:textSize="12sp"
                     android:textStyle="bold" />
 
@@ -105,7 +105,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:maxLines="4"
-            android:textColor="@color/dark_text"
+            android:textColor="@color/palette_mint"
             android:textSize="14sp" />
 
         <!-- Context Quote -->
@@ -127,7 +127,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
-            android:textColor="@color/dark_text_muted"
+            android:textColor="@color/palette_slate"
             android:textSize="12sp"
             android:visibility="gone" />
 

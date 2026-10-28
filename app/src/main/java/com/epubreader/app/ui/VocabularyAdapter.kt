@@ -66,17 +66,17 @@ class VocabularyAdapter(
                 when (item.masteryLevel) {
                     1 -> {
                         masteryPill.text = ctx.getString(R.string.vocab_chip_learning)
-                        masteryPill.backgroundTintList = android.content.res.ColorStateList.valueOf(ContextCompat.getColor(ctx, R.color.dark_surface))
+                        masteryPill.backgroundTintList = android.content.res.ColorStateList.valueOf(ContextCompat.getColor(ctx, R.color.palette_plum))
                         masteryPill.setTextColor(ContextCompat.getColor(ctx, R.color.white))
                     }
                     2 -> {
                         masteryPill.text = ctx.getString(R.string.vocab_mastered_badge)
-                        masteryPill.backgroundTintList = android.content.res.ColorStateList.valueOf(ContextCompat.getColor(ctx, R.color.accent_pop))
+                        masteryPill.backgroundTintList = android.content.res.ColorStateList.valueOf(ContextCompat.getColor(ctx, R.color.palette_violet))
                         masteryPill.setTextColor(ContextCompat.getColor(ctx, R.color.white))
                     }
                     else -> {
                         masteryPill.text = ctx.getString(R.string.vocab_chip_new)
-                        masteryPill.backgroundTintList = android.content.res.ColorStateList.valueOf(ContextCompat.getColor(ctx, R.color.dark_surface))
+                        masteryPill.backgroundTintList = android.content.res.ColorStateList.valueOf(ContextCompat.getColor(ctx, R.color.palette_plum))
                         masteryPill.setTextColor(ContextCompat.getColor(ctx, R.color.white))
                     }
                 }

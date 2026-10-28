@@ -18,6 +18,8 @@ class BookRepository(
 
     fun observeHomeRecentlyAdded(): Flow<List<BookEntity>> = bookDao.observeHomeRecentlyAdded()
 
+    fun observeHomeRecentlyAddedTop50(): Flow<List<BookEntity>> = bookDao.observeHomeRecentlyAddedTop50()
+
     fun observeCurrentlyReading(): Flow<List<BookEntity>> = bookDao.observeCurrentlyReading()
 
     suspend fun setCurrentlyReading(id: Long) = bookDao.setCurrentlyReading(id)

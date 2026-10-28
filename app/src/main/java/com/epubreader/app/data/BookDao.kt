@@ -15,10 +15,12 @@ interface BookDao {
     @Query("SELECT * FROM books ORDER BY title")
     fun observeAll(): Flow<List<BookEntity>>
 
-    /** Home shelf: the latest library insertions, newest first. Room id is the stable
-     * insertion sequence and remains unchanged when an existing EPUB is rescanned. */
-    @Query("SELECT * FROM books ORDER BY id DESC LIMIT 6")
+    /** Home shelf: the latest library insertions by file mtime, newest first. */
+    @Query("SELECT * FROM books ORDER BY source_last_modified DESC, id DESC LIMIT 6")
     fun observeHomeRecentlyAdded(): Flow<List<BookEntity>>
+
+    @Query("SELECT * FROM books ORDER BY source_last_modified DESC, id DESC LIMIT 50")
+    fun observeHomeRecentlyAddedTop50(): Flow<List<BookEntity>>
 
     @Query("SELECT * FROM books WHERE id = :id")
     suspend fun getById(id: Long): BookEntity?

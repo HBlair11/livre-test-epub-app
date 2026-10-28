@@ -10,7 +10,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?android:colorBackground"
+    android:background="@color/palette_eggplant"
     android:fitsSystemWindows="true"
     android:orientation="vertical">
 
@@ -19,11 +19,11 @@
         android:id="@+id/settingsToolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="?android:colorBackground"
+        android:background="@color/palette_eggplant"
         app:title="@string/reader_settings_title"
-        app:titleTextColor="@color/reader_chrome_text"
+        app:titleTextColor="@color/white"
         app:navigationIcon="@drawable/ic_arrow_back"
-        app:navigationIconTint="@color/reader_chrome_text"
+        app:navigationIconTint="@color/white"
         app:navigationContentDescription="@string/action_back" />
 
     <androidx.core.widget.NestedScrollView
@@ -31,7 +31,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:background="@color/reader_chrome_bg"
+        android:background="@color/palette_eggplant"
         android:fillViewport="true"
         android:scrollbars="vertical">
 
@@ -44,7 +44,9 @@
             android:paddingBottom="32dp">
 
             <!-- ============ Theme ============ -->
-            <TextView style="@style/ReaderSettingLabel" android:text="@string/reader_theme" />
+            <TextView style="@style/ReaderSettingLabel"
+                android:text="@string/reader_theme"
+                android:textColor="@color/palette_purple"/>
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/themeLayout"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
@@ -55,13 +57,15 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="none"
-                    android:textColor="@color/reader_chrome_text"
+                    android:textColor="@color/white"
                     android:paddingStart="12dp"
                     android:paddingEnd="8dp" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <!-- ============ Font Face ============ -->
-            <TextView style="@style/ReaderSettingLabel" android:text="@string/reader_font_face" />
+            <TextView style="@style/ReaderSettingLabel"
+                android:text="@string/reader_font_face"
+                android:textColor="@color/palette_purple" />
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/fontLayout"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
@@ -72,13 +76,15 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="none"
-                    android:textColor="@color/reader_chrome_text"
+                    android:textColor="@color/white"
                     android:paddingStart="12dp"
                     android:paddingEnd="8dp" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <!-- ============ Alignment ============ -->
-            <TextView style="@style/ReaderSettingLabel" android:text="@string/reader_alignment" />
+            <TextView style="@style/ReaderSettingLabel"
+                android:text="@string/reader_alignment"
+                android:textColor="@color/palette_purple" />
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/alignLayout"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
@@ -89,13 +95,15 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="none"
-                    android:textColor="@color/reader_chrome_text"
+                    android:textColor="@color/white"
                     android:paddingStart="12dp"
                     android:paddingEnd="8dp" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <!-- ============ Font Size stepper ============ -->
-            <TextView style="@style/ReaderSettingLabel" android:text="@string/reader_font_size" />
+            <TextView style="@style/ReaderSettingLabel"
+                android:text="@string/reader_font_size"
+                android:textColor="@color/palette_purple" />
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -117,7 +125,9 @@
             </LinearLayout>
 
             <!-- ============ Line Spacing stepper ============ -->
-            <TextView style="@style/ReaderSettingLabel" android:text="@string/reader_line_height" />
+            <TextView style="@style/ReaderSettingLabel"
+                android:text="@string/reader_line_height"
+                android:textColor="@color/palette_purple" />
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -139,7 +149,9 @@
             </LinearLayout>
 
             <!-- ============ Margin stepper ============ -->
-            <TextView style="@style/ReaderSettingLabel" android:text="@string/reader_margin" />
+            <TextView style="@style/ReaderSettingLabel"
+                android:text="@string/reader_margin"
+                android:textColor="@color/palette_purple" />
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -161,30 +173,36 @@
             </LinearLayout>
 
             <!-- ============ Top & Bottom Margin toggle ============ -->
-            <TextView style="@style/ReaderSettingLabel" android:text="@string/reader_bottom_margin" />
+            <TextView style="@style/ReaderSettingLabel"
+                android:text="@string/reader_bottom_margin"
+                android:textColor="@color/palette_purple" />
             <androidx.appcompat.widget.SwitchCompat
                 android:id="@+id/bottomMarginSwitch"
                 style="@style/ReaderSwitchRow"
                 android:text="@string/reader_bottom_margin_summary"
-                android:textColor="@color/palette_slate"
+                android:textColor="@color/palette_mint"
                 android:textSize="13sp" />
 
             <!-- ============ Hyphenation toggle ============ -->
-            <TextView style="@style/ReaderSettingLabel" android:text="@string/reader_hyphenation" />
+            <TextView style="@style/ReaderSettingLabel"
+                android:text="@string/reader_hyphenation"
+                android:textColor="@color/palette_purple" />
             <androidx.appcompat.widget.SwitchCompat
                 android:id="@+id/hyphenationSwitch"
                 style="@style/ReaderSwitchRow"
                 android:text="@string/reader_hyphenation_summary"
-                android:textColor="@color/palette_slate"
+                android:textColor="@color/palette_mint"
                 android:textSize="13sp" />
 
             <!-- ============ Page Turn Animation toggle (Patch 17, Addition #2) ============ -->
-            <TextView style="@style/ReaderSettingLabel" android:text="@string/reader_page_turn_animation" />
+            <TextView style="@style/ReaderSettingLabel"
+                android:text="@string/reader_page_turn_animation"
+                android:textColor="@color/palette_purple" />
             <androidx.appcompat.widget.SwitchCompat
                 android:id="@+id/pageTurnAnimSwitch"
                 style="@style/ReaderSwitchRow"
                 android:text="@string/reader_page_turn_animation_summary"
-                android:textColor="@color/palette_slate"
+                android:textColor="@color/palette_mint"
                 android:textSize="13sp" />
 
         </LinearLayout>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="view_mode_options">
+        <item>@string/view_mode_list</item>
+        <item>@string/view_mode_grid_2</item>
+        <item>@string/view_mode_grid_3</item>
+        <item>@string/view_mode_grid_4</item>
+    </string-array>
+
+    <string-array name="sort_field_options">
+        <item>@string/sort_recently_added</item>
+        <item>@string/sort_recently_read</item>
+        <item>@string/sort_title</item>
+        <item>@string/sort_series</item>
+        <item>@string/sort_author</item>
+    </string-array>
+
+    <string-array name="sort_order_added">
+        <item>@string/sort_newer_first</item>
+        <item>@string/sort_older_first</item>
+    </string-array>
+
+    <string-array name="sort_order_standard">
+        <item>@string/sort_a_z</item>
+        <item>@string/sort_z_a</item>
+    </string-array>
+
+    <string-array name="book_options">
+        <item>@string/option_open</item>
+        <item>@string/option_details</item>
+        <item>@string/option_favorite_add</item>
+        <item>@string/option_remove_reading</item>
+        <item>@string/option_remove</item>
+    </string-array>
+</resources>

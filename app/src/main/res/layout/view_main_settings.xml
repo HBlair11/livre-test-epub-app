@@ -62,7 +62,7 @@
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:layout_marginBottom="16dp"
-            android:background="?attr/dividerHorizontal" />
+            android:background="@color/palette_purple" />
 
         <!-- 2. Daily Reading Goal Section -->
         <com.google.android.material.card.MaterialCardView
@@ -80,42 +80,88 @@
                 android:orientation="vertical"
                 android:padding="16dp">
 
+                <!-- 1. Title -->
                 <TextView
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/settings_section_daily_goal"
                     android:textColor="@color/palette_mint"
                     android:textSize="16sp"
                     android:textStyle="bold" />
 
+                <!-- 2. Subtitle -->
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
+                    android:layout_marginTop="8dp"
                     android:text="@string/settings_section_daily_goal_subtitle"
                     android:textColor="@color/palette_slate"
                     android:textSize="13sp"
                     android:lineSpacingMultiplier="1.2"/>
 
+                <!-- 3. Target Title -->
                 <TextView
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
-                    android:text="@string/settings_target_minutes"
+                    android:text="@string/goal_target_title"
                     android:textColor="@color/palette_slate"
                     android:textSize="14sp"
                     android:textStyle="bold" />
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnConfigureGoal"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                <!-- 4. Subtext & Selected Label (Horizontal Row) -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="6dp"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:id="@+id/tvGoalSubtext"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:textColor="@color/palette_mint"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvGoalSelectedLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/palette_violet"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <!-- 5. Pills Container -->
+                <HorizontalScrollView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    android:text="@string/settings_configure_goal_btn"
-                    android:textColor="@color/white"
-                    app:strokeColor="@color/accent_pop" />
+                    android:scrollbars="none">
 
+                    <LinearLayout
+                        android:id="@+id/goalPillsContainer"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal" />
+                </HorizontalScrollView>
+
+                <!-- 6. Switch Button -->
+                <TextView
+                    android:id="@+id/btnGoalTypeSwitch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:padding="4dp"
+                    android:textColor="@color/palette_violet"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+
+                <!-- 7. Dashboard Switch -->
                 <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/goalDashboardSwitch"
                     android:layout_width="match_parent"
@@ -299,7 +345,7 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- 6. Full Backup and Restore Section -->
+        <!-- 7. Full Backup and Restore Section -->
         <com.google.android.material.card.MaterialCardView
             style="@style/Widget.MaterialComponents.CardView"
             android:layout_width="match_parent"
@@ -348,7 +394,7 @@
                         android:layout_marginEnd="6dp"
                         android:text="@string/settings_export_backup"
                         android:textColor="@color/white"
-                        app:backgroundTint="@color/dark_bg"
+                        app:backgroundTint="@color/palette_eggplant"
                         app:icon="@drawable/ic_upload"
                         app:iconTint="@color/white"
                         android:textSize="12sp" />
@@ -362,7 +408,7 @@
                         android:layout_marginStart="6dp"
                         android:text="@string/settings_import_backup"
                         android:textColor="@color/white"
-                        app:backgroundTint="@color/dark_bg"
+                        app:backgroundTint="@color/palette_eggplant"
                         app:icon="@drawable/ic_download"
                         app:iconTint="@color/white"
                         android:textSize="12sp" />
@@ -370,7 +416,7 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- 7. Privacy Guaranteed & Architecture Section -->
+        <!-- 8. Privacy Guaranteed & Architecture Section -->
         <com.google.android.material.card.MaterialCardView
             style="@style/Widget.MaterialComponents.CardView"
             android:layout_width="match_parent"
@@ -423,7 +469,7 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- 8. Define Section -->
+        <!-- 9. Define Section -->
         <com.google.android.material.card.MaterialCardView
             style="@style/Widget.MaterialComponents.CardView"
             android:layout_width="match_parent"
@@ -458,7 +504,7 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- 9. The Livre Magicae Section -->
+        <!-- 10. The Livre Magicae Section -->
         <com.google.android.material.card.MaterialCardView
             style="@style/Widget.MaterialComponents.CardView"
             android:layout_width="match_parent"

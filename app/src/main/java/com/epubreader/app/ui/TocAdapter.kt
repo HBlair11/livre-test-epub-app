@@ -122,7 +122,7 @@ class TocAdapter(
             binding.title.setTextColor(
                 ContextCompat.getColor(
                     binding.root.context,
-                    if (selected) R.color.reader_chrome_accent else R.color.reader_chrome_text
+                    if (selected) R.color.palette_mint else R.color.white
                 )
             )
 

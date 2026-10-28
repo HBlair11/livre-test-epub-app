@@ -3,6 +3,9 @@ package com.epubreader.app.ui
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
+import android.view.MotionEvent
 import android.view.View
 import android.widget.TextView
 import android.widget.Toast
@@ -17,6 +20,7 @@ import com.epubreader.app.R
 import com.epubreader.app.data.AppDatabase
 import com.epubreader.app.data.DictionaryHistoryEntity
 import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.textfield.TextInputLayout
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -33,6 +37,56 @@ class VocabularyActivity : AppCompatActivity() {
     private var vocabFlashcardFlipped: Boolean = false
     private var ttsPronouncer: com.epubreader.app.util.TtsPronouncer? = null
 
+    // Layout references
+    private var vocabTabs: com.google.android.material.tabs.TabLayout? = null
+    private var wordsContainer: View? = null
+    private var flashcardContainer: View? = null
+    private var searchLayout: TextInputLayout? = null
+    private var searchEdit: com.google.android.material.textfield.TextInputEditText? = null
+    private var chipGroup: com.google.android.material.chip.ChipGroup? = null
+    private var recycler: androidx.recyclerview.widget.RecyclerView? = null
+    private var emptyText: View? = null
+    private var actionsRow: View? = null
+    private var subtitleTv: TextView? = null
+
+    // Shared filter update layout loop
+    private val applyFilters = {
+        val query = searchEdit?.text?.toString()?.trim()?.lowercase() ?: ""
+        val checkedId = chipGroup?.checkedChipId
+        val filtered = vocabFullList.filter { item ->
+            val matchesQuery = query.isBlank() ||
+                    item.word.lowercase().contains(query) ||
+                    (item.definition?.lowercase()?.contains(query) == true) ||
+                    (item.bookTitle?.lowercase()?.contains(query) == true)
+
+            val matchesChip = when (checkedId) {
+                R.id.chipNew -> item.masteryLevel == 0
+                R.id.chipLearning -> item.masteryLevel == 1
+                R.id.chipMastered -> item.masteryLevel == 2
+                else -> true
+            }
+            matchesQuery && matchesChip
+        }
+        vocabAdapter.submitList(filtered)
+        emptyText?.visibility = if (filtered.isEmpty()) View.VISIBLE else View.GONE
+        recycler?.visibility = if (filtered.isEmpty()) View.GONE else View.VISIBLE
+        actionsRow?.visibility = if (vocabFullList.isEmpty()) View.GONE else View.VISIBLE
+
+        val total = vocabFullList.size
+        val count = filtered.size
+        val wordOrWords =
+            if (count == 1) getString(R.string.vocab_label_book) else getString(R.string.vocab_label_books)
+        subtitleTv?.text = if (filtered.size == vocabFullList.size) {
+            getString(
+                R.string.vocab_heading_subtitle,
+                total,
+                if (total == 1) getString(R.string.vocab_label_book) else getString(R.string.vocab_label_books)
+            )
+        } else {
+            "$count matching $wordOrWords (filtered from $total)"
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val prefs = com.epubreader.app.data.PrefsManager(this)
@@ -43,15 +97,17 @@ class VocabularyActivity : AppCompatActivity() {
         findViewById<com.google.android.material.appbar.MaterialToolbar>(R.id.toolbar)
             ?.setNavigationOnClickListener { finish() }
 
-        val tabs = findViewById<com.google.android.material.tabs.TabLayout>(R.id.vocabTabs)
-        val wordsContainer = findViewById<View>(R.id.vocabWordsTabContainer)
-        val flashcardContainer = findViewById<View>(R.id.vocabFlashcardContainer)
-        val searchEdit = findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.vocabSearchEdit)
-        val chipGroup = findViewById<com.google.android.material.chip.ChipGroup>(R.id.vocabFilterChipGroup)
-        val recycler = findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.vocabRecycler)
-        val emptyText = findViewById<View>(R.id.vocabEmptyText)
-        val actionsRow = findViewById<View>(R.id.vocabActionsRow)
-        val subtitleTv = findViewById<TextView>(R.id.vocabSubtitleText)
+        // Bind layout views
+        vocabTabs = findViewById(R.id.vocabTabs)
+        wordsContainer = findViewById(R.id.vocabWordsTabContainer)
+        flashcardContainer = findViewById(R.id.vocabFlashcardContainer)
+        searchLayout = findViewById<TextInputLayout>(R.id.vocabSearchLayout)
+        searchEdit = findViewById(R.id.vocabSearchEdit)
+        chipGroup = findViewById(R.id.vocabFilterChipGroup)
+        recycler = findViewById(R.id.vocabRecycler)
+        emptyText = findViewById(R.id.vocabEmptyText)
+        actionsRow = findViewById(R.id.vocabActionsRow)
+        subtitleTv = findViewById(R.id.vocabSubtitleText)
 
         if (ttsPronouncer == null) {
             ttsPronouncer = com.epubreader.app.util.TtsPronouncer(this)
@@ -78,11 +134,11 @@ class VocabularyActivity : AppCompatActivity() {
         recycler?.layoutManager = LinearLayoutManager(this)
         recycler?.adapter = vocabAdapter
 
-        // Dual Tab Switcher
-        tabs?.addOnTabSelectedListener(object : com.google.android.material.tabs.TabLayout.OnTabSelectedListener {
+        // Rule 3 — Tab toggling resets screen directly
+        vocabTabs?.addOnTabSelectedListener(object : com.google.android.material.tabs.TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: com.google.android.material.tabs.TabLayout.Tab?) {
-                hideKeyboard(searchEdit)
-                searchEdit?.clearFocus()
+                resetVocabScreenToDefault()
+
                 if (tab?.position == 1) {
                     wordsContainer?.visibility = View.GONE
                     flashcardContainer?.visibility = View.VISIBLE
@@ -96,44 +152,32 @@ class VocabularyActivity : AppCompatActivity() {
             override fun onTabReselected(tab: com.google.android.material.tabs.TabLayout.Tab?) {}
         })
 
-        // Live Search & Chip Filters
-        val applyFilters = {
-            val query = searchEdit?.text?.toString()?.trim()?.lowercase() ?: ""
-            val checkedId = chipGroup?.checkedChipId
-            val filtered = vocabFullList.filter { item ->
-                val matchesQuery = query.isBlank() ||
-                    item.word.lowercase().contains(query) ||
-                    (item.definition?.lowercase()?.contains(query) == true) ||
-                    (item.bookTitle?.lowercase()?.contains(query) == true)
-
-                val matchesChip = when (checkedId) {
-                    R.id.chipNew -> item.masteryLevel == 0
-                    R.id.chipLearning -> item.masteryLevel == 1
-                    R.id.chipMastered -> item.masteryLevel == 2
-                    else -> true
-                }
-                matchesQuery && matchesChip
+        // Rule 1 — Explicitly show/hide cancel button ONLY when typing text content changes
+        searchEdit?.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                val query = s?.toString()?.trim() ?: ""
+                searchLayout?.isEndIconVisible = query.isNotEmpty()
+                applyFilters()
             }
-            vocabAdapter.submitList(filtered)
-            emptyText?.visibility = if (filtered.isEmpty()) View.VISIBLE else View.GONE
-            recycler?.visibility = if (filtered.isEmpty()) View.GONE else View.VISIBLE
-            actionsRow?.visibility = if (vocabFullList.isEmpty()) View.GONE else View.VISIBLE
+            override fun afterTextChanged(s: Editable?) {}
+        })
 
-            val total = vocabFullList.size
-            val count = filtered.size
-            val wordOrWords = if (count == 1) getString(R.string.vocab_label_book) else getString(R.string.vocab_label_books)
-            subtitleTv?.text = if (filtered.size == vocabFullList.size) {
-                getString(R.string.vocab_heading_subtitle, total, if (total == 1) getString(R.string.vocab_label_book) else getString(R.string.vocab_label_books))
+        searchEdit?.setOnEditorActionListener { _, actionId, event ->
+            if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH ||
+                (event != null && event.keyCode == android.view.KeyEvent.KEYCODE_ENTER && event.action == android.view.KeyEvent.ACTION_DOWN)) {
+                hideKeyboard(searchEdit)
+                searchEdit?.clearFocus()
+                true
             } else {
-                "$count matching $wordOrWords (filtered from $total)"
+                false
             }
         }
 
-        searchEdit?.addTextChangedListener(object : android.text.TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) { applyFilters() }
-            override fun afterTextChanged(s: android.text.Editable?) {}
-        })
+        // Rule 4 — Clicking Cancel Icon Clears Input Text, Hides Keyboard, & Removes Focus explicitly
+        searchLayout?.setEndIconOnClickListener {
+            resetVocabScreenToDefault()
+        }
 
         chipGroup?.setOnCheckedStateChangeListener { group, checkedIds ->
             val checkedId = checkedIds.firstOrNull() ?: View.NO_ID
@@ -141,10 +185,13 @@ class VocabularyActivity : AppCompatActivity() {
                 val chip = group.getChildAt(i) as? com.google.android.material.chip.Chip
                 if (chip != null) {
                     if (chip.id == checkedId) {
-                        chip.chipBackgroundColor = android.content.res.ColorStateList.valueOf(ContextCompat.getColor(this, R.color.accent_pop))
+                        chip.chipBackgroundColor =
+                            android.content.res.ColorStateList.valueOf(ContextCompat.getColor(this, R.color.palette_violet))
                         chip.setTextColor(ContextCompat.getColor(this, R.color.black))
                     } else {
-                        chip.chipBackgroundColor = android.content.res.ColorStateList.valueOf(ContextCompat.getColor(this, R.color.palette_plum))
+                        chip.chipBackgroundColor = android.content.res.ColorStateList.valueOf(
+                            ContextCompat.getColor(this, R.color.palette_plum)
+                        )
                         chip.setTextColor(ContextCompat.getColor(this, R.color.palette_mint))
                     }
                 }
@@ -152,15 +199,16 @@ class VocabularyActivity : AppCompatActivity() {
             applyFilters()
         }
 
-        // Initialize chip styles
         for (i in 0 until (chipGroup?.childCount ?: 0)) {
             val chip = chipGroup?.getChildAt(i) as? com.google.android.material.chip.Chip
             if (chip != null) {
                 if (chip.isChecked) {
-                    chip.chipBackgroundColor = android.content.res.ColorStateList.valueOf(ContextCompat.getColor(this, R.color.accent_pop))
+                    chip.chipBackgroundColor =
+                        android.content.res.ColorStateList.valueOf(ContextCompat.getColor(this, R.color.palette_violet))
                     chip.setTextColor(ContextCompat.getColor(this, R.color.black))
                 } else {
-                    chip.chipBackgroundColor = android.content.res.ColorStateList.valueOf(ContextCompat.getColor(this, R.color.palette_plum))
+                    chip.chipBackgroundColor =
+                        android.content.res.ColorStateList.valueOf(ContextCompat.getColor(this, R.color.palette_plum))
                     chip.setTextColor(ContextCompat.getColor(this, R.color.palette_mint))
                 }
             }
@@ -170,30 +218,13 @@ class VocabularyActivity : AppCompatActivity() {
         findViewById<View>(R.id.vocabExportMarkdown)?.setOnClickListener { export(1) }
         findViewById<View>(R.id.vocabClearAll)?.setOnClickListener { confirmClearVocab() }
 
-        // Flashcard controls
+        // 3D Card Configuration layout loops
         val flashcardCard = findViewById<View>(R.id.flashcardCardView)
         val flashcardPrev = findViewById<View>(R.id.flashcardPrevBtn)
         val flashcardNext = findViewById<View>(R.id.flashcardNextBtn)
         val flashcardLearning = findViewById<com.google.android.material.button.MaterialButton>(R.id.flashcardLearningBtn)
         val flashcardMastered = findViewById<com.google.android.material.button.MaterialButton>(R.id.flashcardMasteredBtn)
         val flashcardAudioBtn = findViewById<View>(R.id.flashcardAudioBtn)
-
-        flashcardLearning?.setOnClickListener {
-            if (vocabFullList.isNotEmpty() && vocabFlashcardIndex in vocabFullList.indices) {
-                val current = vocabFullList[vocabFlashcardIndex]
-                lifecycleScope.launch(Dispatchers.IO) {
-                    AppDatabase.get(applicationContext).dictionaryHistoryDao().updateMasteryLevel(current.id, 1)
-                }
-            }
-        }
-        flashcardMastered?.setOnClickListener {
-            if (vocabFullList.isNotEmpty() && vocabFlashcardIndex in vocabFullList.indices) {
-                val current = vocabFullList[vocabFlashcardIndex]
-                lifecycleScope.launch(Dispatchers.IO) {
-                    AppDatabase.get(applicationContext).dictionaryHistoryDao().updateMasteryLevel(current.id, 2)
-                }
-            }
-        }
 
         flashcardAudioBtn?.setOnClickListener {
             if (vocabFullList.isNotEmpty() && vocabFlashcardIndex in vocabFullList.indices) {
@@ -286,6 +317,43 @@ class VocabularyActivity : AppCompatActivity() {
             if (vocabFlashcardIndex >= list.size) vocabFlashcardIndex = (list.size - 1).coerceAtLeast(0)
             renderFlashcard()
         }
+
+        // CRITICAL INITIALIZATION FIX FOR CUSTOM MODE: Force hide icon on screen startup
+        searchLayout?.isEndIconVisible = false
+    }
+
+    // Rule 3 & 4 — Clean helper reset loop that handles visibility states directly
+    private var isResettingScreen = false
+
+    private fun resetVocabScreenToDefault() {
+        if (isResettingScreen) return
+        isResettingScreen = true
+        try {
+            searchEdit?.text?.clear()
+            chipGroup?.check(R.id.chipAll)
+            searchEdit?.clearFocus()
+            hideKeyboard(searchEdit)
+            searchLayout?.isEndIconVisible = false // Explicitly hide close icon on clean resets
+            applyFilters()
+
+            // Reset tabs to Word Sanctuary (Tab 0) & update container visibility
+            if (vocabTabs?.selectedTabPosition != 0) {
+                vocabTabs?.getTabAt(0)?.select()
+            }
+            wordsContainer?.visibility = View.VISIBLE
+            flashcardContainer?.visibility = View.GONE
+
+            // Reset flashcard progress, flip state, and 3D card rotation back to Card 1
+            vocabFlashcardIndex = 0
+            vocabFlashcardFlipped = false
+            val flashcardCard = findViewById<View>(R.id.flashcardCardView)
+            flashcardCard?.rotationY = 0f
+            findViewById<View>(R.id.flashcardFrontSide)?.visibility = View.VISIBLE
+            findViewById<View>(R.id.flashcardBackSide)?.visibility = View.GONE
+            renderFlashcard()
+        } finally {
+            isResettingScreen = false
+        }
     }
 
     private fun renderFlashcard() {
@@ -305,7 +373,8 @@ class VocabularyActivity : AppCompatActivity() {
         phoneticTv?.text = current.phonetic ?: "/${current.word.lowercase()}/"
         posTv?.text = current.partOfSpeech?.uppercase() ?: "WORD"
         defTv?.text = current.definition ?: getString(R.string.dictionary_not_found)
-        exampleTv?.text = if (!current.example.isNullOrBlank()) getString(R.string.vocab_quote_format, current.example) else ""
+        exampleTv?.text =
+            if (!current.example.isNullOrBlank()) getString(R.string.vocab_quote_format, current.example) else ""
 
         updateFlashcardMasteryState(current, flashcardLearning, flashcardMastered, this)
     }
@@ -316,9 +385,9 @@ class VocabularyActivity : AppCompatActivity() {
         masteredBtn: com.google.android.material.button.MaterialButton?,
         context: android.content.Context
     ) {
-        val accentPop = ContextCompat.getColor(context, R.color.accent_pop)
-        val black = ContextCompat.getColor(context, android.R.color.black)
-        val white = ContextCompat.getColor(context, android.R.color.white)
+        val accentPop = ContextCompat.getColor(context, R.color.palette_violet)
+        val black = ContextCompat.getColor(context, R.color.black)
+        val white = ContextCompat.getColor(context, R.color.white)
         val transparent = android.graphics.Color.TRANSPARENT
         val strokeColorState = android.content.res.ColorStateList.valueOf(accentPop)
 
@@ -355,7 +424,8 @@ class VocabularyActivity : AppCompatActivity() {
                 lifecycleScope.launch(Dispatchers.IO) {
                     AppDatabase.get(applicationContext).dictionaryHistoryDao().clear()
                 }
-                Snackbar.make(findViewById(android.R.id.content), R.string.vocabulary_cleared, Snackbar.LENGTH_SHORT).show()
+                Snackbar.make(findViewById(android.R.id.content), R.string.vocabulary_cleared, Snackbar.LENGTH_SHORT)
+                    .show()
             }
             .setNegativeButton(R.string.cancel, null)
             .show()
@@ -374,7 +444,8 @@ class VocabularyActivity : AppCompatActivity() {
             file.writeText(content, Charsets.UTF_8)
             withContext(Dispatchers.Main) {
                 share(file, mime)
-                Snackbar.make(findViewById(android.R.id.content), R.string.vocabulary_exported, Snackbar.LENGTH_SHORT).show()
+                Snackbar.make(findViewById(android.R.id.content), R.string.vocabulary_exported, Snackbar.LENGTH_SHORT)
+                    .show()
             }
         }
     }
@@ -436,8 +507,9 @@ class VocabularyActivity : AppCompatActivity() {
         startActivity(Intent.createChooser(intent, getString(R.string.vocabulary_title)))
     }
 
-    override fun dispatchTouchEvent(ev: android.view.MotionEvent?): Boolean {
-        if (ev?.action == android.view.MotionEvent.ACTION_DOWN) {
+    // Rule 2 — Clicking Outside Drops Focus, Closes Keyboards, & Explicitly RETAINS close icon state if text is active
+    override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
+        if (ev?.action == MotionEvent.ACTION_DOWN) {
             val v = currentFocus
             if (v is android.widget.EditText) {
                 val outRect = android.graphics.Rect()
@@ -445,6 +517,10 @@ class VocabularyActivity : AppCompatActivity() {
                 if (!outRect.contains(ev.rawX.toInt(), ev.rawY.toInt())) {
                     v.clearFocus()
                     hideKeyboard(v)
+
+                    // Enforce Rule 2 manually: explicitly maintain visibility based on actual text buffer contents
+                    val textStr = searchEdit?.text?.toString()?.trim() ?: ""
+                    searchLayout?.isEndIconVisible = textStr.isNotEmpty()
                 }
             }
         }
@@ -457,6 +533,22 @@ class VocabularyActivity : AppCompatActivity() {
         if (targetToken != null) {
             imm?.hideSoftInputFromWindow(targetToken, 0)
         }
+    }
+
+    // Rule 3 (Continued) — Moving away from screen or returning completely flushes the query states back to baseline
+    override fun onPause() {
+        super.onPause()
+        resetVocabScreenToDefault()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        resetVocabScreenToDefault()
+    }
+
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        super.onRestoreInstanceState(savedInstanceState)
+        resetVocabScreenToDefault()
     }
 
     override fun onDestroy() {

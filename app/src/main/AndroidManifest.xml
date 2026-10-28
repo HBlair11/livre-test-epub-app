@@ -55,7 +55,7 @@
             android:name=".ReaderActivity"
             android:exported="false"
             android:configChanges="orientation|screenSize|keyboardHidden"
-            android:theme="@style/Theme.EpubReader.Reader" />
+            android:theme="@style/Theme.EpubReader" />
 
         <!-- Patch 17 (Issue #1): full-screen reader settings activity (replaces
              the old BottomSheet settings sheet). Same static reader chrome. -->
@@ -63,7 +63,7 @@
             android:name=".ui.ReaderSettingsActivity"
             android:exported="false"
             android:configChanges="orientation|screenSize|keyboardHidden"
-            android:theme="@style/Theme.EpubReader.Settings" />
+            android:theme="@style/Theme.EpubReader" />
 
         <activity
             android:name=".BookDetailsActivity"

@@ -62,7 +62,7 @@
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:layout_marginBottom="16dp"
-            android:background="?attr/dividerHorizontal" />
+            android:background="@color/palette_purple" />
 
         <!-- Folders info and management section -->
         <com.google.android.material.card.MaterialCardView
@@ -70,7 +70,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            app:cardBackgroundColor="?attr/colorSurface"
+            app:cardBackgroundColor="@color/palette_plum"
             app:cardCornerRadius="14dp"
             app:cardElevation="1dp">
 

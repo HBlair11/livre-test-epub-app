@@ -2,14 +2,9 @@
 <resources>
     <string name="app_name">The Livre Magicae</string>
 
-    <string name="continue_reading">Continue reading</string>
-    <string name="home_continue_label">Continue Reading</string>
     <string name="home_continue_heading">CONTINUE READING</string>
-    <string name="home_continue_series">%1$s</string>
-    <string name="home_continue_location">Location - %1$s</string>
     <string name="home_recently_added">RECENTLY ADDED</string>
     <string name="home_favorites">FAVORITES</string>
-    <string name="home_opened_date">Opened %1$s</string>
     <string name="home_browse_by_author">BROWSE BY AUTHOR</string>
     <string name="home_browse_by_series">BROWSE BY SERIES</string>
     <string name="home_all_authors">All Authors</string>
@@ -18,26 +13,18 @@
     <string name="home_progress">Progress</string>
     <string name="home_resume_reading">Resume Reading</string>
     <string name="home_book_details">View Book Details</string>
-    <string name="home_top_authors">Top Authors</string>
-    <string name="home_top_series">Top Series</string>
-    <string name="home_group_title">%1$s · %2$d books</string>
-    <string name="home_progress_percent">%1$d%% read</string>
     <string name="home_empty_title">Your library is empty</string>
     <string name="home_empty_hint">Add a few EPUBs and Home will become your reading starting point.</string>
-    <string name="action_scan_folder">Scan folder</string>
     <string name="action_import_file">Import file</string>
     <string name="action_search">Search</string>
     <string name="action_search_books">Search books</string>
     <string name="action_sort">Sort</string>
     <string name="action_view_mode">View mode</string>
-    <string name="action_more">More</string>
     <string name="action_toc">Contents</string>
     <string name="action_bookmarks">Bookmarks</string>
     <string name="action_highlights">Highlights</string>
     <string name="action_settings">Settings</string>
     <string name="action_back">Back</string>
-    <string name="action_prev">Previous</string>
-    <string name="action_next">Next</string>
 
     <string name="confirm">Confirm</string>
     <string name="delete">Delete</string>
@@ -46,26 +33,12 @@
     <string name="title_field">Title</string>
     <string name="collection_name">Collection name</string>
 
-    <string name="settings_theme">Theme</string>
-    <string name="settings_font">Font</string>
-    <string name="settings_align">Alignment</string>
-    <string name="settings_font_size">Font size</string>
-    <string name="settings_line_height">Line spacing</string>
-    <string name="settings_margin">Margin</string>
-    <string name="settings_reader_theme">Reader theme</string>
-    <string name="settings_about">About</string>
-    <string name="settings_about_detail">The Livre Magicae · Epub Reader</string>
 
     <string name="settings_keep_screen_on">SCREEN ON</string>
     <string name="settings_keep_screen_on_summary">Keep the phone screen on for 10 minutes longer than your current system setting when you are actively reading.</string>
 
     <string name="search_books_hint">Search books…</string>
-    <string name="search_in_book_hint">Search this book</string>
 
-    <string name="tab_reading">Reading</string>
-    <string name="tab_library">Library</string>
-    <string name="tab_authors">Authors</string>
-    <string name="tab_series">Series</string>
 
     <!-- Drawer -->
     <string name="nav_home">Home</string>
@@ -81,8 +54,6 @@
     <string name="nav_reading_stats">Reading Stats</string>
     <string name="nav_settings">Settings</string>
     <string name="coming_soon">Coming soon</string>
-    <string name="nav_open">Open navigation menu</string>
-    <string name="nav_close">Close navigation menu</string>
     <string name="back_again_to_exit">Press back again to exit</string>
     <string name="action_add">Import books</string>
     <string name="folder_heading_title">OFFLINE EPUB FOLDER AND FILE MANAGER</string>
@@ -100,7 +71,6 @@
     <string name="metadata_refresh_unchanged">Unchanged</string>
     <string name="metadata_refresh_skipped">Skipped</string>
     <string name="metadata_refresh_failed">Failed</string>
-    <string name="metadata_refresh_no_results">No EPUB files were found.</string>
     <string name="folder_options">Folder</string>
     <string name="scan_no_folder">Select a folder first</string>
     <string name="scan_complete_new">Scan completed, %1$d new book(s) found</string>
@@ -111,35 +81,42 @@
     <string name="recently_added_screen_title">Recently Added</string>
 
     <string name="empty_favorites">No favorites yet. Long-press a book to favorite it.</string>
-    <string name="empty_finished">No finished books yet.</string>
-    <string name="empty_tbr">Nothing in your To Be Read list.</string>
     <string name="empty_placeholder">This section is coming soon.</string>
 
     <string name="empty_library">No books yet</string>
     <string name="search_no_matches">No matching books</string>
 
     <string name="sort_recently_added">Modified</string>
-    <string name="sort_recently_read">Recently Opened</string>
+    <string name="sort_recently_read">Read</string>
     <string name="sort_title">Title</string>
     <string name="sort_author">Author</string>
     <string name="sort_series">Series</string>
+    <string name="sort_a_z">A - Z</string>
+    <string name="sort_z_a">Z - A</string>
     <string name="sort_ascending">Ascending</string>
     <string name="sort_descending">Descending</string>
-    <string name="sort_newer_first">Newer first</string>
-    <string name="sort_older_first">Older first</string>
+    <string name="sort_newer_first">Newest to Oldest</string>
+    <string name="sort_older_first">Oldest to Newest</string>
     <string name="sort_choose_order">Choose order</string>
 
     <string name="view_mode_grid">Grid</string>
     <string name="view_mode_list">List</string>
-    <string name="grid_columns">Columns: %1$d</string>
+    <string name="view_mode_grid_2">Grid 2</string>
+    <string name="view_mode_grid_3">Grid 3</string>
+    <string name="view_mode_grid_4">Grid 4</string>
 
     <string name="option_favorite_add">Add to Favorites</string>
     <string name="option_favorite_remove">Remove from Favorites</string>
     <string name="search_hint_books">Search by title, author or series</string>
     <string name="search_results">Search results</string>
+    <string name="search_empty_line1">Type to search your personal offline library.</string>
+    <string name="search_empty_line2">Press Enter to record search history</string>
+    <string name="recent_searches_title">RECENT SEARCHES</string>
+    <string name="clear_history">Clear history</string>
+    <string name="no_results_found">No results found</string>
+    <string name="no_results_subtitle">Try another keyword or change your filter.</string>
     <string name="empty_library_hint">Tap the folder button to scan for EPUB files</string>
     <string name="scan_complete">Imported %1$d book(s)</string>
-    <string name="scan_none">No EPUB files found</string>
     <string name="empty_reading">Nothing in progress. Open a book to begin.</string>
     <string name="empty_authors">No authors found.</string>
     <string name="empty_series">No series found.</string>
@@ -172,7 +149,6 @@
     <string name="book_added">Date added</string>
     <string name="book_last_read">Last read</string>
     <string name="book_last_read_and_bookmark">Date last read and current bookmark</string>
-    <string name="book_progress">Progress</string>
     <string name="unknown_author">Unknown author</string>
     <string name="book_title">Title</string>
     <string name="untitled">Untitled</string>
@@ -182,25 +158,33 @@
     <string name="option_edit_details">Edit details</string>
     <string name="edit_book_details">Edit book details</string>
     <string name="edit_book_cover">Change cover</string>
-    <string name="edit_book_cover_placeholder">Use generated cover</string>
     <string name="details_saved">Book details saved</string>
 
-    <string name="reader_hint_tap">Tap center for menu · tap sides to turn pages</string>
+
+    <string name="nook_workspace_title">READING NOOK WORKSPACE (JOURNAL, STAMPS &amp; NOTES)</string>
+
+    <string name="book_details_nook_workspace">OPEN READING NOOK</string>
+    <string name="book_details_drop_reading">REMOVE FROM READING</string>
+    <string name="book_details_delete_book">REMOVE FROM LIBRARY</string>
+    <string name="book_details_edit_metadata">EDIT METADATA</string>
+    <string name="book_details_favorite_add">ADD TO FAVORITES</string>
+    <string name="book_details_favorite_remove">REMOVE FROM FAVORITES</string>
+    <string name="book_details_file_prefix">File: </string>
+    <string name="book_details_date_last_read">Date Last Read: </string>
+    <string name="progress_percent">%1$d%%</string>
+
     <string name="reader_chapter">Chapter %1$d</string>
-    <string name="page_x_of_y">Chapter %1$d of %2$d</string>
     <string name="no_toc">No contents</string>
     <string name="reader_contents">Contents</string>
     <string name="reader_bookmarks">Bookmarks</string>
     <string name="reader_search">Search</string>
     <string name="reader_settings">Settings</string>
     <string name="reader_theme">Theme</string>
-    <string name="reader_font_family">Font</string>
     <string name="reader_font_size">Font size</string>
     <string name="reader_line_height">Line spacing</string>
     <string name="reader_bottom_margin">Top &amp; bottom margin</string>
     <string name="reader_bottom_margin_summary">Keep page content clear of the top status bar and bottom nav bar (equal top &amp; bottom spacing)</string>
     <string name="reader_page_of_pages">%1$d / %2$d</string>
-    <string name="reader_page_measuring">%1$d / …</string>
     <string name="reader_tab_contents">Contents</string>
     <string name="reader_tab_bookmarks">Bookmarks</string>
     <string name="reader_tab_highlights">Highlights</string>
@@ -222,7 +206,6 @@
     <string name="dictionary_did_you_mean">Did you mean…</string>
     <string name="dictionary_lookup_external">Look up in other apps</string>
     <string name="dictionary_external_none">No external dictionary app is installed.</string>
-    <string name="dictionary_attribution">Offline dictionary • WordNet-derived local dataset</string>
     <string name="reader_search_empty">Enter a word or phrase to find matches across the book.</string>
     <string name="reader_margin">Margin</string>
     <string name="reader_alignment">Alignment</string>
@@ -251,7 +234,6 @@
 
     <!-- Patch 17: full-screen reader settings activity. -->
     <string name="reader_settings_title">Reader Settings</string>
-    <string name="reader_settings_done">Done</string>
     <!-- Steppers: content descriptions for the +/- buttons (accessibility). -->
     <string name="stepper_decrease">Decrease</string>
     <string name="stepper_increase">Increase</string>
@@ -263,10 +245,6 @@
     <string name="settings_vocab_mastery_summary">Enable practice tabs, flashcard mode, and mastery level badges in Vocabulary Sanctuary.</string>
     <string name="stats_goal_disabled_info">Daily Reading Goal tracking is turned off. You can enable this feature and configure your goal in Settings.</string>
 
-    <string name="toc_empty">No contents</string>
-    <string name="bookmarks_empty">No bookmarks</string>
-    <string name="search_no_results">No results</string>
-    <string name="search_results_label">Results</string>
     <string name="bookmark_added">Bookmark added</string>
     <string name="bookmark_exists">Bookmark exists</string>
 
@@ -291,9 +269,6 @@
     <string name="tts_pause">Pause</string>
     <string name="tts_stop">Stop</string>
     <string name="tts_unavailable">Offline read-aloud is unavailable. Install an offline voice in your system Text-to-Speech settings.</string>
-    <string name="home_progress_location">%1$d%% · %2$s</string>
-    <string name="settings_reading_stats">Reading Stats</string>
-    <string name="settings_reading_stats_detail">Quiet, private reading reflection</string>
     <string name="stats_title">Reading Stats</string>
     <string name="stats_privacy">All reading stats stay on your device.</string>
     <string name="stats_time_week">Time this week</string>
@@ -305,8 +280,6 @@
     <string name="stats_days">days</string>
     <string name="stats_minutes_value">%1$d min</string>
     <string name="stats_hours_value">%1$dh %2$dm</string>
-    <string name="about_privacy_title">Privacy</string>
-    <string name="define_title">Define</string>
 
     <!-- Patch v37: Vocabulary (offline dictionary lookup history) -->
     <string name="nav_vocabulary">Vocabulary</string>
@@ -323,29 +296,39 @@
 
     <!-- Highlights -->
     <string name="highlight_action">Highlight</string>
-    <string name="highlight_copy">Copy</string>
     <string name="highlight_note">Note</string>
-    <string name="highlight_define">Define</string>
-    <string name="highlight_more">More</string>
     <string name="highlight_color_yellow">Yellow</string>
     <string name="highlight_color_green">Green</string>
     <string name="highlight_color_blue">Blue</string>
     <string name="highlight_color_purple">Purple</string>
     <string name="highlight_added">Highlight added</string>
-    <string name="highlight_note_hint">Add a note…</string>
+    <string name="highlight_note_hint">Write your note or thoughts...</string>
     <string name="highlight_note_saved">Note saved</string>
     <string name="highlight_delete">Delete highlight</string>
-    <string name="highlight_copied">Copied to clipboard</string>
     <string name="highlight_deleted">Highlight deleted</string>
     <string name="bookmark_deleted">Bookmark deleted</string>
+    <string name="highlight_add_personal_note">+ Add a personal note</string>
+    <string name="save_note">Save Note</string>
+    <string name="edit">Edit</string>
+    <string name="copy_all">Copy All</string>
+    <string name="highlight_details">Highlight Details</string>
+    <string name="no_note_attached">No note attached yet.</string>
+    <string name="delete_highlight">Delete Highlight</string>
+    <string name="personal_note">Personal Note</string>
+    <string name="edit_note">Edit Note</string>
+    <string name="add_note">+ Add Note</string>
+    <string name="close">Close</string>
+    <string name="filter_label">Filter:</string>
+    <string name="filter_all">All</string>
+    <string name="filter_title">Title</string>
+    <string name="filter_author">Author</string>
+    <string name="filter_series">Series</string>
+    <string name="filter_all_count">All (%1$d)</string>
+    <string name="recently_added_heading_subtitle">Top 50 recently added books from your bookshelf, newest to oldest.</string>
 
     <!-- Patch v37: expanded Read Aloud (TTS) controls -->
     <string name="tts_skip_back">Previous sentence</string>
     <string name="tts_skip_forward">Next sentence</string>
-    <string name="tts_repeat">Repeat sentence</string>
-    <string name="tts_repeat_on">Repeating sentence</string>
-    <string name="tts_repeat_word">Repeating word</string>
-    <string name="tts_repeat_off">Repeat off</string>
     <string name="tts_resume">Resume</string>
     <string name="tts_sleep_timer">Sleep timer</string>
     <string name="tts_sleep_off">Off</string>
@@ -360,7 +343,6 @@
     <string name="tts_voice_changed_pause">Voice updated. Press play to continue.</string>
     <string name="tts_background_playback">Keep reading in background</string>
     <string name="tts_background_playback_summary">Continue read-aloud when the screen is off or you switch apps</string>
-    <string name="tts_sentence_position">Sentence %1$d of %2$d</string>
     <string name="tts_status_reading">Reading</string>
     <string name="tts_status_paused">Paused</string>
     <string name="tts_notification_title">Reading aloud</string>
@@ -371,10 +353,7 @@
          reader menu disappears while it is open. -->
     <string name="tts_overlay_title">Read aloud</string>
     <string name="tts_close">Close read aloud</string>
-    <string name="tts_section">Section</string>
-    <string name="tts_stop_confirm">Stop</string>
 
-    <string name="selection_move_toolbar">Move selection toolbar</string>
 
     <string name="settings_section_heading_title">SETTINGS &amp; APP CONFIGURATION</string>
     <string name="settings_section_heading_subtitle">Manage Reading Goals, configure app level settings and backups and learn more about the App features.</string>
@@ -382,13 +361,9 @@
     <string name="settings_section_daily_goal_subtitle">Set a gentle daily reading milestone to celebrate your reading habit without high-pressure streaks.</string>
     <string name="settings_target_minutes">Target Minutes per Day</string>
     <string name="settings_show_goal_stats">Show Goal on Stats Dashboard</string>
-    <string name="settings_show_goal_stats_summary">Displays your daily goal ring and progress</string>
 
     <string name="settings_section_scanned_folder">SCANNED FOLDER</string>
 
-    <string name="settings_section_color_theme">Reader Color Theme</string>
-    <string name="settings_section_typography">Typography &amp; Sizing</string>
-    <string name="settings_section_tts">Read Aloud TTS Voice &amp; Speed</string>
     <string name="settings_section_backup">FULL BACKUP &amp; RESTORE</string>
     <string name="settings_section_backup_summary">Export your reading database, bookmarks, highlights, and preferences to a secure file, or restore from a previous backup.</string>
     <string name="settings_export_backup">Export Backup</string>
@@ -400,12 +375,6 @@
     <string name="settings_privacy_body">• No account\n• No tracking\n• No analytics\n• No cloud library\n• No advertising\n• No internet connection required\n\nYour books stay on your device.</string>
     <string name="settings_epub_reader_settings_info_title">EPUB READER SETTINGS AND CONFIGURATION</string>
     <string name="settings_epub_reader_settings_info_body">Reader appearance, typography, fonts, line spacing, margins, hyphenation, page turn animations, and read-aloud voice settings can be configured directly inside any open book reader settings menu.</string>
-    <string name="goal_15_mins">15 mins</string>
-    <string name="goal_20_mins">20 mins</string>
-    <string name="goal_30_mins">30 mins</string>
-    <string name="goal_45_mins">45 mins</string>
-    <string name="goal_60_mins">60 mins</string>
-    <string name="about_app_full_info">Version 1.36\n\nThe Livre Magicae · EPUB Reader\nA calm, offline-first reading companion.</string>
     <string name="backup_export_success">Backup exported successfully (local encrypted DB &amp; preferences).</string>
     <string name="backup_import_success">Backup imported successfully.</string>
 
@@ -413,17 +382,13 @@
     <string name="settings_section_dictionary_attribution">Offline dictionary bundled with the app.\nEnglish definitions are derived from WordNet 3.1 (wordnet.princeton.edu), used under its permissive license.\nSee assets/dict/WORDNET_LICENSE.txt for details.</string>
 
     <string name="settings_section_app_title">THE LIVRE MAGICAE</string>
-    <string name="settings_section_app_version">Version 1.36</string>
-    <string name="settings_section_description">The Livre Magicae · EPUB Reader\nA calm, offline-first reading companion.</string>
     <string name="settings_section_info">Version 1.36\n\nThe Livre Magicae · EPUB Reader\nA calm, offline-first reading companion.</string>
 
     <string name="action_clear_all">Clear All</string>
-    <string name="stats_time_read">Time Read</string>
     <string name="stats_this_week">This Week</string>
     <string name="stats_this_year">This Year</string>
     <string name="stats_overview">Reading Overview</string>
     <string name="stats_overview_title">READING OVERVIEW</string>
-    <string name="stats_finished">Books Finished</string>
     <string name="stats_streak">Reading Streak</string>
     <string name="stats_heading_title">READING STATISTICS</string>
     <string name="stats_heading_subtitle">Track your personal reading habits, offline streaks, and progress.</string>
@@ -433,7 +398,6 @@
     <string name="stats_this_year_title">THIS YEAR</string>
     <string name="stats_completed_title">COMPLETED</string>
     <string name="stats_goal_fraction">%1$d of %2$d minutes completed today</string>
-    <string name="plus_sign">+</string>
 
     <string name="library_heading_title">LIBRARY</string>
     <string name="library_heading_subtitle">Your entire personal, offline bookshelf.</string>
@@ -466,7 +430,6 @@
     <string name="vocab_mark_mastered">Mastered</string>
     <string name="vocab_mastered_badge">Mastered ✓</string>
     <string name="vocab_discovered_in">Discovered in: %1$s</string>
-    <string name="vocab_pronouncing">Pronouncing %1$s</string>
     <string name="vocab_label_book">Book</string>
     <string name="daily_goal_dialog_title">Daily Reading Goal</string>
     <string name="daily_goal_dialog_subtitle">Building a daily habit expands your vocabulary, sharpens focus, and helps you finish more books.</string>
@@ -483,10 +446,10 @@
     <string name="goal_sub_30_min">Deep Dive</string>
     <string name="goal_sub_45_min">Bookworm</string>
     <string name="goal_sub_60_min">Marathon</string>
-    <string name="goal_sub_5_pages">Easy Start</string>
-    <string name="goal_sub_10_pages">Casual Pace</string>
-    <string name="goal_sub_20_pages">Steady Progress</string>
-    <string name="goal_sub_30_pages">Active Reader</string>
+    <string name="goal_sub_10_pages">Easy Start</string>
+    <string name="goal_sub_20_pages">Casual Pace</string>
+    <string name="goal_sub_30_pages">Steady Progress</string>
+    <string name="goal_sub_40_pages">Active Reader</string>
     <string name="goal_sub_50_pages">Fast Track</string>
     <string name="goal_label_custom">Custom</string>
     <string name="goal_updated_toast">Daily reading goal updated!</string>
@@ -496,10 +459,8 @@
     <string name="stats_goal_fraction_minutes">%1$d of %2$d minutes completed today</string>
     <string name="stats_goal_fraction_pages">%1$d of %2$d pages completed today</string>
     <string name="vocab_label_books">Books</string>
-    <string name="vocab_label_author">Author</string>
-    <string name="vocab_label_authors">Authors</string>
-    <string name="vocab_label_series">Series</string>
-    <string name="vocab_label_collection">Collection</string>
-    <string name="vocab_label_collections">Collections</string>
     <string name="vocab_quote_format">"%1$s"</string>
+    <string name="goal_switch_minutes">Minutes (Click to switch to Pages)</string>
+    <string name="goal_switch_pages">Pages (Click to switch to Minutes)</string>
+    <string name="goal_target_title">Set your Target for the day</string>
 </resources>

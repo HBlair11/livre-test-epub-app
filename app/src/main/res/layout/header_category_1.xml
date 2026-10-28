@@ -4,7 +4,7 @@
     android:id="@+id/toolbar"
     android:layout_width="match_parent"
     android:layout_height="?attr/actionBarSize"
-    android:background="?attr/colorSurface"
+    android:background="@color/palette_plum"
     app:title="@string/app_name"
     app:titleTextColor="@color/palette_mint">
 

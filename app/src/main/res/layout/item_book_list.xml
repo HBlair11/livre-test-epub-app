@@ -9,7 +9,7 @@
     app:cardBackgroundColor="@color/palette_plum"
     app:cardCornerRadius="10dp"
     app:cardElevation="0dp"
-    app:strokeColor="@color/light_border"
+    app:strokeColor="@color/palette_slate"
     app:strokeWidth="0.5dp">
 
     <LinearLayout
@@ -17,16 +17,26 @@
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:padding="10dp">
+        android:padding="12dp">
 
         <!-- Cover: clickable to open reader -->
-        <ImageView
-            android:id="@+id/cover"
-            android:layout_width="68dp"
-            android:layout_height="108dp"
-            android:background="@drawable/cover_frame"
-            android:contentDescription="@string/book_author"
-            android:scaleType="centerCrop" />
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="78dp"
+            android:layout_height="124dp"
+            app:cardElevation="0dp"
+            app:strokeWidth="0dp"
+            app:shapeAppearanceOverlay="@style/ShapeAppearance.LeftSideRounded"
+            app:cardPreventCornerOverlap="false">
+
+            <ImageView
+                android:id="@+id/cover"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/cover_frame"
+                android:contentDescription="@string/book_cover"
+                android:scaleType="centerCrop" />
+
+        </com.google.android.material.card.MaterialCardView>
 
         <!-- Info area: clickable to open book details -->
         <LinearLayout
@@ -42,14 +52,16 @@
                 android:id="@+id/title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginEnd="20dp"
                 android:ellipsize="end"
+                android:minLines="2"
                 android:maxLines="2"
                 android:textColor="@color/palette_mint"
                 android:textSize="15sp"
                 android:textStyle="bold" />
 
             <TextView
-                android:id="@+id/author"
+                android:id="@+id/authorAndSeries"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
@@ -58,21 +70,10 @@
                 android:textColor="@color/palette_slate"
                 android:textSize="12sp" />
 
-            <TextView
-                android:id="@+id/series"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="1dp"
-                android:ellipsize="end"
-                android:maxLines="1"
-                android:textColor="@color/secondary"
-                android:textSize="11sp"
-                android:visibility="gone" />
-
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
+                android:layout_marginTop="8dp"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 
@@ -80,18 +81,22 @@
                     android:id="@+id/progressBar"
                     style="@android:style/Widget.ProgressBar.Horizontal"
                     android:layout_width="0dp"
-                    android:layout_height="4dp"
+                    android:layout_height="8dp"
                     android:layout_weight="1"
+                    android:layout_marginTop="@dimen/app_chrome_padding_v"
+                    android:layout_marginBottom="@dimen/app_chrome_padding_v"
                     android:max="100"
                     android:progress="0"
-                    android:progressDrawable="@drawable/progress_line" />
+                    android:progressDrawable="@drawable/progress_line_rounded_book_list" />
 
                 <TextView
                     android:id="@+id/progressPct"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="6dp"
-                    android:textColor="@color/palette_slate"
+                    android:layout_marginTop="@dimen/app_chrome_padding_v"
+                    android:layout_marginBottom="@dimen/app_chrome_padding_v"
+                    android:layout_marginStart="8dp"
+                    android:textColor="@color/palette_purple"
                     android:textSize="11sp" />
 
                 <TextView
@@ -99,17 +104,33 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="0dp"
-                    android:background="@drawable/badge_bg"
+                    android:background="@drawable/badge_bg_violet"
                     android:paddingStart="6dp"
                     android:paddingTop="1dp"
                     android:paddingEnd="6dp"
                     android:paddingBottom="1dp"
                     android:text="@string/progress_completed"
-                    android:textColor="@color/white"
+                    android:textColor="@color/black"
                     android:textSize="9sp"
                     android:textStyle="bold"
                     android:visibility="gone" />
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>
+
+    <!-- Favorites badge: top-right corner of card -->
+    <ImageView
+        android:id="@+id/favoriteBadge"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_gravity="top|end"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:background="@drawable/favorite_badge_bg"
+        android:contentDescription="@string/option_favorite"
+        android:padding="5dp"
+        android:src="@drawable/ic_favorite"
+        android:visibility="gone"
+        app:tint="@color/palette_violet" />
+
 </com.google.android.material.card.MaterialCardView>

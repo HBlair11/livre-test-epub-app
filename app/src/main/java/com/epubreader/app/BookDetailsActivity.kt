@@ -6,6 +6,7 @@ import android.content.Intent
 import android.graphics.BitmapFactory
 import androidx.activity.result.contract.ActivityResultContracts
 import android.os.Bundle
+import android.widget.TextView
 import android.text.format.DateFormat
 import android.text.format.Formatter
 import android.view.View
@@ -141,62 +142,70 @@ class BookDetailsActivity : AppCompatActivity() {
         }
 
         // =========================
-        // FILENAME
+        // CONDITIONAL METADATA GRID
         // =========================
 
-        binding.filenameValue.text =
-            book.sourceFilename
-                ?: File(book.path).name
+        // PUBLISHER
+        if (!book.publisher.isNullOrBlank()) {
+            binding.publisherContainer.visibility = View.VISIBLE
+            binding.publisherValue.text = book.publisher
+        } else {
+            binding.publisherContainer.visibility = View.GONE
+        }
 
-        // =========================
-        // FILE SIZE
-        // =========================
+        // PUBLISH YEAR
+        if (book.publishYear != null && book.publishYear > 0) {
+            binding.publishYearContainer.visibility = View.VISIBLE
+            binding.publishYearValue.text = book.publishYear.toString()
+        } else {
+            binding.publishYearContainer.visibility = View.GONE
+        }
 
-        binding.filesizeValue.text =
-            Formatter.formatFileSize(
-                this,
-                book.fileSize
-            )
-
-        // =========================
         // LANGUAGE
-        // =========================
+        if (!book.language.isNullOrBlank()) {
+            binding.languageContainer.visibility = View.VISIBLE
+            binding.languageValue.text = book.language
+        } else {
+            binding.languageContainer.visibility = View.GONE
+        }
 
-        binding.languageValue.text =
-            book.language?.takeIf { it.isNotBlank() } ?: ""
-        binding.publishYearValue.text = book.publishYear?.toString().orEmpty()
-        binding.subjectsValue.text = book.subjectTags.orEmpty()
+        // SUBJECT TAGS
+        if (!book.subjectTags.isNullOrBlank()) {
+            binding.subjectsContainer.visibility = View.VISIBLE
+            binding.subjectsValue.text = book.subjectTags
+        } else {
+            binding.subjectsContainer.visibility = View.GONE
+        }
+
+        // ALWAYS SHOWN METADATA
+        binding.filenameValue.text = book.sourceFilename ?: File(book.path).name
+        binding.filesizeValue.text = Formatter.formatFileSize(this, book.fileSize)
+        binding.dateAddedValue.text = fmtDate(book.addedDate)
 
         // =========================
-        // DATE ADDED
-        // =========================
-
-        binding.dateAddedValue.text =
-            fmtDate(book.addedDate)
-
-        // =========================
-        // LAST READ + BOOKMARK
+        // PROGRESS CARD
         // =========================
 
         if (book.lastOpenedDate != null) {
 
-            binding.lastReadContainer.visibility =
-                View.VISIBLE
+            binding.lastReadContainer.visibility = View.VISIBLE
 
-            val progressText =
-                if (book.progress >= 0.90f) {
-                    getString(R.string.progress_completed)
-                } else {
-                    "${(book.progress * 100).toInt()}% read"
-                }
+            val percent = (book.progress * 100).toInt().coerceIn(0, 100)
+            binding.progressPercentText.text = getString(R.string.progress_percent, percent)
+            binding.progressBar.progress = percent
 
-            binding.lastReadValue.text =
-                "${fmtDate(book.lastOpenedDate!!)} • $progressText"
+            val dateStr = fmtDate(book.lastOpenedDate)
+            val progressText = if (book.progress >= 0.90f) {
+                getString(R.string.progress_completed)
+            } else {
+                "$percent% read"
+            }
+
+            binding.lastReadValue.text = "$dateStr • $progressText"
 
         } else {
 
-            binding.lastReadContainer.visibility =
-                View.GONE
+            binding.lastReadContainer.visibility = View.GONE
         }
 
         // =========================
@@ -244,25 +253,22 @@ class BookDetailsActivity : AppCompatActivity() {
 
         var favoriteState = book.isFavorite
 
-        binding.btnFavorite.setImageResource(
-            if (favoriteState) {
-                R.drawable.ic_favorite
-            } else {
-                R.drawable.ic_favorite_border
-            }
-        )
+        fun updateFavoriteUI(isFav: Boolean) {
+            binding.btnFavorite.setIconResource(
+                if (isFav) R.drawable.ic_favorite else R.drawable.ic_favorite_border
+            )
+            binding.btnFavorite.setText(
+                if (isFav) R.string.book_details_favorite_remove else R.string.book_details_favorite_add
+            )
+        }
+
+        updateFavoriteUI(favoriteState)
 
         binding.btnFavorite.setOnClickListener {
             favoriteState = !favoriteState
             val newFavoriteState = favoriteState
 
-            binding.btnFavorite.setImageResource(
-                if (newFavoriteState) {
-                    R.drawable.ic_favorite
-                } else {
-                    R.drawable.ic_favorite_border
-                }
-            )
+            updateFavoriteUI(newFavoriteState)
 
             favoriteUpdateJob?.cancel()
             favoriteUpdateJob = lifecycleScope.launch(Dispatchers.IO) {
@@ -302,6 +308,11 @@ class BookDetailsActivity : AppCompatActivity() {
 
     private fun showEditDialog(book: BookEntity) {
         val view = layoutInflater.inflate(R.layout.dialog_book_edit, null)
+        val headerTv = view.findViewById<TextView>(R.id.header)
+        headerTv?.text = getString(R.string.edit_book_details)
+        val footerLayout = view.findViewById<View>(R.id.footer)
+        footerLayout.tag = "editBookFooter"
+
         val titleEdit = view.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.titleEdit)
         val authorEdit = view.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.authorEdit)
         val seriesEdit = view.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.seriesEdit)
@@ -325,43 +336,42 @@ class BookDetailsActivity : AppCompatActivity() {
         descriptionEdit.setText(book.description.orEmpty())
 
         val dialog = AlertDialog.Builder(this)
-            .setTitle(R.string.edit_book_details)
             .setView(view)
-            .setPositiveButton(R.string.ok, null)
-            .setNeutralButton(R.string.edit_book_cover, null)
-            .setNegativeButton(R.string.cancel, null)
             .create()
 
-        dialog.setOnShowListener {
-            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-                val newTitle = titleEdit.text?.toString()?.trim().orEmpty().ifBlank { getString(R.string.untitled) }
-                val newAuthor = authorEdit.text?.toString()?.trim().orEmpty()
-                val newSeries = seriesEdit.text?.toString()?.trim().orEmpty().ifBlank { null }
-                val newSeriesIndex = seriesIndexEdit.text?.toString()?.trim()?.toDoubleOrNull()
-                val newPublisher = publisherEdit.text?.toString()?.trim().orEmpty().ifBlank { null }
-                val newYear = yearEdit.text?.toString()?.trim()?.toIntOrNull()
-                val newLanguage = languageEdit.text?.toString()?.trim().orEmpty().ifBlank { null }
-                val newIdentifier = identifierEdit.text?.toString()?.trim().orEmpty().ifBlank { null }
-                val newSubjects = subjectsEdit.text?.toString()?.trim().orEmpty().ifBlank { null }
-                val newDescription = descriptionEdit.text?.toString()?.trim().orEmpty().ifBlank { null }
-                lifecycleScope.launch(Dispatchers.IO) {
-                    AppDatabase.get(applicationContext).bookDao().updateMetadataOnly(
-                        id = book.id, title = newTitle, author = newAuthor, series = newSeries, seriesIndex = newSeriesIndex,
-                        language = newLanguage, publisher = newPublisher, description = newDescription, identifier = newIdentifier,
-                        publishYear = newYear, subjectTags = newSubjects, sourceUri = book.sourceUri, sourceFilename = book.sourceFilename,
-                        sortTitle = newTitle, sortAuthor = newAuthor,
-                    )
-                    withContext(Dispatchers.Main) {
-                        Snackbar.make(binding.root, R.string.details_saved, Snackbar.LENGTH_SHORT).show()
-                        load()
-                    }
+        val btnCover = view.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnCover)
+        val btnCancel = view.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnCancel)
+        val btnOk = view.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnOk)
+
+        btnCancel.setOnClickListener { dialog.dismiss() }
+        btnCover.setOnClickListener {
+            dialog.dismiss()
+            coverPicker.launch(arrayOf("image/*"))
+        }
+        btnOk.setOnClickListener {
+            val newTitle = titleEdit.text?.toString()?.trim().orEmpty().ifBlank { getString(R.string.untitled) }
+            val newAuthor = authorEdit.text?.toString()?.trim().orEmpty()
+            val newSeries = seriesEdit.text?.toString()?.trim().orEmpty().ifBlank { null }
+            val newSeriesIndex = seriesIndexEdit.text?.toString()?.trim()?.toDoubleOrNull()
+            val newPublisher = publisherEdit.text?.toString()?.trim().orEmpty().ifBlank { null }
+            val newYear = yearEdit.text?.toString()?.trim()?.toIntOrNull()
+            val newLanguage = languageEdit.text?.toString()?.trim().orEmpty().ifBlank { null }
+            val newIdentifier = identifierEdit.text?.toString()?.trim().orEmpty().ifBlank { null }
+            val newSubjects = subjectsEdit.text?.toString()?.trim().orEmpty().ifBlank { null }
+            val newDescription = descriptionEdit.text?.toString()?.trim().orEmpty().ifBlank { null }
+            lifecycleScope.launch(Dispatchers.IO) {
+                AppDatabase.get(applicationContext).bookDao().updateMetadataOnly(
+                    id = book.id, title = newTitle, author = newAuthor, series = newSeries, seriesIndex = newSeriesIndex,
+                    language = newLanguage, publisher = newPublisher, description = newDescription, identifier = newIdentifier,
+                    publishYear = newYear, subjectTags = newSubjects, sourceUri = book.sourceUri, sourceFilename = book.sourceFilename,
+                    sortTitle = newTitle, sortAuthor = newAuthor,
+                )
+                withContext(Dispatchers.Main) {
+                    Snackbar.make(binding.root, R.string.details_saved, Snackbar.LENGTH_SHORT).show()
+                    load()
                 }
-                dialog.dismiss()
             }
-            dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener {
-                dialog.dismiss()
-                coverPicker.launch(arrayOf("image/*"))
-            }
+            dialog.dismiss()
         }
         dialog.show()
     }

@@ -2,108 +2,54 @@
 <resources>
     <!--
       ============================================================
-      BRAND PALETTE — SINGLE SOURCE OF TRUTH
-      These five colors are the entire brand palette. Change a color
-      here once and it propagates everywhere (app + reader chrome).
-      References Kindle/ReadEra: calm, reading-focused, dark chrome.
-      ============================================================
-      mint     #E0F0EA  lightest  — app background (light), dark text (night)
-      slate    #95ADBE  mid       — secondary accents, muted text, borders
-      purple   #574F7D  deep      — primary variant, muted text (light)
-      plum     #503A65  rich      — primary/accent (FAB, chips, drawer header)
-      eggplant #3C2A4D  darkest   — app background (night), reader chrome bg,
-                                    dark body text (light mode)
-      violet   #B388FF  pop       — accent pop that needs to be highlighted on dark background
+      BRAND PALETTE — MAIN 6 COLOR PALETTE (SINGLE SOURCE OF TRUTH)
       ============================================================
     -->
-    <!-- Original App Colors -->
-    <color name="palette_mint">#E0F0EA</color>
-    <color name="palette_slate">#95ADBE</color>
-    <color name="palette_purple">#574F7D</color>
-    <color name="palette_plum">#503A65</color>
-    <color name="palette_eggplant">#3C2A4D</color>
-    <color name="palette_violet">#B388FF</color>
+    <color name="palette_china">#1c0c16</color>
+    <color name="palette_dusty_rose">#4f213e</color>
+    <color name="palette_rose_water">#823666</color>
+    <color name="palette_copper_rose">#daa6c7</color>
+    <color name="palette_plum_wine">#fdfafc</color>
+    <color name="palette_blush_mauve">#b54c8e</color>
 
-    <color name="palette_china">#FFEEF2</color>
-    <color name="palette_dusty_rose">#B48EAE</color>
-    <color name="palette_rose_water">#D8A694</color>
-    <color name="palette_copper_rose">#9e6764</color>
-    <color name="palette_plum_wine">#754B4D</color>
-    <color name="palette_blush_mauve">#C6707E</color>
-
-    <!-- Test App Colors
+    <!-- Main Palette Colors -->
     <color name="palette_mint">@color/palette_china</color>
     <color name="palette_slate">@color/palette_dusty_rose</color>
     <color name="palette_purple">@color/palette_rose_water</color>
     <color name="palette_plum">@color/palette_copper_rose</color>
     <color name="palette_eggplant">@color/palette_plum_wine</color>
     <color name="palette_violet">@color/palette_blush_mauve</color>
-    -->
+    <color name="white">#000000</color>
+    <color name="black">#FFFFFF</color>
 
-    <!-- ===== App — light mode ===== -->
-    <color name="light_bg">@color/palette_mint</color>
-    <color name="light_surface">@color/white</color>
-    <color name="light_surface_alt">@color/palette_mint</color>
-    <color name="light_border">@color/palette_slate</color>
-    <color name="light_text">@color/palette_eggplant</color>
-    <color name="light_text_muted">@color/palette_purple</color>
-    <color name="light_text_faint">@color/palette_slate</color>
-
-    <!-- ===== App — dark mode (night) ===== -->
-    <color name="dark_bg">@color/palette_eggplant</color>
-    <color name="dark_surface">@color/palette_plum</color>
-    <color name="dark_surface_alt">@color/palette_purple</color>
-    <color name="dark_border">@color/palette_purple</color>
-    <color name="dark_text">@color/palette_mint</color>
-    <color name="dark_text_muted">@color/palette_slate</color>
-    <color name="dark_text_faint">@color/palette_slate</color>
-
-    <!-- ===== Reader chrome — STATIC across all reader themes
-         (dark background + white text/icons, independent of the
-         light/sepia/dark reading theme and of app day/night). ===== -->
-    <color name="reader_chrome_bg">@color/palette_eggplant</color>
-    <color name="reader_chrome_surface">@color/palette_plum</color>
-    <color name="reader_chrome_text">@color/white</color>
+    <!-- ===== Miscellaneous Overlay & Feature Tints ===== -->
     <color name="reader_chrome_text_muted">#B3FFFFFF</color>      <!-- 70% white -->
-    <color name="reader_history_text">#8A8A8A</color>          <!-- fixed muted gray for the transparent history overlay -->
-    <color name="reader_chrome_accent">@color/palette_mint</color>
-    <color name="reader_chrome_track">#5A5070</color>
+    <color name="reader_history_text">#8A8A8A</color>          <!-- fixed muted gray for transparent history overlay -->
     <color name="reader_chrome_scrim">#803C2A4D</color>  <!-- 50% eggplant pill for floating indicators -->
-
-    <!-- ===== Reader content area — only the EPUB content changes
-         with the reading theme. Black text on white (light), white
-         text on black (dark), dark text on cream (sepia). ===== -->
-    <color name="reader_bg_light">@color/white</color>
-    <color name="reader_ink_light">@color/black</color>
-    <color name="reader_bg_sepia">#F1E3D3</color>
-    <color name="reader_ink_sepia">#5A4650</color>
-    <color name="reader_bg_dark">@color/black</color>
-    <color name="reader_ink_dark">@color/white</color>
-
-    <!-- ===== Backward-compatible aliases (kept so existing layouts
-         that reference @color/accent etc. keep working). ===== -->
-    <color name="accent">@color/palette_plum</color>
-    <color name="accent_dark">@color/palette_purple</color>
-    <color name="secondary">@color/palette_slate</color>
-    <color name="pop">@color/palette_mint</color>
-    <color name="pop2">@color/palette_purple</color>
-    <color name="light_accent">@color/palette_mint</color>
-    <color name="accent_pop">@color/palette_violet</color>
-
-    <!-- ===== Misc ===== -->
-    <color name="white">#FFFFFF</color>
-    <color name="black">#000000</color>
-    <color name="scrim">#99000000</color>
-    <color name="cover_placeholder">@color/palette_mint</color>
-    <color name="cover_text">@color/palette_purple</color>
-    <color name="progress_track">@color/palette_slate</color>
-    <color name="progress_fill">@color/palette_mint</color>
-    <color name="completed">@color/palette_slate</color>
-
-    <!-- Patch 18 (Addition #1): fast-scroll thumb (muted slate, 55% opacity) -->
     <color name="reader_history_surface">#00000000</color>
-
-    <!-- Patch v37: Read-aloud word highlight in the reader content area
-         (slate at 50% alpha — readable on light, sepia and dark themes). -->
     <color name="tts_word_highlight">#8095ADBE</color>
+
+    <!--
+      ============================================================
+      OBSOLETE ALIASES (Commented out — layouts & code now reference
+      the main 6 palette colors directly)
+      ============================================================
+      <color name="dark_bg">@color/palette_eggplant</color>
+      <color name="dark_surface">@color/palette_plum</color>
+      <color name="dark_border">@color/palette_purple</color>
+      <color name="dark_text">@color/palette_mint</color>
+      <color name="dark_text_muted">@color/palette_slate</color>
+      <color name="reader_chrome_bg">@color/palette_eggplant</color>
+      <color name="reader_chrome_surface">@color/palette_plum</color>
+      <color name="reader_chrome_accent">@color/palette_mint</color>
+      <color name="accent">@color/palette_plum</color>
+      <color name="accent_dark">@color/palette_purple</color>
+      <color name="secondary">@color/palette_slate</color>
+      <color name="pop">@color/palette_mint</color>
+      <color name="accent_pop">@color/palette_violet</color>
+      <color name="cover_placeholder">@color/palette_mint</color>
+      <color name="progress_track">@color/palette_slate</color>
+      <color name="progress_fill">@color/palette_mint</color>
+      ============================================================
+    -->
 </resources>

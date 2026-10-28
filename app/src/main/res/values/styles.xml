@@ -5,7 +5,7 @@
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_marginTop">20dp</item>
         <item name="android:layout_marginBottom">4dp</item>
-        <item name="android:textColor">?android:textColorSecondary</item>
+        <item name="android:textColor">@color/palette_slate</item>
         <item name="android:textSize">13sp</item>
         <item name="android:textStyle">bold</item>
         <item name="android:textAllCaps">true</item>
@@ -16,6 +16,9 @@
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_weight">1</item>
         <item name="android:textSize">12sp</item>
+        <item name="android:textColor">@color/reader_toggle_text_color</item>
+        <item name="strokeColor">@color/reader_toggle_stroke_color</item>
+        <item name="backgroundTint">@color/reader_toggle_bg_tint</item>
     </style>
 
     <!-- ===== Patch 17: full-screen reader settings activity =====
@@ -34,8 +37,8 @@
         <item name="android:paddingLeft">0dp</item>
         <item name="android:paddingRight">0dp</item>
         <item name="iconPadding">0dp</item>
-        <item name="iconTint">?attr/colorPrimary</item>
-        <item name="rippleColor">?attr/colorPrimary</item>
+        <item name="iconTint">@color/palette_plum</item>
+        <item name="rippleColor">@color/palette_plum</item>
     </style>
 
     <!-- The numeric value between the +/- buttons. -->
@@ -44,7 +47,7 @@
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_weight">1</item>
         <item name="android:gravity">center</item>
-        <item name="android:textColor">?android:textColorPrimary</item>
+        <item name="android:textColor">@color/palette_mint</item>
         <item name="android:textSize">16sp</item>
         <item name="android:textStyle">bold</item>
     </style>
@@ -56,15 +59,6 @@
         <item name="android:layout_height">wrap_content</item>
         <item name="android:gravity">center_vertical</item>
         <item name="android:minHeight">48dp</item>
-    </style>
-
-    <!-- Wrapper that pads each setting block consistently. -->
-    <style name="ReaderSettingBlock">
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:orientation">vertical</item>
-        <item name="android:paddingTop">6dp</item>
-        <item name="android:paddingBottom">6dp</item>
     </style>
 
     <!-- ===== Patch 18 (Fix #1): shared icon-button style — the SINGLE SOURCE
@@ -92,7 +86,7 @@
         <item name="android:layout_marginEnd">@dimen/app_selection_toolbar_action_margin_h</item>
         <item name="android:paddingStart">@dimen/app_selection_toolbar_action_padding_h</item>
         <item name="android:paddingEnd">@dimen/app_selection_toolbar_action_padding_h</item>
-        <item name="android:textColor">@color/reader_chrome_text</item>
+        <item name="android:textColor">@color/white</item>
         <item name="android:textSize">@dimen/app_selection_toolbar_text_size</item>
         <item name="android:clickable">true</item>
         <item name="android:focusable">true</item>
@@ -108,22 +102,22 @@
         <item name="android:layout_marginEnd">@dimen/app_selection_toolbar_action_margin_h</item>
         <item name="android:minWidth">@dimen/app_selection_toolbar_action_min_width</item>
         <item name="android:background">?android:attr/selectableItemBackgroundBorderless</item>
-        <item name="android:tint">@color/reader_chrome_text</item>
+        <item name="android:tint">@color/white</item>
         <item name="android:clickable">true</item>
         <item name="android:focusable">true</item>
     </style>
 
     <!-- Semantic Toolbar style: automatically tints navigation icons, menu actions, and titles -->
     <style name="Widget.EpubReader.Toolbar" parent="Widget.MaterialComponents.Toolbar">
-        <item name="titleTextColor">?android:textColorPrimary</item>
-        <item name="subtitleTextColor">?android:textColorSecondary</item>
-        <item name="navigationIconTint">?android:textColorPrimary</item>
-        <item name="actionMenuTextColor">?android:textColorPrimary</item>
+        <item name="titleTextColor">@color/palette_mint</item>
+        <item name="subtitleTextColor">@color/palette_slate</item>
+        <item name="navigationIconTint">@color/palette_mint</item>
+        <item name="actionMenuTextColor">@color/palette_mint</item>
     </style>
 
     <!-- Semantic Hamburger / Back-Arrow toggle style -->
     <style name="Widget.EpubReader.DrawerArrowToggle" parent="Widget.AppCompat.DrawerArrowToggle">
-        <item name="color">?android:textColorPrimary</item>
+        <item name="color">@color/palette_mint</item>
     </style>
 
     <!-- Individual Folder Action Button Styles -->
@@ -133,7 +127,7 @@
         <item name="android:layout_marginTop">16dp</item>
         <item name="android:textSize">14sp</item>
         <item name="android:textColor">@color/black</item>
-        <item name="backgroundTint">@color/accent_pop</item>
+        <item name="backgroundTint">@color/palette_violet</item>
     </style>
 
     <style name="Widget.EpubReader.FolderButton.RefreshMetadata" parent="Widget.MaterialComponents.Button">
@@ -142,7 +136,7 @@
         <item name="android:layout_marginTop">8dp</item>
         <item name="android:textSize">14sp</item>
         <item name="android:textColor">@color/white</item>
-        <item name="backgroundTint">@color/dark_bg</item>
+        <item name="backgroundTint">@color/palette_eggplant</item>
     </style>
 
     <style name="Widget.EpubReader.FolderButton.SelectFolder" parent="Widget.MaterialComponents.Button">
@@ -151,7 +145,7 @@
         <item name="android:layout_marginTop">8dp</item>
         <item name="android:textSize">14sp</item>
         <item name="android:textColor">@color/white</item>
-        <item name="backgroundTint">@color/dark_bg</item>
+        <item name="backgroundTint">@color/palette_eggplant</item>
     </style>
 
     <style name="Widget.EpubReader.FolderButton.RemoveFolder" parent="Widget.MaterialComponents.Button.OutlinedButton">
@@ -160,6 +154,20 @@
         <item name="android:layout_marginTop">8dp</item>
         <item name="android:textSize">14sp</item>
         <item name="android:textColor">@color/white</item>
-        <item name="backgroundTint">@color/dark_bg</item>
+        <item name="backgroundTint">@color/palette_eggplant</item>
+    </style>
+
+    <style name="ShapeAppearance.TopRounded" parent="">
+        <item name="cornerSizeTopLeft">6dp</item>
+        <item name="cornerSizeTopRight">6dp</item>
+        <item name="cornerSizeBottomLeft">2dp</item>
+        <item name="cornerSizeBottomRight">2dp</item>
+    </style>
+
+    <style name="ShapeAppearance.LeftSideRounded" parent="">
+        <item name="cornerSizeTopLeft">6dp</item>
+        <item name="cornerSizeTopRight">6dp</item>
+        <item name="cornerSizeBottomLeft">6dp</item>
+        <item name="cornerSizeBottomRight">6dp</item>
     </style>
 </resources>

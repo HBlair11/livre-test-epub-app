@@ -63,7 +63,7 @@
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:layout_marginBottom="@dimen/app_row_content_padding_h"
-            android:background="?attr/dividerHorizontal" />
+            android:background="@color/palette_purple" />
 
         <!-- 2. Dual Tab Switcher -->
         <com.google.android.material.tabs.TabLayout
@@ -72,9 +72,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
-            app:tabIndicatorColor="@color/accent_pop"
-            app:tabSelectedTextColor="@color/accent_pop"
-            app:tabTextColor="@color/palette_slate">
+            android:saveEnabled="false"
+            app:tabIndicatorColor="@color/palette_violet"
+            app:tabSelectedTextColor="@color/palette_violet"
+            app:tabTextColor="@color/palette_eggplant">
 
             <com.google.android.material.tabs.TabItem
                 android:layout_width="wrap_content"
@@ -102,15 +103,25 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
                 android:hint="@string/vocab_search_hint"
-                app:startIconDrawable="@drawable/ic_search">
+                app:boxStrokeColor="@color/palette_plum"
+                app:boxCornerRadiusTopStart="10dp"
+                app:boxCornerRadiusTopEnd="10dp"
+                app:boxCornerRadiusBottomStart="10dp"
+                app:boxCornerRadiusBottomEnd="10dp"
+                app:startIconDrawable="@drawable/ic_search"
+                app:endIconMode="clear_text"
+                app:endIconDrawable="@drawable/ic_close">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/vocabSearchEdit"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:imeOptions="actionSearch"
+                    android:saveEnabled="false"
                     android:inputType="text"
-                    android:singleLine="true"
+                    android:maxLines="1"
+                    android:textColor="@color/palette_mint"
+                    android:textColorHint="@color/palette_slate"
                     android:textSize="14sp" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -170,7 +181,7 @@
                     android:layout_marginEnd="4dp"
                     android:text="@string/vocabulary_export_csv"
                     android:textColor="@color/white"
-                    app:strokeColor="@color/accent_pop"
+                    app:strokeColor="@color/palette_violet"
                     android:textSize="12sp" />
 
                 <com.google.android.material.button.MaterialButton
@@ -183,7 +194,7 @@
                     android:layout_marginEnd="4dp"
                     android:text="@string/vocabulary_export_markdown"
                     android:textColor="@color/white"
-                    app:strokeColor="@color/accent_pop"
+                    app:strokeColor="@color/palette_violet"
                     android:textSize="12sp" />
 
                 <com.google.android.material.button.MaterialButton
@@ -194,7 +205,7 @@
                     android:layout_marginStart="4dp"
                     android:text="@string/action_clear_all"
                     android:textColor="@color/white"
-                    app:strokeColor="@color/accent_pop"
+                    app:strokeColor="@color/palette_violet"
                     android:textSize="12sp" />
             </LinearLayout>
 
@@ -272,7 +283,7 @@
                     android:layout_marginEnd="6dp"
                     android:text="@string/vocab_mark_learning"
                     android:textColor="@color/white"
-                    app:strokeColor="@color/accent_pop" />
+                    app:strokeColor="@color/palette_violet" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/flashcardMasteredBtn"
@@ -283,7 +294,7 @@
                     android:layout_marginStart="6dp"
                     android:text="@string/vocab_mark_mastered"
                     android:textColor="@color/white"
-                    app:strokeColor="@color/accent_pop" />
+                    app:strokeColor="@color/palette_violet" />
             </LinearLayout>
 
             <!-- Previous and Next Card Buttons on Left and Right Edges -->
@@ -299,7 +310,7 @@
                     android:layout_alignParentStart="true"
                     android:padding="8dp"
                     android:text="@string/vocab_flashcard_prev"
-                    android:textColor="@color/accent_pop"
+                    android:textColor="@color/palette_violet"
                     android:textSize="14sp"
                     android:textStyle="bold" />
 
@@ -310,7 +321,7 @@
                     android:layout_alignParentEnd="true"
                     android:padding="8dp"
                     android:text="@string/vocab_flashcard_next"
-                    android:textColor="@color/accent_pop"
+                    android:textColor="@color/palette_violet"
                     android:textSize="14sp"
                     android:textStyle="bold" />
             </RelativeLayout>

@@ -439,7 +439,8 @@ class MainActivity : AppCompatActivity() {
             DrawerItem(getString(R.string.nav_reading_stats), R.drawable.ic_stats, view = ShelfView.Stats),
             DrawerItem(getString(R.string.nav_vocabulary), R.drawable.ic_vocabulary, view = ShelfView.Vocabulary),
             DrawerItem(getString(R.string.nav_folders), R.drawable.ic_folder, view = ShelfView.Folders),
-            DrawerItem(getString(R.string.nav_settings), R.drawable.ic_settings, view = ShelfView.Settings
+            DrawerItem(
+                getString(R.string.nav_settings), R.drawable.ic_settings, view = ShelfView.Settings
             ),
         )
 
@@ -510,19 +511,26 @@ class MainActivity : AppCompatActivity() {
         if (viewModel.view.value !is ShelfView.Home) return
 
         binding.homeContent.homeEmpty.visibility = if (content.hasBooks) View.GONE else View.VISIBLE
-        binding.homeContent.homeRecentlyAddedSection.visibility = if (content.recentlyAdded.isEmpty()) View.GONE else View.VISIBLE
+        binding.homeContent.homeRecentlyAddedSection.visibility =
+            if (content.recentlyAdded.isEmpty()) View.GONE else View.VISIBLE
         val hasContinueReading = content.continueReading != null
         binding.homeContent.homeContinueSection.visibility = if (hasContinueReading) View.VISIBLE else View.GONE
         binding.homeContent.homeContinueCard.visibility = if (hasContinueReading) View.VISIBLE else View.GONE
 
         binding.homeContent.homeContinueViewAll.setOnClickListener { viewModel.setView(ShelfView.Reading) }
-        binding.homeContent.homeRecentlyAddedViewAll.setOnClickListener { viewModel.setView(ShelfView.RecentlyAdded(content.recentlyAdded.map { it.id })) }
+        binding.homeContent.homeRecentlyAddedViewAll.setOnClickListener {
+            viewModel.setView(
+                ShelfView.RecentlyAdded(
+                    content.recentlyAdded.map { it.id })
+            )
+        }
         binding.homeContent.homeFavoritesViewAll.setOnClickListener { viewModel.setView(ShelfView.Favorites) }
         binding.homeContent.homeAllAuthorsBtn.setOnClickListener { viewModel.setView(ShelfView.AuthorsList) }
         binding.homeContent.homeAllSeriesBtn.setOnClickListener { viewModel.setView(ShelfView.SeriesList) }
 
         content.continueReading?.let { book ->
-            val dateStr = android.text.format.DateFormat.format("MMM dd, yyyy", book.lastOpenedDate ?: book.addedDate).toString()
+            val dateStr =
+                android.text.format.DateFormat.format("MMM dd, yyyy", book.lastOpenedDate ?: book.addedDate).toString()
             binding.homeContent.homeContinueDate.text = "Opened $dateStr"
             binding.homeContent.homeContinueTitle.text = book.title
 
@@ -564,12 +572,14 @@ class MainActivity : AppCompatActivity() {
         }
 
         submitHomeShelf(R.id.homeRecentlyAdded, content.recentlyAdded)
-        binding.homeContent.homeFavoritesSection.visibility = if (content.favorites.isEmpty()) View.GONE else View.VISIBLE
+        binding.homeContent.homeFavoritesSection.visibility =
+            if (content.favorites.isEmpty()) View.GONE else View.VISIBLE
         submitHomeShelf(R.id.homeFavorites, content.favorites)
 
         populateAuthorRows(content.topAuthors)
         populateSeriesRows(content.topSeries)
-        binding.homeContent.homeAuthorsSection.visibility = if (content.topAuthors.isEmpty()) View.GONE else View.VISIBLE
+        binding.homeContent.homeAuthorsSection.visibility =
+            if (content.topAuthors.isEmpty()) View.GONE else View.VISIBLE
         binding.homeContent.homeSeriesSection.visibility = if (content.topSeries.isEmpty()) View.GONE else View.VISIBLE
     }
 
@@ -577,7 +587,8 @@ class MainActivity : AppCompatActivity() {
         val container = binding.homeContent.homeAuthorRowsContainer
         container.removeAllViews()
         authors.take(4).forEach { group ->
-            val row = layoutInflater.inflate(R.layout.item_home_author_series, container, false) as android.view.ViewGroup
+            val row =
+                layoutInflater.inflate(R.layout.item_home_author_series, container, false) as android.view.ViewGroup
             val tvTitle = row.findViewById<android.widget.TextView>(R.id.title)
             val tvCount = row.findViewById<android.widget.TextView>(R.id.count)
 
@@ -592,7 +603,8 @@ class MainActivity : AppCompatActivity() {
         val container = binding.homeContent.homeSeriesRowsContainer
         container.removeAllViews()
         seriesList.take(4).forEach { group ->
-            val row = layoutInflater.inflate(R.layout.item_home_author_series, container, false) as android.view.ViewGroup
+            val row =
+                layoutInflater.inflate(R.layout.item_home_author_series, container, false) as android.view.ViewGroup
             val tvTitle = row.findViewById<android.widget.TextView>(R.id.title)
             val tvCount = row.findViewById<android.widget.TextView>(R.id.count)
 
@@ -689,7 +701,8 @@ class MainActivity : AppCompatActivity() {
         val isStatsOrVocab = view is ShelfView.Stats || view is ShelfView.Vocabulary
         val headerLayoutRes = when {
             isStatsOrVocab || isFoldersView(view) || view is ShelfView.Settings -> R.layout.header_category_1
-            view is ShelfView.Home || view is ShelfView.Reading || view is ShelfView.AuthorsList || view is ShelfView.SeriesList || view is ShelfView.Collections -> R.layout.header_category_2
+            view is ShelfView.Home || view is ShelfView.AuthorsList || view is ShelfView.SeriesList || view is ShelfView.Collections -> R.layout.header_category_2
+            view is ShelfView.Reading -> R.layout.header_category_4
             else -> R.layout.header_category_3
         }
 
@@ -703,7 +716,8 @@ class MainActivity : AppCompatActivity() {
             val inflatedHeader = layoutInflater.inflate(headerLayoutRes, headerContainer, true)
             headerContainer?.setTag(R.id.headerContainer, headerLayoutRes)
 
-            val activeToolbar = inflatedHeader.findViewById<com.google.android.material.appbar.MaterialToolbar>(R.id.toolbar)
+            val activeToolbar =
+                inflatedHeader.findViewById<com.google.android.material.appbar.MaterialToolbar>(R.id.toolbar)
             if (activeToolbar != null) {
                 setSupportActionBar(activeToolbar)
                 supportActionBar?.setDisplayHomeAsUpEnabled(true)
@@ -728,7 +742,8 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        val activeToolbar = headerContainer?.findViewById<com.google.android.material.appbar.MaterialToolbar>(R.id.toolbar)
+        val activeToolbar =
+            headerContainer?.findViewById<com.google.android.material.appbar.MaterialToolbar>(R.id.toolbar)
         if (activeToolbar != null) {
             if (isDetail || isRecentlyAdded) {
                 activeToolbar.setNavigationIcon(R.drawable.ic_arrow_back)
@@ -772,6 +787,7 @@ class MainActivity : AppCompatActivity() {
             shelfContainer?.visibility = View.VISIBLE
             val shelfLayoutRes = when (view) {
                 is ShelfView.Reading -> R.layout.view_currently_reading
+                is ShelfView.RecentlyAdded -> R.layout.view_recently_added
                 is ShelfView.Favorites -> R.layout.view_favorites
                 is ShelfView.AuthorsList, is ShelfView.AuthorDetail -> R.layout.view_authors
                 is ShelfView.SeriesList, is ShelfView.SeriesDetail -> R.layout.view_series
@@ -790,18 +806,28 @@ class MainActivity : AppCompatActivity() {
             val ivHeaderIcon = shelfContainer?.findViewById<android.widget.ImageView>(R.id.ivHeaderIcon)
 
             when (view) {
+                is ShelfView.RecentlyAdded -> {
+                    tvHeaderTitle?.text = getString(R.string.recently_added_screen_title)
+                    tvHeaderSubtitle?.text = getString(R.string.recently_added_heading_subtitle)
+                    ivHeaderIcon?.visibility = View.VISIBLE
+                    ivHeaderIcon?.setImageResource(R.drawable.ic_recent)
+                    shelfContainer?.findViewById<TextView>(R.id.headerCountText)?.visibility = View.VISIBLE
+                }
+
                 is ShelfView.AuthorDetail -> {
                     tvHeaderTitle?.text = "AUTHOR: ${view.name.uppercase()}"
                     tvHeaderSubtitle?.text = ""
                     ivHeaderIcon?.visibility = View.VISIBLE
                     ivHeaderIcon?.setImageResource(R.drawable.ic_person_frame)
                 }
+
                 is ShelfView.SeriesDetail -> {
                     tvHeaderTitle?.text = "SERIES: ${view.name.uppercase()}"
                     tvHeaderSubtitle?.text = ""
                     ivHeaderIcon?.visibility = View.VISIBLE
                     ivHeaderIcon?.setImageResource(R.drawable.ic_series)
                 }
+
                 is ShelfView.AuthorsList -> {
                     tvHeaderTitle?.text = getString(R.string.authors_heading_title)
                     tvHeaderSubtitle?.text = getString(R.string.authors_heading_subtitle)
@@ -809,6 +835,7 @@ class MainActivity : AppCompatActivity() {
                     ivHeaderIcon?.setImageResource(R.drawable.ic_person)
                     shelfContainer?.findViewById<TextView>(R.id.headerCountText)?.visibility = View.VISIBLE
                 }
+
                 is ShelfView.SeriesList -> {
                     tvHeaderTitle?.text = getString(R.string.series_heading_title)
                     tvHeaderSubtitle?.text = getString(R.string.series_heading_subtitle)
@@ -816,6 +843,7 @@ class MainActivity : AppCompatActivity() {
                     ivHeaderIcon?.setImageResource(R.drawable.ic_series)
                     shelfContainer?.findViewById<TextView>(R.id.headerCountText)?.visibility = View.VISIBLE
                 }
+
                 else -> {}
             }
         } else {
@@ -1212,26 +1240,62 @@ class MainActivity : AppCompatActivity() {
 
     // ---------------------------------------------------------------- sort (field -> asc/desc -> refresh + scroll top)
     private fun showSortDialog() {
-        val options =
-            listOf(
-                getString(R.string.sort_recently_added) to PrefsManager.SortOption.RECENTLY_ADDED,
-                getString(R.string.sort_recently_read) to PrefsManager.SortOption.RECENTLY_READ,
-                getString(R.string.sort_title) to PrefsManager.SortOption.TITLE,
-                getString(R.string.sort_series) to PrefsManager.SortOption.SERIES,
-                getString(R.string.sort_author) to PrefsManager.SortOption.AUTHOR,
-            )
+        val keys = listOf(
+            PrefsManager.SortOption.RECENTLY_ADDED,
+            PrefsManager.SortOption.RECENTLY_READ,
+            PrefsManager.SortOption.TITLE,
+            PrefsManager.SortOption.SERIES,
+            PrefsManager.SortOption.AUTHOR
+        )
+        val labels = resources.getStringArray(R.array.sort_field_options)
+        val options = labels.indices.map { labels[it] to keys[it] }
         val current = options.indexOfFirst { it.second == viewModel.sort.value }
-        AlertDialog
-            .Builder(this)
-            .setTitle(R.string.action_sort)
-            .setSingleChoiceItems(
-                options.map { it.first }.toTypedArray(),
-                if (current < 0) 0 else current
-            ) { d, which ->
-                d.dismiss()
-                showSortDirectionDialog(options[which].first, options[which].second)
-            }.setNegativeButton(R.string.cancel, null)
-            .show()
+        val asc = viewModel.sortAscending.value ?: true
+
+        val dialogView = layoutInflater.inflate(R.layout.dialog_sort, null, false)
+        val headerTv = dialogView.findViewById<TextView>(R.id.header)
+        headerTv.text = getString(R.string.action_sort)
+        val recycler = dialogView.findViewById<RecyclerView>(R.id.recycler)
+        recycler.layoutManager = LinearLayoutManager(this)
+
+        val dialog = AlertDialog.Builder(this)
+            .setView(dialogView)
+            .create()
+
+        recycler.adapter = object : RecyclerView.Adapter<CustomDialogViewHolder>() {
+            override fun onCreateViewHolder(parent: android.view.ViewGroup, viewType: Int): CustomDialogViewHolder {
+                val view = layoutInflater.inflate(R.layout.item_sort_option, parent, false)
+                return CustomDialogViewHolder(view)
+            }
+
+            override fun onBindViewHolder(holder: CustomDialogViewHolder, position: Int) {
+                holder.titleTv.text = labels[position]
+                val isSelected = position == (if (current < 0) 0 else current)
+                holder.itemView.setBackgroundResource(if (isSelected) R.drawable.drawer_item_selected_bg else R.drawable.item_background_borderless_material)
+                holder.titleTv.setTextColor(ContextCompat.getColor(this@MainActivity, if (isSelected) R.color.palette_mint else R.color.white))
+                holder.checkIv.visibility = View.GONE
+                if (isSelected) {
+                    holder.directionTv?.visibility = View.VISIBLE
+                    val dirText = if (keys[position] == PrefsManager.SortOption.RECENTLY_ADDED || keys[position] == PrefsManager.SortOption.RECENTLY_READ) {
+                        if (asc) getString(R.string.sort_newer_first) else getString(R.string.sort_older_first)
+                    } else {
+                        if (asc) getString(R.string.sort_a_z) else getString(R.string.sort_z_a)
+                    }
+                    holder.directionTv?.text = dirText
+                } else {
+                    holder.directionTv?.visibility = View.GONE
+                }
+
+                holder.itemView.setOnClickListener {
+                    dialog.dismiss()
+                    showSortDirectionDialog(options[position].first, options[position].second)
+                }
+            }
+
+            override fun getItemCount() = labels.size
+        }
+
+        dialog.show()
     }
 
     private fun showSortDirectionDialog(
@@ -1239,20 +1303,55 @@ class MainActivity : AppCompatActivity() {
         fieldKey: String,
     ) {
         val asc = viewModel.sortAscending.value ?: true
-        val labels = if (fieldKey == PrefsManager.SortOption.RECENTLY_ADDED) {
-            arrayOf(getString(R.string.sort_newer_first), getString(R.string.sort_older_first))
+        val labels = if (fieldKey == PrefsManager.SortOption.RECENTLY_ADDED || fieldKey == PrefsManager.SortOption.RECENTLY_READ) {
+            resources.getStringArray(R.array.sort_order_added)
         } else {
-            arrayOf(getString(R.string.sort_ascending), getString(R.string.sort_descending))
+            resources.getStringArray(R.array.sort_order_standard)
         }
-        AlertDialog
-            .Builder(this)
-            .setTitle("$fieldLabel · ${getString(R.string.sort_choose_order)}")
-            .setSingleChoiceItems(labels, if (asc) 0 else 1) { d, which ->
-                scrollToTopOnNextContent = true
-                viewModel.setSort(fieldKey, which == 0)
-                d.dismiss()
-            }.setNegativeButton(R.string.cancel, null)
-            .show()
+        val checked = if (asc) 0 else 1
+
+        val dialogView = layoutInflater.inflate(R.layout.dialog_sort, null, false)
+        val headerTv = dialogView.findViewById<TextView>(R.id.header)
+        headerTv.text = "$fieldLabel · ${getString(R.string.sort_choose_order)}"
+        val recycler = dialogView.findViewById<RecyclerView>(R.id.recycler)
+        recycler.layoutManager = LinearLayoutManager(this)
+
+        val dialog = AlertDialog.Builder(this)
+            .setView(dialogView)
+            .create()
+
+        recycler.adapter = object : RecyclerView.Adapter<CustomDialogViewHolder>() {
+            override fun onCreateViewHolder(parent: android.view.ViewGroup, viewType: Int): CustomDialogViewHolder {
+                val view = layoutInflater.inflate(R.layout.item_sort_option, parent, false)
+                return CustomDialogViewHolder(view)
+            }
+
+            override fun onBindViewHolder(holder: CustomDialogViewHolder, position: Int) {
+                holder.titleTv.text = labels[position]
+                val isSelected = position == checked
+                holder.itemView.setBackgroundResource(if (isSelected) R.drawable.drawer_item_selected_bg else R.drawable.item_background_borderless_material)
+                holder.titleTv.setTextColor(ContextCompat.getColor(this@MainActivity, if (isSelected) R.color.palette_mint else R.color.white))
+                holder.checkIv.visibility = if (isSelected) View.VISIBLE else View.GONE
+                holder.checkIv.imageTintList = android.content.res.ColorStateList.valueOf(ContextCompat.getColor(this@MainActivity, R.color.palette_violet))
+                holder.directionTv?.visibility = View.GONE
+
+                holder.itemView.setOnClickListener {
+                    scrollToTopOnNextContent = true
+                    viewModel.setSort(fieldKey, position == 0)
+                    dialog.dismiss()
+                }
+            }
+
+            override fun getItemCount() = labels.size
+        }
+
+        dialog.show()
+    }
+
+    private class CustomDialogViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val titleTv: TextView = itemView.findViewById(R.id.title)
+        val checkIv: android.widget.ImageView = itemView.findViewById(R.id.check)
+        val directionTv: TextView? = itemView.findViewById(R.id.direction)
     }
 
     // ---------------------------------------------------------------- view mode (List / Grid 2 / Grid 3 / Grid 4)
@@ -1260,30 +1359,55 @@ class MainActivity : AppCompatActivity() {
         val grid = viewModel.viewModeGrid.value == true
         val cols = viewModel.gridColumns.value ?: 3
         val labels =
-            arrayOf(
+            listOf(
                 getString(R.string.view_mode_list),
                 getString(R.string.view_mode_grid) + " 2",
                 getString(R.string.view_mode_grid) + " 3",
                 getString(R.string.view_mode_grid) + " 4",
             )
         val checked = if (!grid) 0 else (cols - 1).coerceIn(1, 3)
-        AlertDialog
-            .Builder(this)
-            .setTitle(R.string.action_view_mode)
-            .setSingleChoiceItems(labels, checked) { d, which ->
-                when (which) {
-                    0 -> {
-                        viewModel.setViewMode(false)
-                    }
 
-                    else -> {
-                        viewModel.setViewMode(true)
-                        viewModel.setGridColumns(which + 1)
+        val dialogView = layoutInflater.inflate(R.layout.dialog_view_mode, null, false)
+        val headerTv = dialogView.findViewById<TextView>(R.id.header)
+        headerTv.text = getString(R.string.action_view_mode)
+        val recycler = dialogView.findViewById<RecyclerView>(R.id.recycler)
+        recycler.layoutManager = LinearLayoutManager(this)
+
+        val dialog = AlertDialog.Builder(this)
+            .setView(dialogView)
+            .create()
+
+        recycler.adapter = object : RecyclerView.Adapter<CustomDialogViewHolder>() {
+            override fun onCreateViewHolder(parent: android.view.ViewGroup, viewType: Int): CustomDialogViewHolder {
+                val view = layoutInflater.inflate(R.layout.item_sort_option, parent, false)
+                return CustomDialogViewHolder(view)
+            }
+
+            override fun onBindViewHolder(holder: CustomDialogViewHolder, position: Int) {
+                holder.titleTv.text = labels[position]
+                val isSelected = position == checked
+                holder.itemView.setBackgroundResource(if (isSelected) R.drawable.drawer_item_selected_bg else R.drawable.item_background_borderless_material)
+                holder.titleTv.setTextColor(ContextCompat.getColor(this@MainActivity, if (isSelected) R.color.palette_mint else R.color.white))
+                holder.checkIv.visibility = if (isSelected) View.VISIBLE else View.GONE
+                holder.checkIv.imageTintList = android.content.res.ColorStateList.valueOf(ContextCompat.getColor(this@MainActivity, R.color.palette_violet))
+                holder.directionTv?.visibility = View.GONE
+
+                holder.itemView.setOnClickListener {
+                    dialog.dismiss()
+                    when (position) {
+                        0 -> viewModel.setViewMode(false)
+                        else -> {
+                            viewModel.setViewMode(true)
+                            viewModel.setGridColumns(position + 1)
+                        }
                     }
                 }
-                d.dismiss()
-            }.setNegativeButton(R.string.cancel, null)
-            .show()
+            }
+
+            override fun getItemCount() = labels.size
+        }
+
+        dialog.show()
     }
 
     // ---------------------------------------------------------------- book options
@@ -1302,11 +1426,40 @@ class MainActivity : AppCompatActivity() {
         }
         labels += getString(R.string.option_remove)
         actions += { confirmDeleteBook(book) }
-        AlertDialog
-            .Builder(this)
-            .setTitle(book.title)
-            .setItems(labels.toTypedArray()) { _, which -> actions[which]() }
-            .show()
+
+        val dialogView = layoutInflater.inflate(R.layout.dialog_book_options, null, false)
+        val headerTv = dialogView.findViewById<TextView>(R.id.header)
+        headerTv.text = book.title
+        val recycler = dialogView.findViewById<RecyclerView>(R.id.recycler)
+        recycler.layoutManager = LinearLayoutManager(this)
+
+        val dialog = AlertDialog.Builder(this)
+            .setView(dialogView)
+            .create()
+
+        recycler.adapter = object : RecyclerView.Adapter<CustomDialogViewHolder>() {
+            override fun onCreateViewHolder(parent: android.view.ViewGroup, viewType: Int): CustomDialogViewHolder {
+                val view = layoutInflater.inflate(R.layout.item_sort_option, parent, false)
+                return CustomDialogViewHolder(view)
+            }
+
+            override fun onBindViewHolder(holder: CustomDialogViewHolder, position: Int) {
+                holder.titleTv.text = labels[position]
+                holder.itemView.setBackgroundResource(R.drawable.item_background_borderless_material)
+                holder.titleTv.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.white))
+                holder.checkIv.visibility = View.GONE
+                holder.directionTv?.visibility = View.GONE
+
+                holder.itemView.setOnClickListener {
+                    dialog.dismiss()
+                    actions[position]()
+                }
+            }
+
+            override fun getItemCount() = labels.size
+        }
+
+        dialog.show()
         return true
     }
 
@@ -1343,44 +1496,61 @@ class MainActivity : AppCompatActivity() {
             getString(R.string.folder_remove)
         )
 
-        AlertDialog
-            .Builder(this)
-            .setTitle(R.string.folder_options)
-            .setItems(items) { _, which ->
+        val dialogView = layoutInflater.inflate(R.layout.dialog_book_options, null, false)
+        val headerTv = dialogView.findViewById<TextView>(R.id.header)
+        headerTv.text = getString(R.string.folder_options)
+        val recycler = dialogView.findViewById<RecyclerView>(R.id.recycler)
+        recycler.layoutManager = LinearLayoutManager(this)
 
-                when (which) {
+        val dialog = AlertDialog.Builder(this)
+            .setView(dialogView)
+            .create()
 
-                    0 -> {
-                        openTreeLauncher.launch(null)
-                    }
+        recycler.adapter = object : RecyclerView.Adapter<CustomDialogViewHolder>() {
+            override fun onCreateViewHolder(parent: android.view.ViewGroup, viewType: Int): CustomDialogViewHolder {
+                val view = layoutInflater.inflate(R.layout.item_sort_option, parent, false)
+                return CustomDialogViewHolder(view)
+            }
 
-                    1 -> {
-                        rescanSelectedFolder()
-                    }
+            override fun onBindViewHolder(holder: CustomDialogViewHolder, position: Int) {
+                holder.titleTv.text = items[position]
+                holder.itemView.setBackgroundResource(R.drawable.item_background_borderless_material)
+                holder.titleTv.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.white))
+                holder.checkIv.visibility = View.GONE
+                holder.directionTv?.visibility = View.GONE
 
-                    2 -> {
-                        refreshMetadataSelectedFolder()
-                    }
+                holder.itemView.setOnClickListener {
+                    dialog.dismiss()
+                    when (position) {
+                        0 -> {
+                            openTreeLauncher.launch(null)
+                        }
+                        1 -> {
+                            rescanSelectedFolder()
+                        }
+                        2 -> {
+                            refreshMetadataSelectedFolder()
+                        }
+                        3 -> {
+                            prefs.selectedFolderUri = null
+                            showFoldersEmptyState()
 
-                    3 -> {
-                        prefs.selectedFolderUri = null
-                        showFoldersEmptyState()
-
-                        Snackbar
-                            .make(
-                                refresh,
-                                R.string.folder_none,
-                                Snackbar.LENGTH_SHORT
-                            )
-                            .show()
+                            Snackbar
+                                .make(
+                                    refresh,
+                                    R.string.folder_none,
+                                    Snackbar.LENGTH_SHORT
+                                )
+                                .show()
+                        }
                     }
                 }
             }
-            .setNegativeButton(
-                R.string.cancel,
-                null
-            )
-            .show()
+
+            override fun getItemCount() = items.size
+        }
+
+        dialog.show()
     }
 
     private fun folderDisplayName(uriString: String): String {
@@ -1703,19 +1873,88 @@ class MainActivity : AppCompatActivity() {
         binding.mainSettingsContent.root.visibility = View.VISIBLE
 
         // 1. Daily Reading Goal Section
-        val updateGoalButtonText = {
+        data class GoalOpt(val value: Int, val chipText: String, val label: String, val subtext: String)
+        val minutesOpts = listOf(
+            GoalOpt(10, "10m", "10 minutes", getString(R.string.goal_sub_10_min)),
+            GoalOpt(20, "20m", "20 minutes", getString(R.string.goal_sub_20_min)),
+            GoalOpt(30, "30m", "30 minutes", getString(R.string.goal_sub_30_min)),
+            GoalOpt(45, "45m", "45 minutes", getString(R.string.goal_sub_45_min)),
+            GoalOpt(60, "60m", "60 minutes", getString(R.string.goal_sub_60_min))
+        )
+        val pagesOpts = listOf(
+            GoalOpt(10, "10p", "10 pages", getString(R.string.goal_sub_10_pages)),
+            GoalOpt(20, "20p", "20 pages", getString(R.string.goal_sub_20_pages)),
+            GoalOpt(30, "30p", "30 pages", getString(R.string.goal_sub_30_pages)),
+            GoalOpt(40, "40p", "40 pages", getString(R.string.goal_sub_40_pages)),
+            GoalOpt(50, "50p", "50 pages", getString(R.string.goal_sub_50_pages))
+        )
+
+        lateinit var bindDailyGoalSection: () -> Unit
+        bindDailyGoalSection = {
             val type = prefs.goalType
-            if (type == "pages") {
-                binding.mainSettingsContent.btnConfigureGoal.text = getString(R.string.settings_current_goal_pages, prefs.dailyGoalPages)
+            val isMinutes = type != "pages"
+
+            val switchBtn = binding.mainSettingsContent.btnGoalTypeSwitch
+            if (isMinutes) {
+                switchBtn.text = getString(R.string.goal_switch_minutes)
             } else {
-                binding.mainSettingsContent.btnConfigureGoal.text = getString(R.string.settings_current_goal_minutes, prefs.dailyGoalMinutes)
+                switchBtn.text = getString(R.string.goal_switch_pages)
+            }
+            switchBtn.setOnClickListener {
+                prefs.goalType = if (isMinutes) "pages" else "minutes"
+                bindDailyGoalSection()
+            }
+
+            val opts = if (isMinutes) minutesOpts else pagesOpts
+            val currentVal = if (isMinutes) prefs.dailyGoalMinutes else prefs.dailyGoalPages
+            val activeOpt = opts.firstOrNull { it.value == currentVal } ?: opts.first()
+            if (currentVal != activeOpt.value) {
+                if (isMinutes) prefs.dailyGoalMinutes = activeOpt.value else prefs.dailyGoalPages = activeOpt.value
+            }
+
+            binding.mainSettingsContent.tvGoalSelectedLabel.text = activeOpt.label
+            binding.mainSettingsContent.tvGoalSubtext.text = activeOpt.subtext
+
+            val container = binding.mainSettingsContent.goalPillsContainer
+            container.removeAllViews()
+            val pillWidth = 56.dp()
+            val pillHeight = 36.dp()
+            val dp8 = 8.dp()
+
+            for (opt in opts) {
+                val pill = android.widget.TextView(this).apply {
+                    text = opt.chipText
+                    textSize = 14f
+                    setTypeface(null, android.graphics.Typeface.BOLD)
+                    gravity = android.view.Gravity.CENTER
+                    val isSelected = opt.value == activeOpt.value
+                    if (isSelected) {
+                        setBackgroundResource(R.drawable.goal_pill_selected)
+                        setTextColor(ContextCompat.getColor(context, R.color.white))
+                    } else {
+                        setBackgroundResource(R.drawable.goal_pill_unselected)
+                        setTextColor(ContextCompat.getColor(context, R.color.palette_plum))
+                    }
+                    val params = android.widget.LinearLayout.LayoutParams(
+                        pillWidth,
+                        pillHeight
+                    ).apply {
+                        marginEnd = dp8
+                    }
+                    layoutParams = params
+                    setOnClickListener {
+                        if (isMinutes) {
+                            prefs.dailyGoalMinutes = opt.value
+                        } else {
+                            prefs.dailyGoalPages = opt.value
+                        }
+                        bindDailyGoalSection()
+                    }
+                }
+                container.addView(pill)
             }
         }
-        updateGoalButtonText()
-        binding.mainSettingsContent.btnConfigureGoal.setOnClickListener {
-            showDailyGoalDialog()
-            binding.mainSettingsContent.btnConfigureGoal.postDelayed({ updateGoalButtonText() }, 200)
-        }
+        bindDailyGoalSection()
 
         binding.mainSettingsContent.goalDashboardSwitch.isChecked = prefs.showGoalOnDashboard
         binding.mainSettingsContent.goalDashboardSwitch.setOnCheckedChangeListener { _, checked ->
@@ -1724,7 +1963,8 @@ class MainActivity : AppCompatActivity() {
 
         // 2. Scanned Folder Section
         val folder = prefs.selectedFolderUri
-        binding.mainSettingsContent.tvScannedFolderValue.text = if (folder != null) folderDisplayName(folder) else getString(R.string.folder_none)
+        binding.mainSettingsContent.tvScannedFolderValue.text =
+            if (folder != null) folderDisplayName(folder) else getString(R.string.folder_none)
         binding.mainSettingsContent.cardFolder.setOnClickListener {
             viewModel.setView(ShelfView.Folders)
         }
@@ -1869,19 +2109,28 @@ class MainActivity : AppCompatActivity() {
 
     private fun showStatsView() {
         val statsRoot = binding.root.findViewById<View>(R.id.mainStatsContent) ?: return
-        statsRoot.findViewById<View>(R.id.cardStatsGoal)?.setOnClickListener { showDailyGoalDialog() }
+        statsRoot.findViewById<View>(R.id.cardStatsGoal)?.setOnClickListener { viewModel.setView(ShelfView.Settings) }
         val now = System.currentTimeMillis()
         val weekStart = java.util.Calendar.getInstance().apply {
             firstDayOfWeek = java.util.Calendar.MONDAY
-            set(java.util.Calendar.HOUR_OF_DAY, 0); set(java.util.Calendar.MINUTE, 0); set(java.util.Calendar.SECOND, 0); set(java.util.Calendar.MILLISECOND, 0)
+            set(java.util.Calendar.HOUR_OF_DAY, 0); set(java.util.Calendar.MINUTE, 0); set(
+            java.util.Calendar.SECOND,
+            0
+        ); set(java.util.Calendar.MILLISECOND, 0)
             set(java.util.Calendar.DAY_OF_WEEK, java.util.Calendar.MONDAY)
         }.timeInMillis
         val yearStart = java.util.Calendar.getInstance().apply {
             set(java.util.Calendar.MONTH, java.util.Calendar.JANUARY); set(java.util.Calendar.DAY_OF_MONTH, 1)
-            set(java.util.Calendar.HOUR_OF_DAY, 0); set(java.util.Calendar.MINUTE, 0); set(java.util.Calendar.SECOND, 0); set(java.util.Calendar.MILLISECOND, 0)
+            set(java.util.Calendar.HOUR_OF_DAY, 0); set(java.util.Calendar.MINUTE, 0); set(
+            java.util.Calendar.SECOND,
+            0
+        ); set(java.util.Calendar.MILLISECOND, 0)
         }.timeInMillis
         val todayStart = java.util.Calendar.getInstance().apply {
-            set(java.util.Calendar.HOUR_OF_DAY, 0); set(java.util.Calendar.MINUTE, 0); set(java.util.Calendar.SECOND, 0); set(java.util.Calendar.MILLISECOND, 0)
+            set(java.util.Calendar.HOUR_OF_DAY, 0); set(java.util.Calendar.MINUTE, 0); set(
+            java.util.Calendar.SECOND,
+            0
+        ); set(java.util.Calendar.MILLISECOND, 0)
         }.timeInMillis
 
         lifecycleScope.launch {
@@ -1894,7 +2143,10 @@ class MainActivity : AppCompatActivity() {
                     val keys = days.toHashSet()
                     val cursor = java.util.Calendar.getInstance().apply {
                         timeInMillis = now
-                        set(java.util.Calendar.HOUR_OF_DAY, 0); set(java.util.Calendar.MINUTE, 0); set(java.util.Calendar.SECOND, 0); set(java.util.Calendar.MILLISECOND, 0)
+                        set(java.util.Calendar.HOUR_OF_DAY, 0); set(
+                        java.util.Calendar.MINUTE,
+                        0
+                    ); set(java.util.Calendar.SECOND, 0); set(java.util.Calendar.MILLISECOND, 0)
                     }
                     while (true) {
                         val key = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).format(cursor.time)
@@ -1949,189 +2201,25 @@ class MainActivity : AppCompatActivity() {
             statsRoot.findViewById<TextView>(R.id.statsWeek)?.text = formatStatsMinutes(stats.weekSeconds)
             statsRoot.findViewById<TextView>(R.id.statsYear)?.text = formatStatsMinutes(stats.yearSeconds)
             statsRoot.findViewById<TextView>(R.id.statsFinished)?.text = stats.finished.toString()
-            statsRoot.findViewById<TextView>(R.id.statsStreak)?.text = "${stats.streak} ${if (stats.streak == 1) "day" else getString(R.string.stats_days)}"
+            statsRoot.findViewById<TextView>(R.id.statsStreak)?.text =
+                "${stats.streak} ${if (stats.streak == 1) "day" else getString(R.string.stats_days)}"
             statsRoot.findViewById<TextView>(R.id.statsChapters)?.text = stats.chapters.toString()
             statsRoot.findViewById<TextView>(R.id.statsPages)?.text = stats.pages.toString()
         }
     }
 
     private data class StatsValues(
-        val weekSeconds: Int, val yearSeconds: Int, val todaySeconds: Int, val chapters: Int, val pages: Int, val finished: Int, val streak: Int, val todayPages: Int
+        val weekSeconds: Int,
+        val yearSeconds: Int,
+        val todaySeconds: Int,
+        val chapters: Int,
+        val pages: Int,
+        val finished: Int,
+        val streak: Int,
+        val todayPages: Int
     )
 
-    private fun showDailyGoalDialog() {
-        val dialogView = layoutInflater.inflate(R.layout.dialog_daily_goal, null, false)
-        val toggleGroup = dialogView.findViewById<com.google.android.material.button.MaterialButtonToggleGroup>(R.id.goalTypeToggleGroup)
-        val radioGroup = dialogView.findViewById<android.widget.RadioGroup>(R.id.goalRadioGroup)
-        val customLayout = dialogView.findViewById<com.google.android.material.textfield.TextInputLayout>(R.id.goalCustomInputLayout)
-        val customEdit = dialogView.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.goalCustomEdit)
-        val saveBtn = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.goalSaveBtn)
-        val remindLaterBtn = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.goalRemindLaterBtn)
-        val resetBtn = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.goalResetBtn)
-        val btnMinutes = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnMinutes)
-        val btnPages = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnPages)
 
-        val dialog = AlertDialog.Builder(this)
-            .setView(dialogView)
-            .create()
-
-        var currentType = prefs.goalType
-        var selectedValue = if (currentType == "minutes") prefs.dailyGoalMinutes else prefs.dailyGoalPages
-
-        val accentPop = ContextCompat.getColor(this, R.color.accent_pop)
-        val white = ContextCompat.getColor(this, android.R.color.white)
-        val black = ContextCompat.getColor(this, android.R.color.black)
-        val slate = ContextCompat.getColor(this, R.color.palette_slate)
-
-        val updateToggleStyles = { type: String ->
-            if (type == "minutes") {
-                toggleGroup?.check(R.id.btnMinutes)
-                btnMinutes?.backgroundTintList = android.content.res.ColorStateList.valueOf(accentPop)
-                btnMinutes?.setTextColor(black)
-                btnPages?.backgroundTintList = android.content.res.ColorStateList.valueOf(android.graphics.Color.TRANSPARENT)
-                btnPages?.setTextColor(white)
-            } else {
-                toggleGroup?.check(R.id.btnPages)
-                btnPages?.backgroundTintList = android.content.res.ColorStateList.valueOf(accentPop)
-                btnPages?.setTextColor(black)
-                btnMinutes?.backgroundTintList = android.content.res.ColorStateList.valueOf(android.graphics.Color.TRANSPARENT)
-                btnMinutes?.setTextColor(white)
-            }
-        }
-
-        val standardMinutes = setOf(10, 20, 30, 45, 60)
-        val standardPages = setOf(5, 10, 20, 30, 50)
-
-        var populateOptions: ((String) -> Unit)? = null
-        populateOptions = { type ->
-            radioGroup?.removeAllViews()
-            val options = if (type == "minutes") {
-                listOf(
-                    Triple(10, "10 min", getString(R.string.goal_sub_10_min)),
-                    Triple(20, "20 min", getString(R.string.goal_sub_20_min)),
-                    Triple(30, "30 min", getString(R.string.goal_sub_30_min)),
-                    Triple(45, "45 min", getString(R.string.goal_sub_45_min)),
-                    Triple(60, "60 min", getString(R.string.goal_sub_60_min))
-                )
-            } else {
-                listOf(
-                    Triple(5, "5 pages", getString(R.string.goal_sub_5_pages)),
-                    Triple(10, "10 pages", getString(R.string.goal_sub_10_pages)),
-                    Triple(20, "20 pages", getString(R.string.goal_sub_20_pages)),
-                    Triple(30, "30 pages", getString(R.string.goal_sub_30_pages)),
-                    Triple(50, "50 pages", getString(R.string.goal_sub_50_pages))
-                )
-            }
-
-            val isCustom = if (type == "minutes") !standardMinutes.contains(selectedValue) else !standardPages.contains(selectedValue)
-
-            options.forEach { (value, label, subtext) ->
-                val itemView = layoutInflater.inflate(R.layout.item_goal_option, radioGroup, false)
-                val rb = itemView.findViewById<android.widget.RadioButton>(R.id.optionRadioButton)
-                val titleTv = itemView.findViewById<TextView>(R.id.optionTitle)
-                val subTv = itemView.findViewById<TextView>(R.id.optionSubtext)
-
-                val isChecked = (value == selectedValue)
-                rb.isChecked = isChecked
-                rb.buttonTintList = android.content.res.ColorStateList.valueOf(if (isChecked) accentPop else slate)
-                titleTv.text = label
-                titleTv.setTextColor(if (isChecked) accentPop else white)
-                subTv.text = subtext
-
-                itemView.setOnClickListener {
-                    selectedValue = value
-                    customLayout?.visibility = View.GONE
-                    customEdit?.setText("")
-                    populateOptions?.invoke(type)
-                }
-
-                radioGroup?.addView(itemView)
-            }
-
-            // Custom Item
-            val customItemView = layoutInflater.inflate(R.layout.item_goal_option, radioGroup, false)
-            val customRb = customItemView.findViewById<android.widget.RadioButton>(R.id.optionRadioButton)
-            val customTitleTv = customItemView.findViewById<TextView>(R.id.optionTitle)
-            val customSubTv = customItemView.findViewById<TextView>(R.id.optionSubtext)
-
-            customRb.isChecked = isCustom
-            customRb.buttonTintList = android.content.res.ColorStateList.valueOf(if (isCustom) accentPop else slate)
-            customTitleTv.text = getString(R.string.goal_label_custom)
-            customTitleTv.setTextColor(if (isCustom) accentPop else white)
-
-            val unitName = if (type == "minutes") getString(R.string.goal_type_minutes).lowercase() else getString(R.string.goal_type_pages).lowercase()
-            customSubTv.text = if (isCustom && selectedValue > 0) "$selectedValue $unitName" else "Enter $unitName..."
-
-            customItemView.setOnClickListener {
-                val wasVisible = customLayout?.visibility == View.VISIBLE
-                if (wasVisible) {
-                    customLayout?.visibility = View.VISIBLE
-                } else {
-                    customLayout?.visibility = View.VISIBLE
-                    if (selectedValue > 0) {
-                        customEdit?.setText(selectedValue.toString())
-                    } else {
-                        customEdit?.setText("")
-                    }
-                }
-                customEdit?.hint = if (type == "minutes") getString(R.string.goal_hint_enter_minutes) else getString(R.string.goal_hint_enter_pages)
-                customEdit?.requestFocus()
-            }
-
-            radioGroup?.addView(customItemView)
-
-            customLayout?.visibility = View.GONE
-        }
-
-        updateToggleStyles(currentType)
-        populateOptions(currentType)
-
-        toggleGroup?.addOnButtonCheckedListener { _: com.google.android.material.button.MaterialButtonToggleGroup, checkedId: Int, isChecked: Boolean ->
-            if (isChecked) {
-                currentType = if (checkedId == R.id.btnPages) "pages" else "minutes"
-                selectedValue = if (currentType == "minutes") prefs.dailyGoalMinutes else prefs.dailyGoalPages
-                customEdit?.setText("")
-                updateToggleStyles(currentType)
-                populateOptions(currentType)
-            }
-        }
-
-        resetBtn?.setOnClickListener {
-            prefs.goalType = "minutes"
-            prefs.dailyGoalMinutes = 20
-            prefs.dailyGoalPages = 20
-            dialog.dismiss()
-            showStatsView()
-            Snackbar.make(binding.root, getString(R.string.goal_reset_toast), Snackbar.LENGTH_SHORT).show()
-        }
-
-        remindLaterBtn?.setOnClickListener {
-            dialog.dismiss()
-        }
-
-        saveBtn?.setOnClickListener {
-            val isCustomActive = customLayout?.visibility == View.VISIBLE
-            if (isCustomActive) {
-                val customVal = customEdit?.text?.toString()?.toIntOrNull()
-                if (customVal != null && customVal > 0) {
-                    selectedValue = customVal
-                }
-            }
-
-            prefs.goalType = currentType
-            if (currentType == "minutes") {
-                prefs.dailyGoalMinutes = selectedValue
-            } else {
-                prefs.dailyGoalPages = selectedValue
-            }
-
-            dialog.dismiss()
-            showStatsView()
-            Snackbar.make(binding.root, getString(R.string.goal_updated_toast), Snackbar.LENGTH_SHORT).show()
-        }
-
-        dialog.show()
-    }
 
     private fun formatStatsMinutes(seconds: Int): String {
         val minutes = seconds / 60
@@ -2152,7 +2240,8 @@ class MainActivity : AppCompatActivity() {
         val requiredTag = if (isFeatureEnabled) "vocab_full" else "vocab_default"
         if (vocabContainer.tag != requiredTag) {
             vocabContainer.removeAllViews()
-            val layoutRes = if (isFeatureEnabled) R.layout.view_main_vocabulary else R.layout.view_main_vocabulary_default
+            val layoutRes =
+                if (isFeatureEnabled) R.layout.view_main_vocabulary else R.layout.view_main_vocabulary_default
             layoutInflater.inflate(layoutRes, vocabContainer, true)
             vocabContainer.tag = requiredTag
             vocabAdapter = null
@@ -2165,11 +2254,27 @@ class MainActivity : AppCompatActivity() {
         val tabs = vocabRoot.findViewById<com.google.android.material.tabs.TabLayout>(R.id.vocabTabs)
         val wordsContainer = vocabRoot.findViewById<View>(R.id.vocabWordsTabContainer)
         val flashcardContainer = vocabRoot.findViewById<View>(R.id.vocabFlashcardContainer)
-        val searchEdit = vocabRoot.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.vocabSearchEdit)
+        val searchLayout =
+            vocabRoot.findViewById<com.google.android.material.textfield.TextInputLayout>(R.id.vocabSearchLayout)
+        val searchEdit =
+            vocabRoot.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.vocabSearchEdit)
         val chipGroup = vocabRoot.findViewById<com.google.android.material.chip.ChipGroup>(R.id.vocabFilterChipGroup)
         val recycler = vocabRoot.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.vocabRecycler)
         val emptyText = vocabRoot.findViewById<View>(R.id.vocabEmptyText)
         val actionsRow = vocabRoot.findViewById<View>(R.id.vocabActionsRow)
+
+        // Explicitly reset session state to fresh baseline on entry/return
+        searchEdit?.text?.clear()
+        searchLayout?.isEndIconVisible = false
+        chipGroup?.check(R.id.chipAll)
+        tabs?.getTabAt(0)?.select()
+        wordsContainer?.visibility = View.VISIBLE
+        flashcardContainer?.visibility = View.GONE
+        vocabFlashcardIndex = 0
+        vocabFlashcardFlipped = false
+        vocabRoot.findViewById<View>(R.id.flashcardCardView)?.rotationY = 0f
+        vocabRoot.findViewById<View>(R.id.flashcardFrontSide)?.visibility = View.VISIBLE
+        vocabRoot.findViewById<View>(R.id.flashcardBackSide)?.visibility = View.GONE
 
         if (vocabAdapter == null || vocabAdapter?.showMastery != isFeatureEnabled) {
             vocabAdapter = com.epubreader.app.ui.VocabularyAdapter(
@@ -2177,7 +2282,8 @@ class MainActivity : AppCompatActivity() {
                 onMasteryCycle = { item ->
                     val nextMastery = (item.masteryLevel + 1) % 3
                     lifecycleScope.launch(Dispatchers.IO) {
-                        AppDatabase.get(applicationContext).dictionaryHistoryDao().updateMasteryLevel(item.id, nextMastery)
+                        AppDatabase.get(applicationContext).dictionaryHistoryDao()
+                            .updateMasteryLevel(item.id, nextMastery)
                     }
                 },
                 onPronounce = { word ->
@@ -2207,6 +2313,7 @@ class MainActivity : AppCompatActivity() {
                     flashcardContainer?.visibility = View.GONE
                 }
             }
+
             override fun onTabUnselected(tab: com.google.android.material.tabs.TabLayout.Tab?) {}
             override fun onTabReselected(tab: com.google.android.material.tabs.TabLayout.Tab?) {}
         })
@@ -2218,9 +2325,9 @@ class MainActivity : AppCompatActivity() {
             val checkedId = chipGroup?.checkedChipId
             val filtered = vocabFullList.filter { item ->
                 val matchesQuery = query.isBlank() ||
-                    item.word.lowercase().contains(query) ||
-                    (item.definition?.lowercase()?.contains(query) == true) ||
-                    (item.bookTitle?.lowercase()?.contains(query) == true)
+                        item.word.lowercase().contains(query) ||
+                        (item.definition?.lowercase()?.contains(query) == true) ||
+                        (item.bookTitle?.lowercase()?.contains(query) == true)
 
                 val matchesChip = when (checkedId) {
                     R.id.chipNew -> item.masteryLevel == 0
@@ -2247,19 +2354,53 @@ class MainActivity : AppCompatActivity() {
 
         searchEdit?.addTextChangedListener(object : android.text.TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) { applyFilters() }
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                val query = s?.toString()?.trim() ?: ""
+                searchLayout?.isEndIconVisible = query.isNotEmpty()
+                applyFilters()
+            }
+
             override fun afterTextChanged(s: android.text.Editable?) {}
         })
+
+        searchLayout?.setEndIconOnClickListener {
+            searchEdit?.text?.clear()
+            searchEdit?.clearFocus()
+            hideKeyboard(searchEdit)
+            searchLayout.isEndIconVisible = false
+            applyFilters()
+        }
+
+        searchEdit?.setOnEditorActionListener { _, actionId, event ->
+            if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH ||
+                (event != null && event.keyCode == android.view.KeyEvent.KEYCODE_ENTER && event.action == android.view.KeyEvent.ACTION_DOWN)) {
+                hideKeyboard(searchEdit)
+                searchEdit?.clearFocus()
+                true
+            } else {
+                false
+            }
+        }
 
         val updateChipStyles = {
             for (i in 0 until (chipGroup?.childCount ?: 0)) {
                 val chip = chipGroup?.getChildAt(i) as? com.google.android.material.chip.Chip
                 if (chip != null) {
                     if (chip.isChecked) {
-                        chip.chipBackgroundColor = android.content.res.ColorStateList.valueOf(androidx.core.content.ContextCompat.getColor(this, R.color.accent_pop))
-                        chip.setTextColor(androidx.core.content.ContextCompat.getColor(this, android.R.color.black))
+                        chip.chipBackgroundColor = android.content.res.ColorStateList.valueOf(
+                            androidx.core.content.ContextCompat.getColor(
+                                this,
+                                R.color.palette_violet
+                            )
+                        )
+                        chip.setTextColor(androidx.core.content.ContextCompat.getColor(this, R.color.white))
                     } else {
-                        chip.chipBackgroundColor = android.content.res.ColorStateList.valueOf(androidx.core.content.ContextCompat.getColor(this, R.color.palette_plum))
+                        chip.chipBackgroundColor = android.content.res.ColorStateList.valueOf(
+                            androidx.core.content.ContextCompat.getColor(
+                                this,
+                                R.color.palette_plum
+                            )
+                        )
                         chip.setTextColor(androidx.core.content.ContextCompat.getColor(this, R.color.palette_mint))
                     }
                 }
@@ -2280,8 +2421,10 @@ class MainActivity : AppCompatActivity() {
         val flashcardCard = vocabRoot.findViewById<View>(R.id.flashcardCardView)
         val flashcardPrev = vocabRoot.findViewById<View>(R.id.flashcardPrevBtn)
         val flashcardNext = vocabRoot.findViewById<View>(R.id.flashcardNextBtn)
-        val flashcardLearning = vocabRoot.findViewById<com.google.android.material.button.MaterialButton>(R.id.flashcardLearningBtn)
-        val flashcardMastered = vocabRoot.findViewById<com.google.android.material.button.MaterialButton>(R.id.flashcardMasteredBtn)
+        val flashcardLearning =
+            vocabRoot.findViewById<com.google.android.material.button.MaterialButton>(R.id.flashcardLearningBtn)
+        val flashcardMastered =
+            vocabRoot.findViewById<com.google.android.material.button.MaterialButton>(R.id.flashcardMasteredBtn)
         val flashcardAudioBtn = vocabRoot.findViewById<View>(R.id.flashcardAudioBtn)
 
         flashcardLearning?.setOnClickListener {
@@ -2409,10 +2552,13 @@ class MainActivity : AppCompatActivity() {
         val posTv = vocabRoot.findViewById<TextView>(R.id.flashcardPos)
         val defTv = vocabRoot.findViewById<TextView>(R.id.flashcardDef)
         val exampleTv = vocabRoot.findViewById<TextView>(R.id.flashcardExample)
-        val flashcardLearning = vocabRoot.findViewById<com.google.android.material.button.MaterialButton>(R.id.flashcardLearningBtn)
-        val flashcardMastered = vocabRoot.findViewById<com.google.android.material.button.MaterialButton>(R.id.flashcardMasteredBtn)
+        val flashcardLearning =
+            vocabRoot.findViewById<com.google.android.material.button.MaterialButton>(R.id.flashcardLearningBtn)
+        val flashcardMastered =
+            vocabRoot.findViewById<com.google.android.material.button.MaterialButton>(R.id.flashcardMasteredBtn)
 
-        progressTv?.text = vocabRoot.context.getString(R.string.vocab_flashcard_progress, vocabFlashcardIndex + 1, vocabFullList.size)
+        progressTv?.text =
+            vocabRoot.context.getString(R.string.vocab_flashcard_progress, vocabFlashcardIndex + 1, vocabFullList.size)
 
         wordTv?.text = current.word.uppercase()
         phoneticTv?.text = current.phonetic ?: "/${current.word.lowercase()}/"
@@ -2429,9 +2575,9 @@ class MainActivity : AppCompatActivity() {
         masteredBtn: com.google.android.material.button.MaterialButton?,
         context: Context
     ) {
-        val accentPop = ContextCompat.getColor(context, R.color.accent_pop)
-        val black = ContextCompat.getColor(context, android.R.color.black)
-        val white = ContextCompat.getColor(context, android.R.color.white)
+        val accentPop = ContextCompat.getColor(context, R.color.palette_violet)
+        val black = ContextCompat.getColor(context, R.color.black)
+        val white = ContextCompat.getColor(context, R.color.white)
         val transparent = android.graphics.Color.TRANSPARENT
         val strokeColorState = android.content.res.ColorStateList.valueOf(accentPop)
 

@@ -55,6 +55,8 @@ class ReaderPersistenceUseCase(context: Context) {
 
     suspend fun deleteHighlight(highlight: HighlightEntity) = highlightDao.delete(highlight)
 
+    suspend fun updateHighlightNote(id: Long, note: String?) = highlightDao.updateNote(id, note)
+
     fun observeHighlights(bookId: Long): Flow<List<HighlightEntity>> = highlightDao.observeForBook(bookId)
 
     suspend fun getHighlightsForChapter(bookId: Long, spineHref: String): List<HighlightEntity> =
