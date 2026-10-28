@@ -136,7 +136,28 @@ class MainActivity : AppCompatActivity() {
     // Book Details uses the normal saved-scroll restoration path instead.
     private var pendingReadingTopReset = false
 
-    private val homeAdapters = mutableMapOf<Int, HomeBookAdapter>()
+    private val homeViewController by lazy {
+        com.epubreader.app.ui.HomeViewController(
+            activity = this,
+            onOpenBook = ::openBook,
+            onOpenBookDetails = ::openBookDetails,
+            onShowBookOptions = ::showBookOptions,
+            onSetView = viewModel::setView,
+            onLoadCover = ::loadHomeCover
+        )
+    }
+
+    private val libraryViewController by lazy { com.epubreader.app.ui.LibraryViewController(this) }
+    private val authorsViewController by lazy { com.epubreader.app.ui.AuthorsViewController(this) }
+    private val seriesViewController by lazy { com.epubreader.app.ui.SeriesViewController(this) }
+    private val collectionsViewController by lazy { com.epubreader.app.ui.CollectionsViewController(this) }
+    private val recentlyAddedViewController by lazy { com.epubreader.app.ui.RecentlyAddedViewController(this) }
+    private val readingViewController by lazy {
+        com.epubreader.app.ui.ReadingViewController(this) { bookId ->
+            viewModel.clearCurrentlyReading(bookId)
+            CurrentlyReadingUndoSnackbar.show(this, binding.root, bookId)
+        }
+    }
 
     /** Cached Home content so the Home screen can be re-rendered instantly when
      *  the user navigates back to it, even if the LiveData already emitted while
@@ -394,8 +415,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        ttsPronouncer?.shutdown()
-        ttsPronouncer = null
+        vocabularyViewController.destroy()
     }
 
     // ---------------------------------------------------------------- drawer
@@ -481,9 +501,7 @@ class MainActivity : AppCompatActivity() {
         item.view?.let {
             // If already on this view (e.g. Home), just scroll to top.
             if (viewModel.view.value == it && it is ShelfView.Home) {
-                binding.homeContent.homeScroll.post {
-                    binding.homeContent.homeScroll.scrollTo(0, 0)
-                }
+                homeViewController.scrollToTop(binding.homeContent)
                 return
             }
             scrollToTopOnNextContent = true
@@ -493,126 +511,10 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupHomeShelves() {
-        val specs = listOf(
-            R.id.homeRecentlyAdded to binding.homeContent.homeRecentlyAdded,
-            R.id.homeFavorites to binding.homeContent.homeFavorites,
-        )
-        specs.forEach { (key, recycler) ->
-            val adapter = HomeBookAdapter(::openBook, ::showBookOptions)
-            recycler.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
-            recycler.adapter = adapter
-            homeAdapters[key] = adapter
-        }
-    }
-
     private fun renderHome(content: HomeContent) {
         lastHomeContent = content
         if (viewModel.view.value !is ShelfView.Home) return
-
-        binding.homeContent.homeEmpty.visibility = if (content.hasBooks) View.GONE else View.VISIBLE
-        binding.homeContent.homeRecentlyAddedSection.visibility =
-            if (content.recentlyAdded.isEmpty()) View.GONE else View.VISIBLE
-        val hasContinueReading = content.continueReading != null
-        binding.homeContent.homeContinueSection.visibility = if (hasContinueReading) View.VISIBLE else View.GONE
-        binding.homeContent.homeContinueCard.visibility = if (hasContinueReading) View.VISIBLE else View.GONE
-
-        binding.homeContent.homeContinueViewAll.setOnClickListener { viewModel.setView(ShelfView.Reading) }
-        binding.homeContent.homeRecentlyAddedViewAll.setOnClickListener {
-            viewModel.setView(
-                ShelfView.RecentlyAdded(
-                    content.recentlyAdded.map { it.id })
-            )
-        }
-        binding.homeContent.homeFavoritesViewAll.setOnClickListener { viewModel.setView(ShelfView.Favorites) }
-        binding.homeContent.homeAllAuthorsBtn.setOnClickListener { viewModel.setView(ShelfView.AuthorsList) }
-        binding.homeContent.homeAllSeriesBtn.setOnClickListener { viewModel.setView(ShelfView.SeriesList) }
-
-        content.continueReading?.let { book ->
-            val dateStr =
-                android.text.format.DateFormat.format("MMM dd, yyyy", book.lastOpenedDate ?: book.addedDate).toString()
-            binding.homeContent.homeContinueDate.text = "Opened $dateStr"
-            binding.homeContent.homeContinueTitle.text = book.title
-
-            val authorStr = book.author.ifBlank { getString(R.string.unknown_author) }
-            val seriesText = book.series
-                ?.trim()
-                ?.takeIf { it.isNotEmpty() }
-                ?.let { series ->
-                    val index = book.seriesIndex
-                    if (index != null) {
-                        val formattedIndex = if (index % 1.0 == 0.0) index.toInt().toString() else index.toString()
-                        " • $series #$formattedIndex"
-                    } else {
-                        " • $series"
-                    }
-                }.orEmpty()
-            binding.homeContent.homeContinueAuthorSeries.text = "by $authorStr$seriesText"
-
-            val location = book.currentLocation?.trim().orEmpty()
-            binding.homeContent.homeContinueLocation.text = if (location.isBlank()) {
-                ""
-            } else {
-                "Current section: \"$location\""
-            }
-            binding.homeContent.homeContinueLocation.visibility = if (location.isBlank()) View.GONE else View.VISIBLE
-
-            val pct = (book.progress * 100).toInt()
-            binding.homeContent.homeContinueProgress.text = if (book.progress >= 0.90f) {
-                getString(R.string.progress_completed)
-            } else {
-                "$pct%"
-            }
-            binding.homeContent.homeContinueProgressBar.progress = if (book.progress >= 0.90f) 100 else pct
-
-            loadHomeCover(book, binding.homeContent.homeContinueCover)
-            binding.homeContent.homeContinueResumeBtn.setOnClickListener { openBook(book) }
-            binding.homeContent.homeContinueDetailsBtn.setOnClickListener { openBookDetails(book) }
-            binding.homeContent.homeContinueCard.setOnClickListener { openBook(book) }
-        }
-
-        submitHomeShelf(R.id.homeRecentlyAdded, content.recentlyAdded)
-        binding.homeContent.homeFavoritesSection.visibility =
-            if (content.favorites.isEmpty()) View.GONE else View.VISIBLE
-        submitHomeShelf(R.id.homeFavorites, content.favorites)
-
-        populateAuthorRows(content.topAuthors)
-        populateSeriesRows(content.topSeries)
-        binding.homeContent.homeAuthorsSection.visibility =
-            if (content.topAuthors.isEmpty()) View.GONE else View.VISIBLE
-        binding.homeContent.homeSeriesSection.visibility = if (content.topSeries.isEmpty()) View.GONE else View.VISIBLE
-    }
-
-    private fun populateAuthorRows(authors: List<HomeGroup>) {
-        val container = binding.homeContent.homeAuthorRowsContainer
-        container.removeAllViews()
-        authors.take(4).forEach { group ->
-            val row =
-                layoutInflater.inflate(R.layout.item_home_author_series, container, false) as android.view.ViewGroup
-            val tvTitle = row.findViewById<android.widget.TextView>(R.id.title)
-            val tvCount = row.findViewById<android.widget.TextView>(R.id.count)
-
-            tvTitle.text = group.name
-            tvCount.text = "${group.count} ${if (group.count == 1) "book" else "books"}"
-            row.setOnClickListener { viewModel.setView(ShelfView.AuthorDetail(group.name)) }
-            container.addView(row)
-        }
-    }
-
-    private fun populateSeriesRows(seriesList: List<HomeGroup>) {
-        val container = binding.homeContent.homeSeriesRowsContainer
-        container.removeAllViews()
-        seriesList.take(4).forEach { group ->
-            val row =
-                layoutInflater.inflate(R.layout.item_home_author_series, container, false) as android.view.ViewGroup
-            val tvTitle = row.findViewById<android.widget.TextView>(R.id.title)
-            val tvCount = row.findViewById<android.widget.TextView>(R.id.count)
-
-            tvTitle.text = group.name
-            tvCount.text = "${group.count} ${if (group.count == 1) "book" else "books"}"
-            row.setOnClickListener { viewModel.setView(ShelfView.SeriesDetail(group.name)) }
-            container.addView(row)
-        }
+        homeViewController.render(binding.homeContent, content)
     }
 
     private fun openBookDetails(book: BookEntity) {
@@ -620,10 +522,6 @@ class MainActivity : AppCompatActivity() {
             putExtra(BookDetailsActivity.EXTRA_BOOK_ID, book.id)
         }
         startActivity(intent)
-    }
-
-    private fun submitHomeShelf(id: Int, books: List<BookEntity>) {
-        homeAdapters[id]?.submitList(books)
     }
 
     private fun loadHomeCover(book: BookEntity, view: android.widget.ImageView) {
@@ -649,7 +547,6 @@ class MainActivity : AppCompatActivity() {
     // ---------------------------------------------------------------- recycler
     private fun setupRecycler() {
         refresh.setOnRefreshListener { rescanSelectedFolder() }
-        setupHomeShelves()
     }
 
     private fun isBookView(view: ShelfView) =
@@ -801,50 +698,24 @@ class MainActivity : AppCompatActivity() {
                 shelfContainer?.setTag(R.id.shelfContainer, shelfLayoutRes)
             }
 
-            val tvHeaderTitle = shelfContainer?.findViewById<TextView>(R.id.tvHeaderTitle)
-            val tvHeaderSubtitle = shelfContainer?.findViewById<TextView>(R.id.tvHeaderSubtitle)
             val ivHeaderIcon = shelfContainer?.findViewById<android.widget.ImageView>(R.id.ivHeaderIcon)
-
+            ivHeaderIcon?.visibility = View.VISIBLE
             when (view) {
-                is ShelfView.RecentlyAdded -> {
-                    tvHeaderTitle?.text = getString(R.string.recently_added_screen_title)
-                    tvHeaderSubtitle?.text = getString(R.string.recently_added_heading_subtitle)
-                    ivHeaderIcon?.visibility = View.VISIBLE
-                    ivHeaderIcon?.setImageResource(R.drawable.ic_recent)
-                    shelfContainer?.findViewById<TextView>(R.id.headerCountText)?.visibility = View.VISIBLE
-                }
+                is ShelfView.RecentlyAdded -> ivHeaderIcon?.setImageResource(R.drawable.ic_recent)
+                is ShelfView.AuthorDetail, is ShelfView.AuthorsList -> ivHeaderIcon?.setImageResource(R.drawable.ic_person)
+                is ShelfView.SeriesDetail, is ShelfView.SeriesList -> ivHeaderIcon?.setImageResource(R.drawable.ic_series)
+                else -> ivHeaderIcon?.visibility = View.GONE
+            }
 
-                is ShelfView.AuthorDetail -> {
-                    tvHeaderTitle?.text = "AUTHOR: ${view.name.uppercase()}"
-                    tvHeaderSubtitle?.text = ""
-                    ivHeaderIcon?.visibility = View.VISIBLE
-                    ivHeaderIcon?.setImageResource(R.drawable.ic_person_frame)
-                }
-
-                is ShelfView.SeriesDetail -> {
-                    tvHeaderTitle?.text = "SERIES: ${view.name.uppercase()}"
-                    tvHeaderSubtitle?.text = ""
-                    ivHeaderIcon?.visibility = View.VISIBLE
-                    ivHeaderIcon?.setImageResource(R.drawable.ic_series)
-                }
-
-                is ShelfView.AuthorsList -> {
-                    tvHeaderTitle?.text = getString(R.string.authors_heading_title)
-                    tvHeaderSubtitle?.text = getString(R.string.authors_heading_subtitle)
-                    ivHeaderIcon?.visibility = View.VISIBLE
-                    ivHeaderIcon?.setImageResource(R.drawable.ic_person)
-                    shelfContainer?.findViewById<TextView>(R.id.headerCountText)?.visibility = View.VISIBLE
-                }
-
-                is ShelfView.SeriesList -> {
-                    tvHeaderTitle?.text = getString(R.string.series_heading_title)
-                    tvHeaderSubtitle?.text = getString(R.string.series_heading_subtitle)
-                    ivHeaderIcon?.visibility = View.VISIBLE
-                    ivHeaderIcon?.setImageResource(R.drawable.ic_series)
-                    shelfContainer?.findViewById<TextView>(R.id.headerCountText)?.visibility = View.VISIBLE
-                }
-
-                else -> {}
+            val itemCount = bookAdapter?.itemCount ?: 0
+            when (view) {
+                is ShelfView.RecentlyAdded -> recentlyAddedViewController.setupHeader(shelfContainer, itemCount)
+                is ShelfView.AuthorDetail -> authorsViewController.setupHeader(shelfContainer, true, view.name, itemCount)
+                is ShelfView.AuthorsList -> authorsViewController.setupHeader(shelfContainer, false, null, itemCount)
+                is ShelfView.SeriesDetail -> seriesViewController.setupHeader(shelfContainer, true, view.name, itemCount)
+                is ShelfView.SeriesList -> seriesViewController.setupHeader(shelfContainer, false, null, itemCount)
+                is ShelfView.Collections -> collectionsViewController.setupHeader(shelfContainer, itemCount)
+                else -> libraryViewController.setupHeader(shelfContainer, view, itemCount)
             }
         } else {
             shelfContainer?.visibility = View.GONE
@@ -893,30 +764,13 @@ class MainActivity : AppCompatActivity() {
         // screen until the scan finishes, and pull-to-refresh also works everywhere.
 
         // Swipe-to-dismiss only on the Currently Reading list
-        touchHelper?.attachToRecyclerView(null)
         if (view is ShelfView.Reading) {
-            val cb =
-                object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
-                    override fun onMove(
-                        rv: RecyclerView,
-                        vh: RecyclerView.ViewHolder,
-                        target: RecyclerView.ViewHolder,
-                    ) = false
-
-                    override fun onSwiped(
-                        viewHolder: RecyclerView.ViewHolder,
-                        dir: Int,
-                    ) {
-                        val pos = viewHolder.bindingAdapterPosition
-                        val books = bookAdapter?.currentList ?: return
-                        if (pos in books.indices) {
-                            val book = books[pos]
-                            viewModel.clearCurrentlyReading(book.id)
-                            CurrentlyReadingUndoSnackbar.show(this@MainActivity, binding.root, book.id)
-                        }
-                    }
-                }
-            touchHelper = ItemTouchHelper(cb).also { r -> recycler?.let { r.attachToRecyclerView(it) } }
+            readingViewController.attachSwipeToDismiss(recycler) { pos ->
+                val books = bookAdapter?.currentList ?: return@attachSwipeToDismiss null
+                if (pos in books.indices) books[pos] else null
+            }
+        } else {
+            readingViewController.detachSwipeToDismiss()
         }
     }
 
@@ -1820,6 +1674,17 @@ class MainActivity : AppCompatActivity() {
         showFoldersView()
     }
 
+    private val foldersViewController by lazy {
+        com.epubreader.app.ui.FoldersViewController(
+            activity = this,
+            prefs = prefs,
+            onScanNow = ::rescanSelectedFolder,
+            onRefreshMetadata = ::refreshMetadataSelectedFolder,
+            onSelectFolder = { openTreeLauncher.launch(null) },
+            getFolderDisplayName = ::folderDisplayName
+        )
+    }
+
     private fun showFoldersView() {
         recycler?.visibility = View.GONE
         binding.emptyState.visibility = View.GONE
@@ -1827,167 +1692,23 @@ class MainActivity : AppCompatActivity() {
         binding.mainSettingsContent.root.visibility = View.GONE
 
         val foldersRoot = binding.root.findViewById<View>(R.id.mainFoldersContent) ?: return
-        foldersRoot.visibility = View.VISIBLE
+        foldersViewController.show(foldersRoot, refresh)
+    }
 
-        val tvFolderTitle = foldersRoot.findViewById<android.widget.TextView>(R.id.tvFolderTitle)
-        val tvFolderHint = foldersRoot.findViewById<android.widget.TextView>(R.id.tvFolderHint)
-        val btnScanNow = foldersRoot.findViewById<View>(R.id.btnScanNow)
-        val btnRefreshMetadata = foldersRoot.findViewById<View>(R.id.btnRefreshMetadata)
-        val btnSelectFolder = foldersRoot.findViewById<View>(R.id.btnSelectFolder)
-        val btnRemoveFolder = foldersRoot.findViewById<View>(R.id.btnRemoveFolder)
-
-        val uri = prefs.selectedFolderUri
-        tvFolderTitle?.text = if (uri != null) {
-            getString(R.string.folder_selected, folderDisplayName(uri))
-        } else {
-            getString(R.string.folder_none)
-        }
-        tvFolderHint?.text = getString(R.string.folder_hint)
-
-        if (uri != null) {
-            btnScanNow?.visibility = View.VISIBLE
-            btnRefreshMetadata?.visibility = View.VISIBLE
-            btnRemoveFolder?.visibility = View.VISIBLE
-
-            btnScanNow?.setOnClickListener { rescanSelectedFolder() }
-            btnRefreshMetadata?.setOnClickListener { refreshMetadataSelectedFolder() }
-            btnSelectFolder?.setOnClickListener { openTreeLauncher.launch(null) }
-            btnRemoveFolder?.setOnClickListener {
-                prefs.selectedFolderUri = null
-                showFoldersView()
-                Snackbar.make(refresh, R.string.folder_none, Snackbar.LENGTH_SHORT).show()
-            }
-        } else {
-            btnScanNow?.visibility = View.GONE
-            btnRefreshMetadata?.visibility = View.GONE
-            btnRemoveFolder?.visibility = View.GONE
-
-            btnSelectFolder?.setOnClickListener { openTreeLauncher.launch(null) }
-        }
+    private val settingsViewController by lazy {
+        com.epubreader.app.ui.SettingsViewController(
+            activity = this,
+            prefs = prefs,
+            onSelectFoldersView = { viewModel.setView(ShelfView.Folders) },
+            getFolderDisplayName = ::folderDisplayName
+        )
     }
 
     private fun showSettingsView() {
         recycler?.visibility = View.GONE
         binding.emptyState.visibility = View.GONE
         binding.homeContent.root.visibility = View.GONE
-        binding.mainSettingsContent.root.visibility = View.VISIBLE
-
-        // 1. Daily Reading Goal Section
-        data class GoalOpt(val value: Int, val chipText: String, val label: String, val subtext: String)
-        val minutesOpts = listOf(
-            GoalOpt(10, "10m", "10 minutes", getString(R.string.goal_sub_10_min)),
-            GoalOpt(20, "20m", "20 minutes", getString(R.string.goal_sub_20_min)),
-            GoalOpt(30, "30m", "30 minutes", getString(R.string.goal_sub_30_min)),
-            GoalOpt(45, "45m", "45 minutes", getString(R.string.goal_sub_45_min)),
-            GoalOpt(60, "60m", "60 minutes", getString(R.string.goal_sub_60_min))
-        )
-        val pagesOpts = listOf(
-            GoalOpt(10, "10p", "10 pages", getString(R.string.goal_sub_10_pages)),
-            GoalOpt(20, "20p", "20 pages", getString(R.string.goal_sub_20_pages)),
-            GoalOpt(30, "30p", "30 pages", getString(R.string.goal_sub_30_pages)),
-            GoalOpt(40, "40p", "40 pages", getString(R.string.goal_sub_40_pages)),
-            GoalOpt(50, "50p", "50 pages", getString(R.string.goal_sub_50_pages))
-        )
-
-        lateinit var bindDailyGoalSection: () -> Unit
-        bindDailyGoalSection = {
-            val type = prefs.goalType
-            val isMinutes = type != "pages"
-
-            val switchBtn = binding.mainSettingsContent.btnGoalTypeSwitch
-            if (isMinutes) {
-                switchBtn.text = getString(R.string.goal_switch_minutes)
-            } else {
-                switchBtn.text = getString(R.string.goal_switch_pages)
-            }
-            switchBtn.setOnClickListener {
-                prefs.goalType = if (isMinutes) "pages" else "minutes"
-                bindDailyGoalSection()
-            }
-
-            val opts = if (isMinutes) minutesOpts else pagesOpts
-            val currentVal = if (isMinutes) prefs.dailyGoalMinutes else prefs.dailyGoalPages
-            val activeOpt = opts.firstOrNull { it.value == currentVal } ?: opts.first()
-            if (currentVal != activeOpt.value) {
-                if (isMinutes) prefs.dailyGoalMinutes = activeOpt.value else prefs.dailyGoalPages = activeOpt.value
-            }
-
-            binding.mainSettingsContent.tvGoalSelectedLabel.text = activeOpt.label
-            binding.mainSettingsContent.tvGoalSubtext.text = activeOpt.subtext
-
-            val container = binding.mainSettingsContent.goalPillsContainer
-            container.removeAllViews()
-            val pillWidth = 56.dp()
-            val pillHeight = 36.dp()
-            val dp8 = 8.dp()
-
-            for (opt in opts) {
-                val pill = android.widget.TextView(this).apply {
-                    text = opt.chipText
-                    textSize = 14f
-                    setTypeface(null, android.graphics.Typeface.BOLD)
-                    gravity = android.view.Gravity.CENTER
-                    val isSelected = opt.value == activeOpt.value
-                    if (isSelected) {
-                        setBackgroundResource(R.drawable.goal_pill_selected)
-                        setTextColor(ContextCompat.getColor(context, R.color.white))
-                    } else {
-                        setBackgroundResource(R.drawable.goal_pill_unselected)
-                        setTextColor(ContextCompat.getColor(context, R.color.palette_plum))
-                    }
-                    val params = android.widget.LinearLayout.LayoutParams(
-                        pillWidth,
-                        pillHeight
-                    ).apply {
-                        marginEnd = dp8
-                    }
-                    layoutParams = params
-                    setOnClickListener {
-                        if (isMinutes) {
-                            prefs.dailyGoalMinutes = opt.value
-                        } else {
-                            prefs.dailyGoalPages = opt.value
-                        }
-                        bindDailyGoalSection()
-                    }
-                }
-                container.addView(pill)
-            }
-        }
-        bindDailyGoalSection()
-
-        binding.mainSettingsContent.goalDashboardSwitch.isChecked = prefs.showGoalOnDashboard
-        binding.mainSettingsContent.goalDashboardSwitch.setOnCheckedChangeListener { _, checked ->
-            prefs.showGoalOnDashboard = checked
-        }
-
-        // 2. Scanned Folder Section
-        val folder = prefs.selectedFolderUri
-        binding.mainSettingsContent.tvScannedFolderValue.text =
-            if (folder != null) folderDisplayName(folder) else getString(R.string.folder_none)
-        binding.mainSettingsContent.cardFolder.setOnClickListener {
-            viewModel.setView(ShelfView.Folders)
-        }
-
-        // 4. Screen On Settings Section
-        binding.mainSettingsContent.screenOnSwitch.isChecked = prefs.keepScreenOn
-        binding.mainSettingsContent.screenOnSwitch.setOnCheckedChangeListener { _, isChecked ->
-            prefs.keepScreenOn = isChecked
-        }
-
-        // 5. Flashcards & Mastery Tracking Feature
-        binding.mainSettingsContent.vocabMasterySwitch.isChecked = prefs.enableVocabMasteryAndFlashcards
-        binding.mainSettingsContent.vocabMasterySwitch.setOnCheckedChangeListener { _, isChecked ->
-            prefs.enableVocabMasteryAndFlashcards = isChecked
-        }
-
-        // 5. Full Backup and Restore Section
-        binding.mainSettingsContent.btnExportBackup.setOnClickListener {
-            Toast.makeText(this, R.string.backup_export_success, Toast.LENGTH_LONG).show()
-        }
-        binding.mainSettingsContent.btnImportBackup.setOnClickListener {
-            Toast.makeText(this, R.string.backup_import_success, Toast.LENGTH_LONG).show()
-        }
+        settingsViewController.show(binding.mainSettingsContent)
     }
 
     override fun onUserInteraction() {
@@ -2107,591 +1828,24 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
+    private val statsViewController by lazy {
+        com.epubreader.app.ui.StatsViewController(
+            activity = this,
+            prefs = prefs,
+            onOpenGoalSettings = { viewModel.setView(ShelfView.Settings) }
+        )
+    }
+
     private fun showStatsView() {
         val statsRoot = binding.root.findViewById<View>(R.id.mainStatsContent) ?: return
-        statsRoot.findViewById<View>(R.id.cardStatsGoal)?.setOnClickListener { viewModel.setView(ShelfView.Settings) }
-        val now = System.currentTimeMillis()
-        val weekStart = java.util.Calendar.getInstance().apply {
-            firstDayOfWeek = java.util.Calendar.MONDAY
-            set(java.util.Calendar.HOUR_OF_DAY, 0); set(java.util.Calendar.MINUTE, 0); set(
-            java.util.Calendar.SECOND,
-            0
-        ); set(java.util.Calendar.MILLISECOND, 0)
-            set(java.util.Calendar.DAY_OF_WEEK, java.util.Calendar.MONDAY)
-        }.timeInMillis
-        val yearStart = java.util.Calendar.getInstance().apply {
-            set(java.util.Calendar.MONTH, java.util.Calendar.JANUARY); set(java.util.Calendar.DAY_OF_MONTH, 1)
-            set(java.util.Calendar.HOUR_OF_DAY, 0); set(java.util.Calendar.MINUTE, 0); set(
-            java.util.Calendar.SECOND,
-            0
-        ); set(java.util.Calendar.MILLISECOND, 0)
-        }.timeInMillis
-        val todayStart = java.util.Calendar.getInstance().apply {
-            set(java.util.Calendar.HOUR_OF_DAY, 0); set(java.util.Calendar.MINUTE, 0); set(
-            java.util.Calendar.SECOND,
-            0
-        ); set(java.util.Calendar.MILLISECOND, 0)
-        }.timeInMillis
-
-        lifecycleScope.launch {
-            val stats = withContext(Dispatchers.IO) {
-                val db = AppDatabase.get(applicationContext)
-                val dao = db.readingSessionDao()
-                val days = dao.activeDays()
-                var streak = 0
-                if (days.isNotEmpty()) {
-                    val keys = days.toHashSet()
-                    val cursor = java.util.Calendar.getInstance().apply {
-                        timeInMillis = now
-                        set(java.util.Calendar.HOUR_OF_DAY, 0); set(
-                        java.util.Calendar.MINUTE,
-                        0
-                    ); set(java.util.Calendar.SECOND, 0); set(java.util.Calendar.MILLISECOND, 0)
-                    }
-                    while (true) {
-                        val key = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).format(cursor.time)
-                        if (!keys.contains(key)) break
-                        streak++
-                        cursor.add(java.util.Calendar.DAY_OF_YEAR, -1)
-                    }
-                }
-                StatsValues(
-                    weekSeconds = dao.activeSecondsSince(weekStart),
-                    yearSeconds = dao.activeSecondsSinceYear(yearStart),
-                    todaySeconds = dao.activeSecondsSince(todayStart),
-                    chapters = dao.chaptersSince(yearStart),
-                    pages = dao.pagesSince(yearStart),
-                    finished = db.bookDao().getFinishedCount(),
-                    streak = streak,
-                    todayPages = dao.pagesSince(todayStart)
-                )
-            }
-            val isGoalEnabled = prefs.showGoalOnDashboard
-            val goalFractionTv = statsRoot.findViewById<TextView>(R.id.statsGoalFraction)
-            val goalProgressRow = statsRoot.findViewById<View>(R.id.statsGoalProgressRow)
-            val goalDisabledInfo = statsRoot.findViewById<TextView>(R.id.statsGoalDisabledInfo)
-
-            if (isGoalEnabled) {
-                goalFractionTv?.visibility = View.VISIBLE
-                goalProgressRow?.visibility = View.VISIBLE
-                goalDisabledInfo?.visibility = View.GONE
-
-                val goalType = prefs.goalType
-                if (goalType == "pages") {
-                    val todayPages = stats.todayPages
-                    val goalPages = prefs.dailyGoalPages.coerceAtLeast(1)
-                    val percent = ((todayPages * 100) / goalPages).coerceIn(0, 100)
-                    goalFractionTv?.text = getString(R.string.stats_goal_fraction_pages, todayPages, goalPages)
-                    statsRoot.findViewById<ProgressBar>(R.id.statsGoalProgressBar)?.progress = percent
-                    statsRoot.findViewById<TextView>(R.id.statsGoalPercent)?.text = "$percent%"
-                } else {
-                    val todayMinutes = stats.todaySeconds / 60
-                    val goalMinutes = prefs.dailyGoalMinutes.coerceAtLeast(1)
-                    val percent = ((todayMinutes * 100) / goalMinutes).coerceIn(0, 100)
-                    goalFractionTv?.text = getString(R.string.stats_goal_fraction_minutes, todayMinutes, goalMinutes)
-                    statsRoot.findViewById<ProgressBar>(R.id.statsGoalProgressBar)?.progress = percent
-                    statsRoot.findViewById<TextView>(R.id.statsGoalPercent)?.text = "$percent%"
-                }
-            } else {
-                goalFractionTv?.visibility = View.GONE
-                goalProgressRow?.visibility = View.GONE
-                goalDisabledInfo?.visibility = View.VISIBLE
-            }
-
-            statsRoot.findViewById<TextView>(R.id.statsWeek)?.text = formatStatsMinutes(stats.weekSeconds)
-            statsRoot.findViewById<TextView>(R.id.statsYear)?.text = formatStatsMinutes(stats.yearSeconds)
-            statsRoot.findViewById<TextView>(R.id.statsFinished)?.text = stats.finished.toString()
-            statsRoot.findViewById<TextView>(R.id.statsStreak)?.text =
-                "${stats.streak} ${if (stats.streak == 1) "day" else getString(R.string.stats_days)}"
-            statsRoot.findViewById<TextView>(R.id.statsChapters)?.text = stats.chapters.toString()
-            statsRoot.findViewById<TextView>(R.id.statsPages)?.text = stats.pages.toString()
-        }
+        statsViewController.show(statsRoot)
     }
 
-    private data class StatsValues(
-        val weekSeconds: Int,
-        val yearSeconds: Int,
-        val todaySeconds: Int,
-        val chapters: Int,
-        val pages: Int,
-        val finished: Int,
-        val streak: Int,
-        val todayPages: Int
-    )
-
-
-
-    private fun formatStatsMinutes(seconds: Int): String {
-        val minutes = seconds / 60
-        return if (minutes < 60) getString(R.string.stats_minutes_value, minutes)
-        else getString(R.string.stats_hours_value, minutes / 60, minutes % 60)
-    }
-
-    private var vocabAdapter: com.epubreader.app.ui.VocabularyAdapter? = null
-    private var vocabFullList: List<com.epubreader.app.data.DictionaryHistoryEntity> = emptyList()
-    private var vocabFlashcardIndex: Int = 0
-    private var vocabFlashcardFlipped: Boolean = false
-    private var ttsPronouncer: com.epubreader.app.util.TtsPronouncer? = null
+    private val vocabularyViewController by lazy { com.epubreader.app.ui.VocabularyViewController(this) }
 
     private fun showVocabularyView() {
         val isFeatureEnabled = prefs.enableVocabMasteryAndFlashcards
         val vocabContainer = binding.root.findViewById<android.view.ViewGroup>(R.id.mainVocabularyContent) ?: return
-
-        val requiredTag = if (isFeatureEnabled) "vocab_full" else "vocab_default"
-        if (vocabContainer.tag != requiredTag) {
-            vocabContainer.removeAllViews()
-            val layoutRes =
-                if (isFeatureEnabled) R.layout.view_main_vocabulary else R.layout.view_main_vocabulary_default
-            layoutInflater.inflate(layoutRes, vocabContainer, true)
-            vocabContainer.tag = requiredTag
-            vocabAdapter = null
-        }
-
-        val vocabRoot = vocabContainer
-        if (ttsPronouncer == null) {
-            ttsPronouncer = com.epubreader.app.util.TtsPronouncer(this)
-        }
-        val tabs = vocabRoot.findViewById<com.google.android.material.tabs.TabLayout>(R.id.vocabTabs)
-        val wordsContainer = vocabRoot.findViewById<View>(R.id.vocabWordsTabContainer)
-        val flashcardContainer = vocabRoot.findViewById<View>(R.id.vocabFlashcardContainer)
-        val searchLayout =
-            vocabRoot.findViewById<com.google.android.material.textfield.TextInputLayout>(R.id.vocabSearchLayout)
-        val searchEdit =
-            vocabRoot.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.vocabSearchEdit)
-        val chipGroup = vocabRoot.findViewById<com.google.android.material.chip.ChipGroup>(R.id.vocabFilterChipGroup)
-        val recycler = vocabRoot.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.vocabRecycler)
-        val emptyText = vocabRoot.findViewById<View>(R.id.vocabEmptyText)
-        val actionsRow = vocabRoot.findViewById<View>(R.id.vocabActionsRow)
-
-        // Explicitly reset session state to fresh baseline on entry/return
-        searchEdit?.text?.clear()
-        searchLayout?.isEndIconVisible = false
-        chipGroup?.check(R.id.chipAll)
-        tabs?.getTabAt(0)?.select()
-        wordsContainer?.visibility = View.VISIBLE
-        flashcardContainer?.visibility = View.GONE
-        vocabFlashcardIndex = 0
-        vocabFlashcardFlipped = false
-        vocabRoot.findViewById<View>(R.id.flashcardCardView)?.rotationY = 0f
-        vocabRoot.findViewById<View>(R.id.flashcardFrontSide)?.visibility = View.VISIBLE
-        vocabRoot.findViewById<View>(R.id.flashcardBackSide)?.visibility = View.GONE
-
-        if (vocabAdapter == null || vocabAdapter?.showMastery != isFeatureEnabled) {
-            vocabAdapter = com.epubreader.app.ui.VocabularyAdapter(
-                showMastery = isFeatureEnabled,
-                onMasteryCycle = { item ->
-                    val nextMastery = (item.masteryLevel + 1) % 3
-                    lifecycleScope.launch(Dispatchers.IO) {
-                        AppDatabase.get(applicationContext).dictionaryHistoryDao()
-                            .updateMasteryLevel(item.id, nextMastery)
-                    }
-                },
-                onPronounce = { word ->
-                    ttsPronouncer?.speak(word)
-                },
-                onDelete = { item ->
-                    lifecycleScope.launch(Dispatchers.IO) {
-                        AppDatabase.get(applicationContext).dictionaryHistoryDao().delete(item)
-                    }
-                }
-            )
-        }
-        recycler?.layoutManager = LinearLayoutManager(this)
-        recycler?.adapter = vocabAdapter
-
-        // Dual Tab Switcher
-        tabs?.addOnTabSelectedListener(object : com.google.android.material.tabs.TabLayout.OnTabSelectedListener {
-            override fun onTabSelected(tab: com.google.android.material.tabs.TabLayout.Tab?) {
-                hideKeyboard(searchEdit)
-                searchEdit?.clearFocus()
-                if (tab?.position == 1) {
-                    wordsContainer?.visibility = View.GONE
-                    flashcardContainer?.visibility = View.VISIBLE
-                    renderFlashcard(vocabRoot)
-                } else {
-                    wordsContainer?.visibility = View.VISIBLE
-                    flashcardContainer?.visibility = View.GONE
-                }
-            }
-
-            override fun onTabUnselected(tab: com.google.android.material.tabs.TabLayout.Tab?) {}
-            override fun onTabReselected(tab: com.google.android.material.tabs.TabLayout.Tab?) {}
-        })
-
-        val subtitleTv = vocabRoot.findViewById<TextView>(R.id.vocabSubtitleText)
-        // Live Search Filter
-        val applyFilters = {
-            val query = searchEdit?.text?.toString()?.trim()?.lowercase() ?: ""
-            val checkedId = chipGroup?.checkedChipId
-            val filtered = vocabFullList.filter { item ->
-                val matchesQuery = query.isBlank() ||
-                        item.word.lowercase().contains(query) ||
-                        (item.definition?.lowercase()?.contains(query) == true) ||
-                        (item.bookTitle?.lowercase()?.contains(query) == true)
-
-                val matchesChip = when (checkedId) {
-                    R.id.chipNew -> item.masteryLevel == 0
-                    R.id.chipLearning -> item.masteryLevel == 1
-                    R.id.chipMastered -> item.masteryLevel == 2
-                    else -> true
-                }
-                matchesQuery && matchesChip
-            }
-            vocabAdapter?.submitList(filtered)
-            emptyText?.visibility = if (filtered.isEmpty()) View.VISIBLE else View.GONE
-            recycler?.visibility = if (filtered.isEmpty()) View.GONE else View.VISIBLE
-            actionsRow?.visibility = if (vocabFullList.isEmpty()) View.GONE else View.VISIBLE
-
-            val total = vocabFullList.size
-            val count = filtered.size
-            val wordOrWords = if (count == 1) "word" else "words"
-            subtitleTv?.text = if (filtered.size == vocabFullList.size) {
-                vocabRoot.context.getString(R.string.vocab_heading_subtitle, total, if (total == 1) "word" else "words")
-            } else {
-                "$count matching $wordOrWords (filtered from $total)"
-            }
-        }
-
-        searchEdit?.addTextChangedListener(object : android.text.TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                val query = s?.toString()?.trim() ?: ""
-                searchLayout?.isEndIconVisible = query.isNotEmpty()
-                applyFilters()
-            }
-
-            override fun afterTextChanged(s: android.text.Editable?) {}
-        })
-
-        searchLayout?.setEndIconOnClickListener {
-            searchEdit?.text?.clear()
-            searchEdit?.clearFocus()
-            hideKeyboard(searchEdit)
-            searchLayout.isEndIconVisible = false
-            applyFilters()
-        }
-
-        searchEdit?.setOnEditorActionListener { _, actionId, event ->
-            if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH ||
-                (event != null && event.keyCode == android.view.KeyEvent.KEYCODE_ENTER && event.action == android.view.KeyEvent.ACTION_DOWN)) {
-                hideKeyboard(searchEdit)
-                searchEdit?.clearFocus()
-                true
-            } else {
-                false
-            }
-        }
-
-        val updateChipStyles = {
-            for (i in 0 until (chipGroup?.childCount ?: 0)) {
-                val chip = chipGroup?.getChildAt(i) as? com.google.android.material.chip.Chip
-                if (chip != null) {
-                    if (chip.isChecked) {
-                        chip.chipBackgroundColor = android.content.res.ColorStateList.valueOf(
-                            androidx.core.content.ContextCompat.getColor(
-                                this,
-                                R.color.palette_violet
-                            )
-                        )
-                        chip.setTextColor(androidx.core.content.ContextCompat.getColor(this, R.color.white))
-                    } else {
-                        chip.chipBackgroundColor = android.content.res.ColorStateList.valueOf(
-                            androidx.core.content.ContextCompat.getColor(
-                                this,
-                                R.color.palette_plum
-                            )
-                        )
-                        chip.setTextColor(androidx.core.content.ContextCompat.getColor(this, R.color.palette_mint))
-                    }
-                }
-            }
-        }
-        updateChipStyles()
-
-        chipGroup?.setOnCheckedStateChangeListener { _, _ ->
-            updateChipStyles()
-            applyFilters()
-        }
-
-        vocabRoot.findViewById<View>(R.id.vocabExportCsv)?.setOnClickListener { exportVocab(0) }
-        vocabRoot.findViewById<View>(R.id.vocabExportMarkdown)?.setOnClickListener { exportVocab(1) }
-        vocabRoot.findViewById<View>(R.id.vocabClearAll)?.setOnClickListener { confirmClearVocab() }
-
-        // Flashcard controls
-        val flashcardCard = vocabRoot.findViewById<View>(R.id.flashcardCardView)
-        val flashcardPrev = vocabRoot.findViewById<View>(R.id.flashcardPrevBtn)
-        val flashcardNext = vocabRoot.findViewById<View>(R.id.flashcardNextBtn)
-        val flashcardLearning =
-            vocabRoot.findViewById<com.google.android.material.button.MaterialButton>(R.id.flashcardLearningBtn)
-        val flashcardMastered =
-            vocabRoot.findViewById<com.google.android.material.button.MaterialButton>(R.id.flashcardMasteredBtn)
-        val flashcardAudioBtn = vocabRoot.findViewById<View>(R.id.flashcardAudioBtn)
-
-        flashcardLearning?.setOnClickListener {
-            if (vocabFullList.isNotEmpty() && vocabFlashcardIndex in vocabFullList.indices) {
-                val current = vocabFullList[vocabFlashcardIndex]
-                lifecycleScope.launch(Dispatchers.IO) {
-                    AppDatabase.get(applicationContext).dictionaryHistoryDao().updateMasteryLevel(current.id, 1)
-                }
-            }
-        }
-
-        flashcardMastered?.setOnClickListener {
-            if (vocabFullList.isNotEmpty() && vocabFlashcardIndex in vocabFullList.indices) {
-                val current = vocabFullList[vocabFlashcardIndex]
-                lifecycleScope.launch(Dispatchers.IO) {
-                    AppDatabase.get(applicationContext).dictionaryHistoryDao().updateMasteryLevel(current.id, 2)
-                }
-            }
-        }
-
-        flashcardAudioBtn?.setOnClickListener {
-            if (vocabFullList.isNotEmpty() && vocabFlashcardIndex in vocabFullList.indices) {
-                val current = vocabFullList[vocabFlashcardIndex]
-                if (ttsPronouncer == null) {
-                    ttsPronouncer = com.epubreader.app.util.TtsPronouncer(this)
-                }
-                val textToSpeak = if (vocabFlashcardFlipped && !current.definition.isNullOrBlank()) {
-                    "${current.word}. ${current.definition}"
-                } else {
-                    current.word
-                }
-                ttsPronouncer?.speak(textToSpeak)
-            }
-        }
-
-        flashcardCard?.setOnClickListener {
-            vocabFlashcardFlipped = !vocabFlashcardFlipped
-            val front = vocabRoot.findViewById<View>(R.id.flashcardFrontSide)
-            val back = vocabRoot.findViewById<View>(R.id.flashcardBackSide)
-            val scale = vocabRoot.resources.displayMetrics.density
-            flashcardCard.cameraDistance = 8000f * scale
-
-            val targetRotation = if (vocabFlashcardFlipped) 180f else 0f
-            flashcardCard.animate()
-                .rotationY(targetRotation)
-                .setDuration(350)
-                .setUpdateListener { _ ->
-                    val currentRotation = flashcardCard.rotationY
-                    if (vocabFlashcardFlipped) {
-                        if (currentRotation >= 90f) {
-                            front?.visibility = View.GONE
-                            back?.visibility = View.VISIBLE
-                            back?.rotationY = 180f
-                        }
-                    } else {
-                        if (currentRotation <= 90f) {
-                            back?.visibility = View.GONE
-                            front?.visibility = View.VISIBLE
-                            front?.rotationY = 0f
-                        }
-                    }
-                }
-                .start()
-        }
-
-        flashcardPrev?.setOnClickListener {
-            if (vocabFullList.isNotEmpty()) {
-                vocabFlashcardIndex = (vocabFlashcardIndex - 1 + vocabFullList.size) % vocabFullList.size
-                vocabFlashcardFlipped = false
-                flashcardCard?.rotationY = 0f
-                vocabRoot.findViewById<View>(R.id.flashcardFrontSide)?.visibility = View.VISIBLE
-                vocabRoot.findViewById<View>(R.id.flashcardBackSide)?.visibility = View.GONE
-                renderFlashcard(vocabRoot)
-            }
-        }
-
-        flashcardNext?.setOnClickListener {
-            if (vocabFullList.isNotEmpty()) {
-                vocabFlashcardIndex = (vocabFlashcardIndex + 1) % vocabFullList.size
-                vocabFlashcardFlipped = false
-                flashcardCard?.rotationY = 0f
-                vocabRoot.findViewById<View>(R.id.flashcardFrontSide)?.visibility = View.VISIBLE
-                vocabRoot.findViewById<View>(R.id.flashcardBackSide)?.visibility = View.GONE
-                renderFlashcard(vocabRoot)
-            }
-        }
-
-        flashcardLearning?.setOnClickListener {
-            if (vocabFullList.isNotEmpty() && vocabFlashcardIndex in vocabFullList.indices) {
-                val current = vocabFullList[vocabFlashcardIndex]
-                lifecycleScope.launch(Dispatchers.IO) {
-                    AppDatabase.get(applicationContext).dictionaryHistoryDao().updateMasteryLevel(current.id, 1)
-                }
-            }
-        }
-
-        flashcardMastered?.setOnClickListener {
-            if (vocabFullList.isNotEmpty() && vocabFlashcardIndex in vocabFullList.indices) {
-                val current = vocabFullList[vocabFlashcardIndex]
-                lifecycleScope.launch(Dispatchers.IO) {
-                    AppDatabase.get(applicationContext).dictionaryHistoryDao().updateMasteryLevel(current.id, 2)
-                }
-            }
-        }
-
-        AppDatabase.get(this).dictionaryHistoryDao().observeAll().asLiveData().observe(this) { list ->
-            vocabFullList = list
-            applyFilters()
-            if (vocabFlashcardIndex >= list.size) vocabFlashcardIndex = (list.size - 1).coerceAtLeast(0)
-            renderFlashcard(vocabRoot)
-
-            val subtitleTv = vocabRoot.findViewById<TextView>(R.id.vocabSubtitleText)
-            val count = list.size
-            val wordOrWords = if (count == 1) "word" else "words"
-            subtitleTv?.text = vocabRoot.context.getString(R.string.vocab_heading_subtitle, count, wordOrWords)
-        }
-    }
-
-    private fun renderFlashcard(vocabRoot: View) {
-        if (vocabFullList.isEmpty()) return
-        val current = vocabFullList[vocabFlashcardIndex.coerceIn(0, vocabFullList.size - 1)]
-        val progressTv = vocabRoot.findViewById<TextView>(R.id.flashcardProgressText)
-        val wordTv = vocabRoot.findViewById<TextView>(R.id.flashcardWord)
-        val phoneticTv = vocabRoot.findViewById<TextView>(R.id.flashcardPhonetic)
-        val posTv = vocabRoot.findViewById<TextView>(R.id.flashcardPos)
-        val defTv = vocabRoot.findViewById<TextView>(R.id.flashcardDef)
-        val exampleTv = vocabRoot.findViewById<TextView>(R.id.flashcardExample)
-        val flashcardLearning =
-            vocabRoot.findViewById<com.google.android.material.button.MaterialButton>(R.id.flashcardLearningBtn)
-        val flashcardMastered =
-            vocabRoot.findViewById<com.google.android.material.button.MaterialButton>(R.id.flashcardMasteredBtn)
-
-        progressTv?.text =
-            vocabRoot.context.getString(R.string.vocab_flashcard_progress, vocabFlashcardIndex + 1, vocabFullList.size)
-
-        wordTv?.text = current.word.uppercase()
-        phoneticTv?.text = current.phonetic ?: "/${current.word.lowercase()}/"
-        posTv?.text = current.partOfSpeech?.uppercase() ?: "WORD"
-        defTv?.text = current.definition ?: getString(R.string.dictionary_not_found)
-        exampleTv?.text = if (!current.example.isNullOrBlank()) "\"${current.example}\"" else ""
-
-        updateFlashcardMasteryState(current, flashcardLearning, flashcardMastered, vocabRoot.context)
-    }
-
-    private fun updateFlashcardMasteryState(
-        current: com.epubreader.app.data.DictionaryHistoryEntity,
-        learningBtn: com.google.android.material.button.MaterialButton?,
-        masteredBtn: com.google.android.material.button.MaterialButton?,
-        context: Context
-    ) {
-        val accentPop = ContextCompat.getColor(context, R.color.palette_violet)
-        val black = ContextCompat.getColor(context, R.color.black)
-        val white = ContextCompat.getColor(context, R.color.white)
-        val transparent = android.graphics.Color.TRANSPARENT
-        val strokeColorState = android.content.res.ColorStateList.valueOf(accentPop)
-
-        val isLearning = current.masteryLevel == 1
-        val isMastered = current.masteryLevel == 2
-
-        learningBtn?.strokeColor = strokeColorState
-        if (isLearning) {
-            learningBtn?.backgroundTintList = android.content.res.ColorStateList.valueOf(accentPop)
-            learningBtn?.setTextColor(black)
-            learningBtn?.text = context.getString(R.string.vocab_mark_learning)
-        } else {
-            learningBtn?.backgroundTintList = android.content.res.ColorStateList.valueOf(transparent)
-            learningBtn?.setTextColor(white)
-            learningBtn?.text = context.getString(R.string.vocab_mark_learning)
-        }
-
-        masteredBtn?.strokeColor = strokeColorState
-        if (isMastered) {
-            masteredBtn?.backgroundTintList = android.content.res.ColorStateList.valueOf(accentPop)
-            masteredBtn?.setTextColor(black)
-            masteredBtn?.text = context.getString(R.string.vocab_mastered_badge)
-        } else {
-            masteredBtn?.backgroundTintList = android.content.res.ColorStateList.valueOf(transparent)
-            masteredBtn?.setTextColor(white)
-            masteredBtn?.text = context.getString(R.string.vocab_mark_mastered)
-        }
-    }
-
-    private fun confirmClearVocab() {
-        androidx.appcompat.app.AlertDialog.Builder(this)
-            .setTitle(R.string.vocabulary_clear_confirm)
-            .setPositiveButton(R.string.delete) { _, _ ->
-                lifecycleScope.launch(Dispatchers.IO) {
-                    AppDatabase.get(applicationContext).dictionaryHistoryDao().clear()
-                }
-                Snackbar.make(binding.root, R.string.vocabulary_cleared, Snackbar.LENGTH_SHORT).show()
-            }
-            .setNegativeButton(R.string.cancel, null)
-            .show()
-    }
-
-    private fun exportVocab(format: Int) {
-        val words = vocabAdapter?.currentList ?: return
-        if (words.isEmpty()) return
-        val timestamp = java.text.SimpleDateFormat("yyyyMMdd-HHmmss", java.util.Locale.US).format(java.util.Date())
-        val (fileName, mime, content) = when (format) {
-            1 -> Triple("vocabulary-$timestamp.md", "text/markdown", buildVocabMarkdown(words))
-            else -> Triple("vocabulary-$timestamp.csv", "text/csv", buildVocabCsv(words))
-        }
-        lifecycleScope.launch(Dispatchers.IO) {
-            val file = java.io.File(cacheDir, fileName)
-            file.writeText(content, Charsets.UTF_8)
-            withContext(Dispatchers.Main) {
-                shareVocabFile(file, mime)
-                Snackbar.make(binding.root, R.string.vocabulary_exported, Snackbar.LENGTH_SHORT).show()
-            }
-        }
-    }
-
-    private fun buildVocabCsv(words: List<com.epubreader.app.data.DictionaryHistoryEntity>): String = buildString {
-        append("word,part_of_speech,definition,example,source_book,mastery\n")
-        words.forEach { item ->
-            val masteryStr = when (item.masteryLevel) {
-                1 -> "Learning"
-                2 -> "Mastered"
-                else -> "New"
-            }
-            append(csvCell(item.word)).append(',')
-                .append(csvCell(item.partOfSpeech.orEmpty())).append(',')
-                .append(csvCell(item.definition.orEmpty())).append(',')
-                .append(csvCell(item.example.orEmpty())).append(',')
-                .append(csvCell(item.bookTitle.orEmpty())).append(',')
-                .append(csvCell(masteryStr)).append('\n')
-        }
-    }
-
-    private fun csvCell(value: String): String =
-        if (value.contains(',') || value.contains('"') || value.contains('\n')) {
-            "\"" + value.replace("\"", "\"\"") + "\""
-        } else {
-            value
-        }
-
-    private fun buildVocabMarkdown(words: List<com.epubreader.app.data.DictionaryHistoryEntity>): String = buildString {
-        append("# Vocabulary Sanctuary\n\n")
-        append("| Word | Part of Speech | Definition | Context Usage | Source Book | Mastery |\n")
-        append("| --- | --- | --- | --- | --- | --- |\n")
-        words.forEach { item ->
-            val masteryStr = when (item.masteryLevel) {
-                1 -> "Learning"
-                2 -> "Mastered"
-                else -> "New"
-            }
-            append("| **").append(item.word.replace("|", "\\|")).append("** | ")
-                .append(item.partOfSpeech.orEmpty().replace("|", "\\|")).append(" | ")
-                .append(item.definition.orEmpty().replace("|", "\\|").replace("\n", " ")).append(" | ")
-                .append(item.example.orEmpty().replace("|", "\\|").replace("\n", " ")).append(" | ")
-                .append(item.bookTitle.orEmpty().replace("|", "\\|")).append(" | ")
-                .append(masteryStr).append(" |\n")
-        }
-    }
-
-    private fun shareVocabFile(file: java.io.File, mime: String) {
-        val uri = androidx.core.content.FileProvider.getUriForFile(
-            this,
-            "$packageName.fileprovider",
-            file,
-        )
-        val intent = Intent(Intent.ACTION_SEND).apply {
-            type = mime
-            putExtra(Intent.EXTRA_STREAM, uri)
-            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-        }
-        startActivity(Intent.createChooser(intent, getString(R.string.vocabulary_title)))
+        vocabularyViewController.show(vocabContainer, isFeatureEnabled)
     }
 }
