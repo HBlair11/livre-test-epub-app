@@ -1,25 +1,26 @@
-package com.epubreader.app
-
-import com.epubreader.app.util.SystemBarController
+package com.epubreader.app.ui
 
 import android.content.Intent
 import android.graphics.BitmapFactory
-import androidx.activity.result.contract.ActivityResultContracts
-import android.os.Bundle
-import android.widget.TextView
+import android.net.Uri
 import android.text.format.DateFormat
 import android.text.format.Formatter
 import android.view.View
+import android.widget.TextView
+import androidx.activity.result.ActivityResultLauncher
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
+
+import com.epubreader.app.ReaderActivity
+import com.epubreader.app.R
 import com.epubreader.app.data.AppDatabase
 import com.epubreader.app.data.BookEntity
 import com.epubreader.app.data.BookRepository
+import com.epubreader.app.databinding.ActivityBookDetailsBinding
 import com.epubreader.app.epub.EpubImporter
 import com.epubreader.app.util.CurrentlyReadingUndoSnackbar
-import com.epubreader.app.databinding.ActivityBookDetailsBinding
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -28,49 +29,26 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.Date
 
-class BookDetailsActivity : AppCompatActivity() {
-
-    private lateinit var binding: ActivityBookDetailsBinding
-    private var bookId: Long = -1L
-    private var shouldRefreshOnResume = false
-    private var favoriteUpdateJob: Job? = null
-
-    private val coverPicker = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
-        uri?.let { applyPickedCover(it) }
-    }
+class BookDetailsViewController(
+    private val activity: AppCompatActivity,
+    private val binding: ActivityBookDetailsBinding,
+    private val bookId: Long,
+    private val coverPicker: ActivityResultLauncher<Array<String>>
+) {
 
     private lateinit var importer: EpubImporter
+    private var favoriteUpdateJob: Job? = null
+    var shouldRefreshOnResume = false
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        binding = ActivityBookDetailsBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-        SystemBarController.apply(this)
-
-        importer = EpubImporter(applicationContext)
-
-        setSupportActionBar(binding.toolbar)
-
-        binding.toolbar.setNavigationOnClickListener {
-            finish()
-        }
-
-        bookId = intent.getLongExtra(EXTRA_BOOK_ID, -1L)
-
-        if (bookId < 0) {
-            finish()
-            return
-        }
-
+    fun setup() {
+        importer = EpubImporter(activity.applicationContext)
         load()
     }
 
-    private fun load() {
-        lifecycleScope.launch(Dispatchers.IO) {
-
+    fun load() {
+        activity.lifecycleScope.launch(Dispatchers.IO) {
             val book = AppDatabase
-                .get(applicationContext)
+                .get(activity.applicationContext)
                 .bookDao()
                 .getById(bookId)
                 ?: return@launch
@@ -82,70 +60,28 @@ class BookDetailsActivity : AppCompatActivity() {
     }
 
     private fun bind(book: BookEntity) {
-
-        // =========================
-        // TITLE
-        // =========================
-
-        title = book.title
+        activity.title = book.title
         binding.title.text = book.title
 
-        // =========================
-        // COVER
-        // =========================
-
         book.coverPath?.let { coverPath ->
-
-            Glide.with(this)
+            Glide.with(activity)
                 .load(File(coverPath))
                 .into(binding.cover)
         }
 
-        // =========================
-        // BOOK
-        // =========================
-
         binding.bookValue.text = book.title
-
-        // =========================
-        // AUTHOR
-        // =========================
-
-        binding.authorValue.text =
-            book.author.ifBlank {
-                getString(R.string.unknown_author)
-            }
-
-        // =========================
-        // SERIES
-        // =========================
+        binding.authorValue.text = book.author.ifBlank { activity.getString(R.string.unknown_author) }
 
         if (!book.series.isNullOrBlank()) {
-
             binding.seriesContainer.visibility = View.VISIBLE
-
-            binding.seriesValue.text =
-                book.seriesIndex?.let { index ->
-                    // Check if the float ends in .0
-                    val formattedIndex = if (index % 1.0 == 0.0) {
-                        index.toInt().toString() // Converts 1.0 -> 1
-                    } else {
-                        index.toString() // Keeps 2.5 -> 2.5
-                    }
-                    
-                    "${book.series} #$formattedIndex"
-                } ?: book.series
-
+            binding.seriesValue.text = book.seriesIndex?.let { index ->
+                val formattedIndex = if (index % 1.0 == 0.0) index.toInt().toString() else index.toString()
+                "${book.series} #$formattedIndex"
+            } ?: book.series
         } else {
-
             binding.seriesContainer.visibility = View.GONE
         }
 
-        // =========================
-        // CONDITIONAL METADATA GRID
-        // =========================
-
-        // PUBLISHER
         if (!book.publisher.isNullOrBlank()) {
             binding.publisherContainer.visibility = View.VISIBLE
             binding.publisherValue.text = book.publisher
@@ -153,7 +89,6 @@ class BookDetailsActivity : AppCompatActivity() {
             binding.publisherContainer.visibility = View.GONE
         }
 
-        // PUBLISH YEAR
         if (book.publishYear != null && book.publishYear > 0) {
             binding.publishYearContainer.visibility = View.VISIBLE
             binding.publishYearValue.text = book.publishYear.toString()
@@ -161,7 +96,6 @@ class BookDetailsActivity : AppCompatActivity() {
             binding.publishYearContainer.visibility = View.GONE
         }
 
-        // LANGUAGE
         if (!book.language.isNullOrBlank()) {
             binding.languageContainer.visibility = View.VISIBLE
             binding.languageValue.text = book.language
@@ -169,7 +103,6 @@ class BookDetailsActivity : AppCompatActivity() {
             binding.languageContainer.visibility = View.GONE
         }
 
-        // SUBJECT TAGS
         if (!book.subjectTags.isNullOrBlank()) {
             binding.subjectsContainer.visibility = View.VISIBLE
             binding.subjectsValue.text = book.subjectTags
@@ -177,139 +110,79 @@ class BookDetailsActivity : AppCompatActivity() {
             binding.subjectsContainer.visibility = View.GONE
         }
 
-        // ALWAYS SHOWN METADATA
         binding.filenameValue.text = book.sourceFilename ?: File(book.path).name
-        binding.filesizeValue.text = Formatter.formatFileSize(this, book.fileSize)
+        binding.filesizeValue.text = Formatter.formatFileSize(activity, book.fileSize)
         binding.dateAddedValue.text = fmtDate(book.addedDate)
 
-        // =========================
-        // PROGRESS CARD
-        // =========================
-
         if (book.lastOpenedDate != null) {
-
             binding.lastReadContainer.visibility = View.VISIBLE
-
             val percent = (book.progress * 100).toInt().coerceIn(0, 100)
-            binding.progressPercentText.text = getString(R.string.progress_percent, percent)
+            binding.progressPercentText.text = activity.getString(R.string.progress_percent, percent)
             binding.progressBar.progress = percent
 
             val dateStr = fmtDate(book.lastOpenedDate)
             val progressText = if (book.progress >= 0.90f) {
-                getString(R.string.progress_completed)
+                activity.getString(R.string.progress_completed)
             } else {
                 "$percent% read"
             }
-
             binding.lastReadValue.text = "$dateStr • $progressText"
-
         } else {
-
             binding.lastReadContainer.visibility = View.GONE
         }
 
-        // =========================
-        // DESCRIPTION
-        // =========================
-
         if (!book.description.isNullOrBlank()) {
-
-            binding.descriptionContainer.visibility =
-                View.VISIBLE
-
-            binding.description.text =
-                book.description
-
+            binding.descriptionContainer.visibility = View.VISIBLE
+            binding.description.text = book.description
         } else {
-
-            binding.descriptionContainer.visibility =
-                View.GONE
+            binding.descriptionContainer.visibility = View.GONE
         }
-
-        // =========================
-        // READ
-        // =========================
 
         binding.btnRead.setOnClickListener {
             shouldRefreshOnResume = true
-
-            lifecycleScope.launch(Dispatchers.IO) {
-                AppDatabase.get(applicationContext).bookDao().markOpened(book.id, System.currentTimeMillis())
+            activity.lifecycleScope.launch(Dispatchers.IO) {
+                AppDatabase.get(activity.applicationContext).bookDao().markOpened(book.id, System.currentTimeMillis())
             }
-            startActivity(
-                Intent(
-                    this,
-                    ReaderActivity::class.java
-                ).putExtra(
-                    ReaderActivity.EXTRA_BOOK_ID,
-                    book.id
-                )
+            activity.startActivity(
+                Intent(activity, ReaderActivity::class.java).putExtra(ReaderActivity.EXTRA_BOOK_ID, book.id)
             )
         }
-
-        // =========================
-        // FAVORITE
-        // =========================
 
         var favoriteState = book.isFavorite
-
         fun updateFavoriteUI(isFav: Boolean) {
-            binding.btnFavorite.setIconResource(
-                if (isFav) R.drawable.ic_favorite else R.drawable.ic_favorite_border
-            )
-            binding.btnFavorite.setText(
-                if (isFav) R.string.book_details_favorite_remove else R.string.book_details_favorite_add
-            )
+            binding.btnFavorite.setIconResource(if (isFav) R.drawable.ic_favorite else R.drawable.ic_favorite_border)
+            binding.btnFavorite.setText(if (isFav) R.string.book_details_favorite_remove else R.string.book_details_favorite_add)
         }
-
         updateFavoriteUI(favoriteState)
 
         binding.btnFavorite.setOnClickListener {
             favoriteState = !favoriteState
             val newFavoriteState = favoriteState
-
             updateFavoriteUI(newFavoriteState)
-
             favoriteUpdateJob?.cancel()
-            favoriteUpdateJob = lifecycleScope.launch(Dispatchers.IO) {
-                AppDatabase
-                    .get(applicationContext)
-                    .bookDao()
-                    .setFavorite(book.id, newFavoriteState)
+            favoriteUpdateJob = activity.lifecycleScope.launch(Dispatchers.IO) {
+                AppDatabase.get(activity.applicationContext).bookDao().setFavorite(book.id, newFavoriteState)
             }
         }
-
-        // =========================
-        // REMOVE FROM READING
-        // =========================
 
         binding.btnEditDetails.setOnClickListener { showEditDialog(book) }
 
         binding.btnRemoveReading.setOnClickListener {
-            lifecycleScope.launch(Dispatchers.IO) {
-                AppDatabase
-                    .get(applicationContext)
-                    .bookDao()
-                    .clearCurrentlyReading(book.id)
+            activity.lifecycleScope.launch(Dispatchers.IO) {
+                AppDatabase.get(activity.applicationContext).bookDao().clearCurrentlyReading(book.id)
             }
-            CurrentlyReadingUndoSnackbar.show(this@BookDetailsActivity, binding.root, book.id)
+            CurrentlyReadingUndoSnackbar.show(activity, binding.root, book.id)
         }
 
-
-        // =========================
-        // REMOVE FROM LIBRARY
-        // =========================
-
-        // REMOVE FROM LIBRARY
         binding.btnRemove.setOnClickListener {
             confirmDeleteBook(book)
         }
     }
 
     private fun showEditDialog(book: BookEntity) {
-        val view = layoutInflater.inflate(R.layout.dialog_book_edit, null)
+        val view = activity.layoutInflater.inflate(R.layout.dialog_book_edit, null)
         val headerTv = view.findViewById<TextView>(R.id.header)
-        headerTv?.text = getString(R.string.edit_book_details)
+        headerTv?.text = activity.getString(R.string.edit_book_details)
         val footerLayout = view.findViewById<View>(R.id.footer)
         footerLayout.tag = "editBookFooter"
 
@@ -335,7 +208,7 @@ class BookDetailsActivity : AppCompatActivity() {
         subjectsEdit.setText(book.subjectTags.orEmpty())
         descriptionEdit.setText(book.description.orEmpty())
 
-        val dialog = AlertDialog.Builder(this)
+        val dialog = AlertDialog.Builder(activity)
             .setView(view)
             .create()
 
@@ -349,18 +222,18 @@ class BookDetailsActivity : AppCompatActivity() {
             coverPicker.launch(arrayOf("image/*"))
         }
         btnOk.setOnClickListener {
-            val newTitle = titleEdit.text?.toString()?.trim().orEmpty().ifBlank { getString(R.string.untitled) }
+            val newTitle = titleEdit.text?.toString()?.trim().orEmpty().ifBlank { activity.getString(R.string.untitled) }
             val newAuthor = authorEdit.text?.toString()?.trim().orEmpty()
             val newSeries = seriesEdit.text?.toString()?.trim().orEmpty().ifBlank { null }
-            val newSeriesIndex = seriesIndexEdit.text?.toString()?.trim()?.toDoubleOrNull()
-            val newPublisher = publisherEdit.text?.toString()?.trim().orEmpty().ifBlank { null }
+            val newSeriesIndex = seriesIndexEdit.text?.toString()?.let { if (it.isBlank()) null else it.trim().toDoubleOrNull() }
+            val newPublisher = publisherEdit.text?.toString()?.trim()?.takeIf { it.isNotBlank() }
             val newYear = yearEdit.text?.toString()?.trim()?.toIntOrNull()
-            val newLanguage = languageEdit.text?.toString()?.trim().orEmpty().ifBlank { null }
-            val newIdentifier = identifierEdit.text?.toString()?.trim().orEmpty().ifBlank { null }
-            val newSubjects = subjectsEdit.text?.toString()?.trim().orEmpty().ifBlank { null }
-            val newDescription = descriptionEdit.text?.toString()?.trim().orEmpty().ifBlank { null }
-            lifecycleScope.launch(Dispatchers.IO) {
-                AppDatabase.get(applicationContext).bookDao().updateMetadataOnly(
+            val newLanguage = languageEdit.text?.toString()?.trim()?.takeIf { it.isNotBlank() }
+            val newIdentifier = identifierEdit.text?.toString()?.trim()?.takeIf { it.isNotBlank() }
+            val newSubjects = subjectsEdit.text?.toString()?.trim()?.takeIf { it.isNotBlank() }
+            val newDescription = descriptionEdit.text?.toString()?.trim()?.takeIf { it.isNotBlank() }
+            activity.lifecycleScope.launch(Dispatchers.IO) {
+                AppDatabase.get(activity.applicationContext).bookDao().updateMetadataOnly(
                     id = book.id, title = newTitle, author = newAuthor, series = newSeries, seriesIndex = newSeriesIndex,
                     language = newLanguage, publisher = newPublisher, description = newDescription, identifier = newIdentifier,
                     publishYear = newYear, subjectTags = newSubjects, sourceUri = book.sourceUri, sourceFilename = book.sourceFilename,
@@ -376,20 +249,20 @@ class BookDetailsActivity : AppCompatActivity() {
         dialog.show()
     }
 
-    private fun applyPickedCover(uri: android.net.Uri) {
-        lifecycleScope.launch(Dispatchers.IO) {
-            val book = AppDatabase.get(applicationContext).bookDao().getById(bookId) ?: return@launch
-            val dir = File(filesDir, "covers").apply { mkdirs() }
+    fun applyPickedCover(uri: Uri) {
+        activity.lifecycleScope.launch(Dispatchers.IO) {
+            val book = AppDatabase.get(activity.applicationContext).bookDao().getById(bookId) ?: return@launch
+            val dir = File(activity.filesDir, "covers").apply { mkdirs() }
             val target = File(dir, "${book.id}_manual_${System.currentTimeMillis()}.png")
             try {
-                contentResolver.openInputStream(uri)?.use { input ->
+                activity.contentResolver.openInputStream(uri)?.use { input ->
                     val bitmap = BitmapFactory.decodeStream(input) ?: return@launch
                     target.outputStream().use { out -> bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 95, out) }
                     bitmap.recycle()
                 } ?: return@launch
                 val old = book.coverPath
-                AppDatabase.get(applicationContext).bookDao().update(book.copy(coverPath = target.absolutePath, metadataEdited = true))
-                if (!old.isNullOrBlank() && old != target.absolutePath && old.contains(File(filesDir, "covers").absolutePath)) File(old).delete()
+                AppDatabase.get(activity.applicationContext).bookDao().update(book.copy(coverPath = target.absolutePath, metadataEdited = true))
+                if (!old.isNullOrBlank() && old != target.absolutePath && old.contains(File(activity.filesDir, "covers").absolutePath)) File(old).delete()
                 withContext(Dispatchers.Main) {
                     Snackbar.make(binding.root, R.string.details_saved, Snackbar.LENGTH_SHORT).show()
                     load()
@@ -402,18 +275,15 @@ class BookDetailsActivity : AppCompatActivity() {
 
     private fun confirmDeleteBook(book: BookEntity) {
         AlertDialog
-            .Builder(this)
+            .Builder(activity)
             .setTitle(R.string.option_remove)
-            .setMessage(
-                getString(R.string.option_remove) + ": " + book.title
-            )
+            .setMessage(activity.getString(R.string.option_remove) + ": " + book.title)
             .setPositiveButton(R.string.ok) { _, _ ->
-                lifecycleScope.launch(Dispatchers.IO) {
+                activity.lifecycleScope.launch(Dispatchers.IO) {
                     importer.deleteImported(book)
-                    BookRepository(applicationContext).deleteBook(book)
-
+                    BookRepository(activity.applicationContext).deleteBook(book)
                     withContext(Dispatchers.Main) {
-                        finish()
+                        activity.finish()
                     }
                 }
             }
@@ -422,31 +292,5 @@ class BookDetailsActivity : AppCompatActivity() {
     }
 
     private fun fmtDate(ts: Long): String =
-        DateFormat
-            .getMediumDateFormat(this)
-            .format(Date(ts))
-
-
-    // Patch 11 "Screen On" lifecycle hooks.
-
-    override fun onResume() {
-        super.onResume()
-
-        if (shouldRefreshOnResume) {
-            shouldRefreshOnResume = false
-            load()
-        }
-        binding.root.post {
-            CurrentlyReadingUndoSnackbar.showPending(this, binding.root)
-        }
-    }
-
-    override fun onPause() {
-        super.onPause()
-    }
-
-
-    companion object {
-        const val EXTRA_BOOK_ID = "book_id"
-    }
+        DateFormat.getMediumDateFormat(activity).format(Date(ts))
 }

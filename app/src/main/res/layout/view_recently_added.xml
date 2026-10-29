@@ -4,77 +4,97 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:paddingStart="@dimen/app_row_content_padding_h"
-    android:paddingEnd="@dimen/app_row_content_padding_h"
-    android:paddingTop="@dimen/app_screen_start_below_header">
+    android:background="@color/palette_eggplant"
+    android:fitsSystemWindows="true">
 
-    <!-- Recently Added Hero Header Section -->
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/palette_plum"
+        android:visibility="gone"
+        app:navigationIcon="@drawable/ic_arrow_back"
+        app:navigationIconTint="@color/palette_mint"
+        app:title="@string/recently_added_screen_title"
+        app:titleTextColor="@color/palette_mint" />
+
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:orientation="vertical"
-        android:paddingBottom="12dp">
+        android:paddingStart="@dimen/app_row_content_padding_h"
+        android:paddingEnd="@dimen/app_row_content_padding_h"
+        android:paddingTop="12dp">
 
+        <!-- Recently Added Hero Header Section -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
+            android:orientation="vertical"
+            android:paddingBottom="12dp">
 
-            <ImageView
-                android:id="@+id/ivHeaderIcon"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:contentDescription="@null"
-                android:src="@drawable/ic_recent"
-                app:tint="@color/palette_mint" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/ivHeaderIcon"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_recent"
+                    app:tint="@color/palette_mint" />
+
+                <TextView
+                    android:id="@+id/tvHeaderTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:text="@string/recently_added_screen_title"
+                    android:textColor="@color/palette_mint"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
 
             <TextView
-                android:id="@+id/tvHeaderTitle"
-                android:layout_width="wrap_content"
+                android:id="@+id/tvHeaderSubtitle"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
-                android:text="@string/recently_added_screen_title"
-                android:textColor="@color/palette_mint"
-                android:textSize="18sp"
+                android:layout_marginTop="8dp"
+                android:text="@string/recently_added_heading_subtitle"
+                android:textColor="@color/palette_slate"
+                android:textSize="13sp"
+                android:lineSpacingMultiplier="1.2" />
+
+            <TextView
+                android:id="@+id/headerCountText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:textColor="@color/palette_violet"
+                android:textSize="13sp"
                 android:textStyle="bold" />
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/tvHeaderSubtitle"
+        <!-- Divider outside header section -->
+        <View
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="@string/recently_added_heading_subtitle"
-            android:textColor="@color/palette_slate"
-            android:textSize="13sp"
-            android:lineSpacingMultiplier="1.2" />
+            android:layout_height="1dp"
+            android:layout_marginBottom="@dimen/app_row_content_padding_h"
+            android:background="@color/palette_purple" />
 
-        <TextView
-            android:id="@+id/headerCountText"
+        <!-- RecyclerView for top 50 recently added books -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:textColor="@color/palette_violet"
-            android:textSize="13sp"
-            android:textStyle="bold" />
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:clipToPadding="false"
+            android:overScrollMode="never"
+            android:paddingBottom="@dimen/app_screen_end_padding" />
+
     </LinearLayout>
-
-    <!-- Divider outside header section -->
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_marginBottom="@dimen/app_row_content_padding_h"
-        android:background="@color/palette_purple" />
-
-    <!-- RecyclerView for top 50 recently added books -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recycler"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:clipToPadding="false"
-        android:overScrollMode="never"
-        android:paddingBottom="@dimen/app_screen_end_padding" />
 
 </LinearLayout>

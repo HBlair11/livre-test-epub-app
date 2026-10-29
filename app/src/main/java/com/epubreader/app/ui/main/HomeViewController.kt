@@ -1,5 +1,7 @@
 package com.epubreader.app.ui
 
+
+import android.content.Intent
 import android.text.format.DateFormat
 import android.view.View
 import android.view.ViewGroup
@@ -51,7 +53,8 @@ class HomeViewController(
 
         binding.homeContinueViewAll.setOnClickListener { onSetView(ShelfView.Reading) }
         binding.homeRecentlyAddedViewAll.setOnClickListener {
-            onSetView(ShelfView.RecentlyAdded(content.recentlyAdded.map { it.id }))
+            val intent = Intent(activity, RecentlyAddedActivity::class.java)
+            activity.startActivity(intent)
         }
         binding.homeFavoritesViewAll.setOnClickListener { onSetView(ShelfView.Favorites) }
         binding.homeAllAuthorsBtn.setOnClickListener { onSetView(ShelfView.AuthorsList) }

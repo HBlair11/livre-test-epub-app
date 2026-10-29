@@ -65,12 +65,7 @@ import com.epubreader.app.epub.ReaderTtsController
 import com.epubreader.app.reader.state.ReaderViewModel
 import com.epubreader.app.reader.web.ReaderWebController
 import com.epubreader.app.tts.ReaderTtsService
-import com.epubreader.app.ui.BookmarkAdapter
-import com.epubreader.app.ui.HighlightListAdapter
-import com.epubreader.app.ui.ReaderSettingsActivity
-import com.epubreader.app.ui.ReaderTheme
-import com.epubreader.app.ui.SearchResultAdapter
-import com.epubreader.app.ui.TocAdapter
+import com.epubreader.app.ui.*
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import kotlinx.coroutines.Dispatchers

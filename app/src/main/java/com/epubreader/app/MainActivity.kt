@@ -36,17 +36,8 @@ import com.epubreader.app.epub.BookFileTypes
 import com.epubreader.app.epub.EpubImporter
 import com.epubreader.app.epub.MetadataRefreshReportStore
 import com.epubreader.app.epub.RescanDecision
-import com.epubreader.app.ui.BookAdapter
-import com.epubreader.app.ui.BookshelfViewModel
-import com.epubreader.app.ui.DisplayItem
-import com.epubreader.app.ui.DrawerAdapter
-import com.epubreader.app.ui.DrawerItem
-import com.epubreader.app.ui.HomeBookAdapter
-import com.epubreader.app.ui.HomeContent
-import com.epubreader.app.ui.HomeGroup
-import com.epubreader.app.ui.RowAdapter
+import com.epubreader.app.ui.*
 import com.epubreader.app.util.CurrentlyReadingUndoSnackbar
-import com.epubreader.app.ui.ShelfView
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -1657,14 +1648,7 @@ class MainActivity : AppCompatActivity() {
         val snackbar = Snackbar.make(refresh, text, Snackbar.LENGTH_LONG)
         if (newCount > 0) {
             snackbar.setAction(R.string.scan_show) {
-                // Patch 16 (Issue #3): instead of dumping the user on the Library
-                // and making them scroll to find the new book(s), remember the
-                // shelf they're currently on and open the transient Recently
-                // Added screen scoped to just the newly imported ids. The screen
-                // is destroyed (state discarded) on back — see exitRecentlyAdded().
-                viewBeforeRecentlyAdded = viewModel.view.value ?: ShelfView.Library
-                scrollToTopOnNextContent = true
-                viewModel.setView(ShelfView.RecentlyAdded(newIds))
+                startActivity(Intent(this@MainActivity, RecentlyAddedActivity::class.java))
             }
         }
         snackbar.show()

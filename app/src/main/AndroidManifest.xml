@@ -66,30 +66,25 @@
             android:theme="@style/Theme.EpubReader" />
 
         <activity
-            android:name=".BookDetailsActivity"
+            android:name=".ui.BookDetailsActivity"
             android:exported="false"
             android:configChanges="orientation|screenSize|keyboardHidden"
             android:theme="@style/Theme.EpubReader" />
 
         <activity
-            android:name=".MetadataRefreshActivity"
+            android:name=".ui.MetadataRefreshActivity"
             android:exported="false"
             android:configChanges="orientation|screenSize|keyboardHidden"
             android:theme="@style/Theme.EpubReader" />
 
         <activity
-            android:name=".ReadingStatsActivity"
+            android:name=".ui.RecentlyAddedActivity"
             android:exported="false"
-            android:theme="@style/Theme.EpubReader" />
-
-        <!-- Patch v37: offline vocabulary (dictionary lookup history). -->
-        <activity
-            android:name=".ui.VocabularyActivity"
-            android:exported="false"
+            android:configChanges="orientation|screenSize|keyboardHidden"
             android:theme="@style/Theme.EpubReader" />
 
         <activity
-            android:name=".SearchActivity"
+            android:name=".ui.SearchActivity"
             android:exported="false"
             android:configChanges="orientation|screenSize|keyboardHidden"
             android:windowSoftInputMode="adjustResize"

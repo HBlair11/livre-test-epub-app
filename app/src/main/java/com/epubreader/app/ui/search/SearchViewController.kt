@@ -1,13 +1,8 @@
-package com.epubreader.app
-
-import com.epubreader.app.util.SystemBarController
+package com.epubreader.app.ui
 
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
-import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
@@ -17,19 +12,19 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.epubreader.app.ReaderActivity
+import com.epubreader.app.R
 import com.epubreader.app.data.BookEntity
 import com.epubreader.app.data.BookRepository
 import com.epubreader.app.databinding.ActivitySearchBinding
-import com.epubreader.app.ui.BookAdapter
 import com.google.android.material.chip.Chip
 import com.google.android.material.textfield.TextInputLayout
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
-class SearchActivity : AppCompatActivity() {
+class SearchViewController(private val activity: AppCompatActivity, private val binding: ActivitySearchBinding) {
 
-    private lateinit var binding: ActivitySearchBinding
     private lateinit var repo: BookRepository
     private val adapter =
         BookAdapter(grid = false, onClick = { openBook(it) }, onLongClick = { false }, onDetails = { openDetails(it) })
@@ -39,19 +34,10 @@ class SearchActivity : AppCompatActivity() {
     private var lastSearchedQuery = ""
 
     @SuppressLint("ClickableViewAccessibility")
-    override fun onCreate(savedInstanceState: Bundle?) {
-        repo = BookRepository(applicationContext)
-        super.onCreate(savedInstanceState)
-        binding = ActivitySearchBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-        SystemBarController.apply(this)
-        setSupportActionBar(binding.searchToolbar)
-        binding.searchToolbar.setNavigationOnClickListener {
-            dismissSearchKeyboard()
-            finish()
-        }
+    fun setup() {
+        repo = BookRepository(activity.applicationContext)
 
-        binding.searchRecycler.layoutManager = LinearLayoutManager(this)
+        binding.searchRecycler.layoutManager = LinearLayoutManager(activity)
         binding.searchRecycler.adapter = adapter
 
         binding.recentScrollView.setOnTouchListener { v, event ->
@@ -80,8 +66,6 @@ class SearchActivity : AppCompatActivity() {
             }
         }
 
-        // Keyboard does NOT auto-open on entry (no requestFocus()).
-
         binding.searchEdit.setOnEditorActionListener { _, _, _ ->
             val q = binding.searchEdit.text?.toString()?.trim() ?: ""
             if (q.isNotBlank()) {
@@ -94,10 +78,10 @@ class SearchActivity : AppCompatActivity() {
             false
         }
 
-        binding.searchEdit.addTextChangedListener(object : TextWatcher {
+        binding.searchEdit.addTextChangedListener(object : android.text.TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-            override fun afterTextChanged(s: Editable?) {
+            override fun afterTextChanged(s: android.text.Editable?) {
                 val text = s?.toString()?.trim() ?: ""
                 if (text.isBlank()) {
                     performSearch("")
@@ -124,12 +108,11 @@ class SearchActivity : AppCompatActivity() {
         updateVisibility("")
     }
 
-    override fun onResume() {
-        super.onResume()
+    fun onResume() {
         updateVisibility(binding.searchEdit.text?.toString()?.trim() ?: "")
     }
 
-    override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
+    fun dispatchTouchEvent(ev: MotionEvent): Boolean {
         if (ev.action == MotionEvent.ACTION_DOWN) {
             if (binding.searchEdit.hasFocus()) {
                 val location = IntArray(2)
@@ -146,7 +129,7 @@ class SearchActivity : AppCompatActivity() {
                 }
             }
         }
-        return super.dispatchTouchEvent(ev)
+        return false
     }
 
     private fun updateChipStyles() {
@@ -156,14 +139,14 @@ class SearchActivity : AppCompatActivity() {
             if (chip != null) {
                 if (chip.id == checkedId) {
                     chip.chipBackgroundColor = android.content.res.ColorStateList.valueOf(
-                        ContextCompat.getColor(this, R.color.palette_violet)
+                        ContextCompat.getColor(activity, R.color.palette_violet)
                     )
-                    chip.setTextColor(ContextCompat.getColor(this, R.color.palette_eggplant))
+                    chip.setTextColor(ContextCompat.getColor(activity, R.color.palette_eggplant))
                 } else {
                     chip.chipBackgroundColor = android.content.res.ColorStateList.valueOf(
-                        ContextCompat.getColor(this, R.color.palette_plum)
+                        ContextCompat.getColor(activity, R.color.palette_plum)
                     )
-                    chip.setTextColor(ContextCompat.getColor(this, R.color.palette_slate))
+                    chip.setTextColor(ContextCompat.getColor(activity, R.color.palette_slate))
                 }
             }
         }
@@ -178,7 +161,7 @@ class SearchActivity : AppCompatActivity() {
             updateVisibility("")
             return
         }
-        searchJob = lifecycleScope.launch {
+        searchJob = activity.lifecycleScope.launch {
             repo.search(q).collectLatest { results ->
                 currentBooks = results
                 filterAndShowResults(results, q)
@@ -266,7 +249,7 @@ class SearchActivity : AppCompatActivity() {
             binding.recentSearchesLayout.visibility = View.VISIBLE
             binding.searchEmpty.visibility = View.GONE
             for (term in recentList) {
-                val itemView = layoutInflater.inflate(R.layout.item_recent_search, chipGroup, false)
+                val itemView = activity.layoutInflater.inflate(R.layout.item_recent_search, chipGroup, false)
                 val queryText = itemView.findViewById<TextView>(R.id.recentQueryText)
                 val deleteBtn = itemView.findViewById<View>(R.id.recentDeleteBtn)
 
@@ -294,9 +277,7 @@ class SearchActivity : AppCompatActivity() {
                 if (chipGroup.childCount > 0) {
                     val singleChipHeight = chipGroup.getChildAt(0).measuredHeight
                     val verticalSpacing = chipGroup.chipSpacingVertical
-
                     val maxFourLinesHeight = (singleChipHeight * 4) + (verticalSpacing * 3)
-
                     val params = scrollView.layoutParams
                     if (chipGroup.measuredHeight > maxFourLinesHeight) {
                         params.height = maxFourLinesHeight
@@ -310,7 +291,7 @@ class SearchActivity : AppCompatActivity() {
     }
 
     private fun loadRecentSearches(): List<String> {
-        val prefs = getSharedPreferences("search_prefs", Context.MODE_PRIVATE)
+        val prefs = activity.getSharedPreferences("search_prefs", Context.MODE_PRIVATE)
         val jsonStr = prefs.getString("recent_searches_json", "[]") ?: "[]"
         val list = mutableListOf<String>()
         try {
@@ -332,7 +313,7 @@ class SearchActivity : AppCompatActivity() {
         for (item in list) {
             arr.put(item)
         }
-        getSharedPreferences("search_prefs", Context.MODE_PRIVATE)
+        activity.getSharedPreferences("search_prefs", Context.MODE_PRIVATE)
             .edit()
             .putString("recent_searches_json", arr.toString())
             .apply()
@@ -345,7 +326,7 @@ class SearchActivity : AppCompatActivity() {
         for (item in list) {
             arr.put(item)
         }
-        getSharedPreferences("search_prefs", Context.MODE_PRIVATE)
+        activity.getSharedPreferences("search_prefs", Context.MODE_PRIVATE)
             .edit()
             .putString("recent_searches_json", arr.toString())
             .apply()
@@ -353,28 +334,28 @@ class SearchActivity : AppCompatActivity() {
     }
 
     private fun clearAllRecentSearches() {
-        getSharedPreferences("search_prefs", Context.MODE_PRIVATE)
+        activity.getSharedPreferences("search_prefs", Context.MODE_PRIVATE)
             .edit()
             .remove("recent_searches_json")
             .apply()
         updateRecentSearchesUi()
     }
 
-    private fun dismissSearchKeyboard() {
-        val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+    fun dismissSearchKeyboard() {
+        val imm = activity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         imm.hideSoftInputFromWindow(binding.searchEdit.windowToken, 0)
         binding.searchEdit.clearFocus()
     }
 
     private fun openBook(book: BookEntity) {
         dismissSearchKeyboard()
-        lifecycleScope.launch { repo.markOpened(book.id) }
-        startActivity(Intent(this, ReaderActivity::class.java).putExtra(ReaderActivity.EXTRA_BOOK_ID, book.id))
+        activity.lifecycleScope.launch { repo.markOpened(book.id) }
+        activity.startActivity(Intent(activity, ReaderActivity::class.java).putExtra(ReaderActivity.EXTRA_BOOK_ID, book.id))
     }
 
     private fun openDetails(book: BookEntity) {
-        startActivity(
-            Intent(this, BookDetailsActivity::class.java).putExtra(
+        activity.startActivity(
+            Intent(activity, BookDetailsActivity::class.java).putExtra(
                 BookDetailsActivity.EXTRA_BOOK_ID,
                 book.id
             )
