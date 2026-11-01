@@ -11,6 +11,16 @@ import com.epubreader.app.epub.MetadataRefreshReportStore
 class MetadataRefreshViewController(private val activity: AppCompatActivity, private val binding: ActivityMetadataRefreshBinding) {
 
     fun setup() {
+        val headerContainer = binding.headerContainer
+        headerContainer.removeAllViews()
+        val inflated = android.view.LayoutInflater.from(activity).inflate(R.layout.header_secondary_category_1, headerContainer, true)
+        val toolbar = inflated.findViewById<com.google.android.material.appbar.MaterialToolbar>(R.id.toolbar)
+        activity.setSupportActionBar(toolbar)
+        toolbar.title = activity.getString(R.string.header_metadata_refresh)
+        toolbar.setNavigationOnClickListener {
+            activity.finish()
+        }
+
         val report = MetadataRefreshReportStore.latest
         if (report == null) {
             activity.finish()

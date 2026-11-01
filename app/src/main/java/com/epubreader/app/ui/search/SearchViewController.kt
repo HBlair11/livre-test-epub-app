@@ -35,6 +35,17 @@ class SearchViewController(private val activity: AppCompatActivity, private val 
 
     @SuppressLint("ClickableViewAccessibility")
     fun setup() {
+        val headerContainer = binding.headerContainer
+        headerContainer.removeAllViews()
+        val inflated = android.view.LayoutInflater.from(activity).inflate(R.layout.header_secondary_category_1, headerContainer, true)
+        val toolbar = inflated.findViewById<com.google.android.material.appbar.MaterialToolbar>(R.id.toolbar)
+        activity.setSupportActionBar(toolbar)
+        toolbar.title = activity.getString(R.string.header_search)
+        toolbar.setNavigationOnClickListener {
+            dismissSearchKeyboard()
+            activity.finish()
+        }
+
         repo = BookRepository(activity.applicationContext)
 
         binding.searchRecycler.layoutManager = LinearLayoutManager(activity)

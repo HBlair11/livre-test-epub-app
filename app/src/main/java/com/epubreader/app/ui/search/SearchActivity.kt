@@ -1,5 +1,6 @@
 package com.epubreader.app.ui
 
+import com.epubreader.app.R
 import com.epubreader.app.util.SystemBarController
 
 import android.annotation.SuppressLint
@@ -19,11 +20,6 @@ class SearchActivity : AppCompatActivity() {
         binding = ActivitySearchBinding.inflate(layoutInflater)
         setContentView(binding.root)
         SystemBarController.apply(this)
-        setSupportActionBar(binding.searchToolbar)
-        binding.searchToolbar.setNavigationOnClickListener {
-            searchViewController.dismissSearchKeyboard()
-            finish()
-        }
 
         searchViewController = SearchViewController(this, binding)
         searchViewController.setup()

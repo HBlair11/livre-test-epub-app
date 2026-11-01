@@ -24,11 +24,6 @@ class BookDetailsActivity : AppCompatActivity() {
         setContentView(binding.root)
         SystemBarController.apply(this)
 
-        setSupportActionBar(binding.toolbar)
-        binding.toolbar.setNavigationOnClickListener {
-            finish()
-        }
-
         bookId = intent.getLongExtra(EXTRA_BOOK_ID, -1L)
         if (bookId < 0) {
             finish()
@@ -47,6 +42,7 @@ class BookDetailsActivity : AppCompatActivity() {
         }
         binding.root.post {
             com.epubreader.app.util.CurrentlyReadingUndoSnackbar.showPending(this, binding.root)
+            com.epubreader.app.util.BookDeleteUndoSnackbar.showPending(this, binding.root)
         }
     }
 

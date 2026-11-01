@@ -1,5 +1,6 @@
 package com.epubreader.app.ui
 
+import com.epubreader.app.R
 import com.epubreader.app.util.SystemBarController
 
 import android.os.Bundle
@@ -24,11 +25,6 @@ class MetadataRefreshActivity : AppCompatActivity() {
             insets
         }
         androidx.core.view.ViewCompat.requestApplyInsets(binding.root)
-
-        setSupportActionBar(binding.toolbar)
-        binding.toolbar.setNavigationOnClickListener {
-            finish()
-        }
 
         metadataRefreshViewController = MetadataRefreshViewController(this, binding)
         metadataRefreshViewController.setup()

@@ -75,12 +75,14 @@
             android:name=".ui.MetadataRefreshActivity"
             android:exported="false"
             android:configChanges="orientation|screenSize|keyboardHidden"
+            android:label="@string/metadata_refresh_title"
             android:theme="@style/Theme.EpubReader" />
 
         <activity
             android:name=".ui.RecentlyAddedActivity"
             android:exported="false"
             android:configChanges="orientation|screenSize|keyboardHidden"
+            android:label="@string/recently_added_screen_title"
             android:theme="@style/Theme.EpubReader" />
 
         <activity
@@ -88,6 +90,7 @@
             android:exported="false"
             android:configChanges="orientation|screenSize|keyboardHidden"
             android:windowSoftInputMode="adjustResize"
+            android:label="@string/search_results"
             android:theme="@style/Theme.EpubReader" />
 
         <!-- Patch v37: foreground keep-alive for read-aloud so playback

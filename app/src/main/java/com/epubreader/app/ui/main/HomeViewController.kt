@@ -53,7 +53,9 @@ class HomeViewController(
 
         binding.homeContinueViewAll.setOnClickListener { onSetView(ShelfView.Reading) }
         binding.homeRecentlyAddedViewAll.setOnClickListener {
-            val intent = Intent(activity, RecentlyAddedActivity::class.java)
+            val intent = Intent(activity, RecentlyAddedActivity::class.java).apply {
+                putExtra("recently_added_source_res", R.string.nav_home)
+            }
             activity.startActivity(intent)
         }
         binding.homeFavoritesViewAll.setOnClickListener { onSetView(ShelfView.Favorites) }

@@ -108,7 +108,7 @@
     <string name="option_favorite_add">Add to Favorites</string>
     <string name="option_favorite_remove">Remove from Favorites</string>
     <string name="search_hint_books">Search by title, author or series</string>
-    <string name="search_results">Search results</string>
+    <string name="search_results">Search</string>
     <string name="search_empty_line1">Type to search your personal offline library.</string>
     <string name="search_empty_line2">Press Enter to record search history</string>
     <string name="recent_searches_title">RECENT SEARCHES</string>
@@ -122,6 +122,7 @@
     <string name="empty_series">No series found.</string>
 
     <string name="progress_completed">Completed</string>
+    <string name="progress_not_read_yet">Not opened yet</string>
     <string name="progress_books">books</string>
     <string name="progress_book">book</string>
 
@@ -130,8 +131,11 @@
     <string name="option_favorite">Favorite</string>
     <string name="option_remove_reading">Remove from Reading</string>
     <string name="currently_reading_removed">Removed from Currently Reading</string>
+    <string name="book_removed_from_library">Removed from library</string>
     <string name="undo">Undo</string>
-    <string name="option_remove">Remove from library</string>
+    <string name="option_remove">Delete from library</string>
+    <string name="option_remove_confirmation_title">Delete from library</string>
+    <string name="option_remove_confirmation_message">Are you sure you want to delete %1$s from your library?</string>
 
     <string name="cancel">Cancel</string>
     <string name="ok">OK</string>
@@ -142,9 +146,11 @@
     <string name="book_size">Filesize</string>
     <string name="book_author">Author</string>
     <string name="book_series">Series</string>
+    <string name="book_progress">Reading Progress</string>
     <string name="book_publisher">Publisher</string>
     <string name="book_language">Language</string>
     <string name="book_description">Description</string>
+    <string name="book_metadata">Metadata</string>
     <string name="book_isbn">Identifier</string>
     <string name="book_added">Date added</string>
     <string name="book_last_read">Last read</string>
@@ -163,14 +169,22 @@
 
     <string name="nook_workspace_title">READING NOOK WORKSPACE (JOURNAL, STAMPS &amp; NOTES)</string>
 
+    <string name="header_book_details">Book Details</string>
+    <string name="header_reading_nook">Reading Nook Workspace</string>
+    <string name="header_recently_added">Recently Added</string>
+    <string name="header_search">Search</string>
+    <string name="header_metadata_refresh">Metadata Refresh</string>
+    <string name="nav_scan_now">Scan Now</string>
+    <string name="nav_add_folder">Add Folder</string>
+
     <string name="book_details_nook_workspace">OPEN READING NOOK</string>
     <string name="book_details_drop_reading">REMOVE FROM READING</string>
-    <string name="book_details_delete_book">REMOVE FROM LIBRARY</string>
+    <string name="book_details_delete_book">DELETE FROM LIBRARY</string>
     <string name="book_details_edit_metadata">EDIT METADATA</string>
     <string name="book_details_favorite_add">ADD TO FAVORITES</string>
     <string name="book_details_favorite_remove">REMOVE FROM FAVORITES</string>
-    <string name="book_details_file_prefix">File: </string>
-    <string name="book_details_date_last_read">Date Last Read: </string>
+    <string name="book_details_file_prefix">File : </string>
+    <string name="book_details_date_last_read">"Date Last Read : "</string>
     <string name="progress_percent">%1$d%%</string>
 
     <string name="reader_chapter">Chapter %1$d</string>
@@ -289,7 +303,8 @@
     <string name="vocabulary_export_markdown">Export as Markdown</string>
     <string name="vocabulary_exported">Vocabulary exported</string>
     <string name="vocabulary_cleared">Vocabulary cleared</string>
-    <string name="vocabulary_clear_confirm">Clear all looked-up words?</string>
+    <string name="vocabulary_clear_confirm">Clear All Words</string>
+    <string name="vocabulary_clear_confirm_message">Are you sure you want to clear all %1$d looked-up words in the Vocabulary Sanctuary?</string>
     <string name="vocabulary_delete_word">Delete word</string>
     <string name="vocab_heading_title">VOCABULARY BUILDER</string>
     <string name="vocab_heading_subtitle">%1$d saved %2$s from your offline dictionary lookups.</string>
@@ -325,6 +340,7 @@
     <string name="filter_series">Series</string>
     <string name="filter_all_count">All (%1$d)</string>
     <string name="recently_added_heading_subtitle">Top 50 recently added books from your bookshelf, newest to oldest.</string>
+    <string name="recently_added_scanned_heading_subtitle">Recently Added books in your bookshelf.</string>
 
     <!-- Patch v37: expanded Read Aloud (TTS) controls -->
     <string name="tts_skip_back">Previous sentence</string>

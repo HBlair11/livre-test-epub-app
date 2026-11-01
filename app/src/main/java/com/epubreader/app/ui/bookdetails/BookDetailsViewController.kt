@@ -4,7 +4,6 @@ import android.content.Intent
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.text.format.DateFormat
-import android.text.format.Formatter
 import android.view.View
 import android.widget.TextView
 import androidx.activity.result.ActivityResultLauncher
@@ -39,8 +38,19 @@ class BookDetailsViewController(
     private lateinit var importer: EpubImporter
     private var favoriteUpdateJob: Job? = null
     var shouldRefreshOnResume = false
-
     fun setup() {
+        val headerContainer = binding.headerContainer
+        headerContainer.removeAllViews()
+        val inflated = android.view.LayoutInflater.from(activity).inflate(R.layout.header_secondary_category_2, headerContainer, true)
+        val toolbar = inflated.findViewById<com.google.android.material.appbar.MaterialToolbar>(R.id.toolbar)
+        activity.setSupportActionBar(toolbar)
+        toolbar.setNavigationOnClickListener {
+            activity.finish()
+        }
+        inflated.findViewById<TextView>(R.id.toolbarSubtitle)?.text = activity.getString(R.string.header_book_details)
+        inflated.findViewById<View>(R.id.headerBtnRead)?.setOnClickListener {
+            binding.btnRead.performClick()
+        }
         importer = EpubImporter(activity.applicationContext)
         load()
     }
@@ -61,6 +71,8 @@ class BookDetailsViewController(
 
     private fun bind(book: BookEntity) {
         activity.title = book.title
+        val toolbarTitle = binding.headerContainer.findViewById<TextView>(R.id.toolbarTitle)
+        toolbarTitle?.text = book.title
         binding.title.text = book.title
 
         book.coverPath?.let { coverPath ->
@@ -82,53 +94,132 @@ class BookDetailsViewController(
             binding.seriesContainer.visibility = View.GONE
         }
 
-        if (!book.publisher.isNullOrBlank()) {
-            binding.publisherContainer.visibility = View.VISIBLE
-            binding.publisherValue.text = book.publisher
+        val visibleRows = mutableListOf<View>()
+
+        val hasPublisher = !book.publisher.isNullOrBlank()
+        val hasPublishYear = book.publishYear != null && book.publishYear > 0
+
+        if (!hasPublisher && !hasPublishYear) {
+            binding.row1.visibility = View.GONE
         } else {
-            binding.publisherContainer.visibility = View.GONE
+            binding.row1.visibility = View.VISIBLE
+            visibleRows.add(binding.row1)
+            val pParams = binding.publisherContainer.layoutParams as android.widget.LinearLayout.LayoutParams
+            val yParams = binding.publishYearContainer.layoutParams as android.widget.LinearLayout.LayoutParams
+
+            if (hasPublisher && hasPublishYear) {
+                binding.publisherContainer.visibility = View.VISIBLE
+                binding.publisherContainer.setPadding(0, 0, dpToPx(8), 0)
+                binding.publisherValue.text = book.publisher
+                pParams.weight = 1f
+                pParams.width = 0
+
+                binding.publishYearContainer.visibility = View.VISIBLE
+                binding.publishYearContainer.setPadding(dpToPx(8), 0, 0, 0)
+                binding.publishYearValue.text = book.publishYear.toString()
+                yParams.weight = 1f
+                yParams.width = 0
+            } else if (hasPublisher) {
+                binding.publisherContainer.visibility = View.VISIBLE
+                binding.publisherContainer.setPadding(0, 0, 0, 0)
+                binding.publisherValue.text = book.publisher
+                pParams.weight = 1f
+                pParams.width = 0
+
+                binding.publishYearContainer.visibility = View.GONE
+                yParams.weight = 0f
+                yParams.width = 0
+            } else {
+                binding.publisherContainer.visibility = View.GONE
+                pParams.weight = 0f
+                pParams.width = 0
+
+                binding.publishYearContainer.visibility = View.VISIBLE
+                binding.publishYearContainer.setPadding(0, 0, 0, 0)
+                binding.publishYearValue.text = book.publishYear.toString()
+                yParams.weight = 1f
+                yParams.width = 0
+            }
+            binding.publisherContainer.layoutParams = pParams
+            binding.publishYearContainer.layoutParams = yParams
         }
 
-        if (book.publishYear != null && book.publishYear > 0) {
-            binding.publishYearContainer.visibility = View.VISIBLE
-            binding.publishYearValue.text = book.publishYear.toString()
-        } else {
-            binding.publishYearContainer.visibility = View.GONE
-        }
+        val hasLanguage = !book.language.isNullOrBlank()
+        val sizeMb = book.fileSize.toDouble() / (1024 * 1024)
+        val sizeStr = String.format(java.util.Locale.US, "%.2f MB", sizeMb)
+        val lParams = binding.languageContainer.layoutParams as android.widget.LinearLayout.LayoutParams
+        val fParams = binding.filesizeContainer.layoutParams as android.widget.LinearLayout.LayoutParams
 
-        if (!book.language.isNullOrBlank()) {
+        binding.row2.visibility = View.VISIBLE
+        visibleRows.add(binding.row2)
+
+        if (hasLanguage) {
             binding.languageContainer.visibility = View.VISIBLE
-            binding.languageValue.text = book.language
+            binding.languageContainer.setPadding(0, 0, dpToPx(8), 0)
+            binding.languageValue.text = book.language.uppercase()
+            lParams.weight = 1f
+            lParams.width = 0
+
+            binding.filesizeContainer.visibility = View.VISIBLE
+            binding.filesizeContainer.setPadding(dpToPx(8), 0, 0, 0)
+            binding.filesizeValue.text = sizeStr
+            fParams.weight = 1f
+            fParams.width = 0
         } else {
             binding.languageContainer.visibility = View.GONE
+            lParams.weight = 0f
+            lParams.width = 0
+
+            binding.filesizeContainer.visibility = View.VISIBLE
+            binding.filesizeContainer.setPadding(0, 0, 0, 0)
+            binding.filesizeValue.text = sizeStr
+            fParams.weight = 1f
+            fParams.width = 0
+        }
+        binding.languageContainer.layoutParams = lParams
+        binding.filesizeContainer.layoutParams = fParams
+
+        if (book.addedDate > 0) {
+            binding.dateAddedContainer.visibility = View.VISIBLE
+            binding.dateAddedValue.text = fmtDate(book.addedDate)
+            visibleRows.add(binding.dateAddedContainer)
+        } else {
+            binding.dateAddedContainer.visibility = View.GONE
         }
 
         if (!book.subjectTags.isNullOrBlank()) {
             binding.subjectsContainer.visibility = View.VISIBLE
             binding.subjectsValue.text = book.subjectTags
+            visibleRows.add(binding.subjectsContainer)
         } else {
             binding.subjectsContainer.visibility = View.GONE
         }
 
+        binding.filenameContainer.visibility = View.VISIBLE
         binding.filenameValue.text = book.sourceFilename ?: File(book.path).name
-        binding.filesizeValue.text = Formatter.formatFileSize(activity, book.fileSize)
-        binding.dateAddedValue.text = fmtDate(book.addedDate)
+        visibleRows.add(binding.filenameContainer)
+
+        visibleRows.forEachIndexed { index, rowView ->
+            val lp = rowView.layoutParams as android.widget.LinearLayout.LayoutParams
+            lp.topMargin = if (index == 0) 0 else dpToPx(12)
+            rowView.layoutParams = lp
+        }
+
+        binding.progressSectionContainer.visibility = View.VISIBLE
+        binding.lastReadContainer.visibility = View.VISIBLE
+        val percent = if (book.progress >= 0.90f) 100 else (book.progress * 100).toInt().coerceIn(0, 100)
+        if (book.progress >= 0.90f) {
+            binding.progressPercentText.text = activity.getString(R.string.progress_completed)
+        } else {
+            binding.progressPercentText.text = activity.getString(R.string.progress_percent, percent)
+        }
+        binding.progressBar.progress = percent
 
         if (book.lastOpenedDate != null) {
-            binding.lastReadContainer.visibility = View.VISIBLE
-            val percent = (book.progress * 100).toInt().coerceIn(0, 100)
-            binding.progressPercentText.text = activity.getString(R.string.progress_percent, percent)
-            binding.progressBar.progress = percent
-
             val dateStr = fmtDate(book.lastOpenedDate)
-            val progressText = if (book.progress >= 0.90f) {
-                activity.getString(R.string.progress_completed)
-            } else {
-                "$percent% read"
-            }
-            binding.lastReadValue.text = "$dateStr • $progressText"
+            binding.lastReadValue.text = "${activity.getString(R.string.book_details_date_last_read)} $dateStr"
         } else {
-            binding.lastReadContainer.visibility = View.GONE
+            binding.lastReadValue.text = activity.getString(R.string.progress_not_read_yet)
         }
 
         if (!book.description.isNullOrBlank()) {
@@ -273,22 +364,19 @@ class BookDetailsViewController(
         }
     }
 
+    private fun dpToPx(dp: Int): Int = (dp * activity.resources.displayMetrics.density).toInt()
+
     private fun confirmDeleteBook(book: BookEntity) {
-        AlertDialog
-            .Builder(activity)
-            .setTitle(R.string.option_remove)
-            .setMessage(activity.getString(R.string.option_remove) + ": " + book.title)
-            .setPositiveButton(R.string.ok) { _, _ ->
-                activity.lifecycleScope.launch(Dispatchers.IO) {
-                    importer.deleteImported(book)
-                    BookRepository(activity.applicationContext).deleteBook(book)
-                    withContext(Dispatchers.Main) {
-                        activity.finish()
-                    }
-                }
-            }
-            .setNegativeButton(R.string.cancel, null)
-            .show()
+        com.epubreader.app.util.CustomConfirmationDialog.show(
+            context = activity,
+            title = activity.getString(R.string.option_remove_confirmation_title),
+            message = activity.getString(R.string.option_remove_confirmation_message, book.title),
+            positiveText = activity.getString(R.string.delete),
+            negativeText = activity.getString(R.string.cancel)
+        ) {
+            com.epubreader.app.util.BookDeleteUndoSnackbar.show(activity, activity.window.decorView, book)
+            activity.finish()
+        }
     }
 
     private fun fmtDate(ts: Long): String =

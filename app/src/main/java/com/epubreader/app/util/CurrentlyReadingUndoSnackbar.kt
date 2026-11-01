@@ -17,7 +17,7 @@ import kotlinx.coroutines.launch
  * Snackbar view that is currently rendering it.
  */
 object CurrentlyReadingUndoSnackbar {
-    private const val DURATION_MS = 2750L
+    private const val DURATION_MS = 3500L
 
     private data class Pending(
         val bookId: Long,
@@ -43,7 +43,8 @@ object CurrentlyReadingUndoSnackbar {
         }
 
         if (visible?.isShown == true) return
-        visible = Snackbar.make(anchor, R.string.currently_reading_removed, remaining.toInt())
+        visible = Snackbar.make(anchor, R.string.currently_reading_removed, Snackbar.LENGTH_LONG)
+            .setDuration(remaining.toInt().coerceAtLeast(1500))
             .setAction(R.string.undo) {
                 val bookId = pending?.bookId ?: return@setAction
                 pending = null

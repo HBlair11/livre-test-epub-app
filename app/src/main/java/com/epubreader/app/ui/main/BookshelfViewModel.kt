@@ -142,9 +142,16 @@ class BookshelfViewModel(
             repo.observeToBeRead().map { applySort(it, sort, asc).map { DisplayItem.Book(it) } }
 
         is ShelfView.RecentlyAdded ->
-            repo.observeHomeRecentlyAddedTop50().map { list ->
-                list.sortedWith(compareByDescending<BookEntity> { it.addedDate }.thenByDescending { it.id })
-                    .map { DisplayItem.Book(it) }
+            if (view.ids.isNotEmpty()) {
+                repo.observeByIds(view.ids).map { list ->
+                    list.sortedWith(compareByDescending<BookEntity> { it.addedDate }.thenByDescending { it.id })
+                        .map { DisplayItem.Book(it) }
+                }
+            } else {
+                repo.observeHomeRecentlyAddedTop50().map { list ->
+                    list.sortedWith(compareByDescending<BookEntity> { it.addedDate }.thenByDescending { it.id })
+                        .map { DisplayItem.Book(it) }
+                }
             }
 
         is ShelfView.AuthorsList ->

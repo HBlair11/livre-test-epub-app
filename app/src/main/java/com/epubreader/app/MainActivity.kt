@@ -139,6 +139,24 @@ class MainActivity : AppCompatActivity() {
     }
 
     private val libraryViewController by lazy { com.epubreader.app.ui.LibraryViewController(this) }
+    private val shelfDialogsHelper by lazy {
+        ShelfDialogsHelper(
+            activity = this,
+            viewModel = viewModel,
+            importer = importer,
+            onOpenBook = { openBook(it) },
+            onOpenDetails = { openDetails(it) },
+            onSelectTreeFolder = { openTreeLauncher.launch(null) },
+            onRescanFolder = { rescanSelectedFolder() },
+            onRefreshMetadataFolder = { refreshMetadataSelectedFolder() },
+            onRemoveFolder = {
+                prefs.selectedFolderUri = null
+                showFoldersEmptyState()
+                Snackbar.make(binding.root, R.string.folder_none, Snackbar.LENGTH_SHORT).show()
+            },
+            onScrollToTop = { scrollToTopOnNextContent = true }
+        )
+    }
     private val authorsViewController by lazy { com.epubreader.app.ui.AuthorsViewController(this) }
     private val seriesViewController by lazy { com.epubreader.app.ui.SeriesViewController(this) }
     private val collectionsViewController by lazy { com.epubreader.app.ui.CollectionsViewController(this) }
@@ -397,6 +415,7 @@ class MainActivity : AppCompatActivity() {
         }
         binding.root.post {
             CurrentlyReadingUndoSnackbar.showPending(this, binding.root)
+            com.epubreader.app.util.BookDeleteUndoSnackbar.showPending(this, binding.root)
         }
     }
 
@@ -1097,7 +1116,7 @@ class MainActivity : AppCompatActivity() {
         val current = options.indexOfFirst { it.second == viewModel.sort.value }
         val asc = viewModel.sortAscending.value ?: true
 
-        val dialogView = layoutInflater.inflate(R.layout.dialog_sort, null, false)
+        val dialogView = layoutInflater.inflate(R.layout.dialog_general_options, null, false)
         val headerTv = dialogView.findViewById<TextView>(R.id.header)
         headerTv.text = getString(R.string.action_sort)
         val recycler = dialogView.findViewById<RecyclerView>(R.id.recycler)
@@ -1155,7 +1174,7 @@ class MainActivity : AppCompatActivity() {
         }
         val checked = if (asc) 0 else 1
 
-        val dialogView = layoutInflater.inflate(R.layout.dialog_sort, null, false)
+        val dialogView = layoutInflater.inflate(R.layout.dialog_general_options, null, false)
         val headerTv = dialogView.findViewById<TextView>(R.id.header)
         headerTv.text = "$fieldLabel · ${getString(R.string.sort_choose_order)}"
         val recycler = dialogView.findViewById<RecyclerView>(R.id.recycler)
@@ -1203,16 +1222,15 @@ class MainActivity : AppCompatActivity() {
     private fun showViewModeDialog() {
         val grid = viewModel.viewModeGrid.value == true
         val cols = viewModel.gridColumns.value ?: 3
-        val labels =
-            listOf(
-                getString(R.string.view_mode_list),
-                getString(R.string.view_mode_grid) + " 2",
-                getString(R.string.view_mode_grid) + " 3",
-                getString(R.string.view_mode_grid) + " 4",
-            )
-        val checked = if (!grid) 0 else (cols - 1).coerceIn(1, 3)
+        val options = listOf(
+            ViewModeOption(getString(R.string.view_mode_list), isGrid = false, columns = 1),
+            ViewModeOption(getString(R.string.view_mode_grid) + " 2", isGrid = true, columns = 2),
+            ViewModeOption(getString(R.string.view_mode_grid) + " 3", isGrid = true, columns = 3),
+            ViewModeOption(getString(R.string.view_mode_grid) + " 4", isGrid = true, columns = 4),
+        )
+        val selectedIndex = if (!grid) 0 else (cols - 1).coerceIn(1, 3)
 
-        val dialogView = layoutInflater.inflate(R.layout.dialog_view_mode, null, false)
+        val dialogView = layoutInflater.inflate(R.layout.dialog_general_options, null, false)
         val headerTv = dialogView.findViewById<TextView>(R.id.header)
         headerTv.text = getString(R.string.action_view_mode)
         val recycler = dialogView.findViewById<RecyclerView>(R.id.recycler)
@@ -1222,34 +1240,14 @@ class MainActivity : AppCompatActivity() {
             .setView(dialogView)
             .create()
 
-        recycler.adapter = object : RecyclerView.Adapter<CustomDialogViewHolder>() {
-            override fun onCreateViewHolder(parent: android.view.ViewGroup, viewType: Int): CustomDialogViewHolder {
-                val view = layoutInflater.inflate(R.layout.item_sort_option, parent, false)
-                return CustomDialogViewHolder(view)
+        recycler.adapter = ViewModeOptionAdapter(options, selectedIndex) { option ->
+            dialog.dismiss()
+            if (!option.isGrid) {
+                viewModel.setViewMode(false)
+            } else {
+                viewModel.setViewMode(true)
+                viewModel.setGridColumns(option.columns)
             }
-
-            override fun onBindViewHolder(holder: CustomDialogViewHolder, position: Int) {
-                holder.titleTv.text = labels[position]
-                val isSelected = position == checked
-                holder.itemView.setBackgroundResource(if (isSelected) R.drawable.drawer_item_selected_bg else R.drawable.item_background_borderless_material)
-                holder.titleTv.setTextColor(ContextCompat.getColor(this@MainActivity, if (isSelected) R.color.palette_mint else R.color.white))
-                holder.checkIv.visibility = if (isSelected) View.VISIBLE else View.GONE
-                holder.checkIv.imageTintList = android.content.res.ColorStateList.valueOf(ContextCompat.getColor(this@MainActivity, R.color.palette_violet))
-                holder.directionTv?.visibility = View.GONE
-
-                holder.itemView.setOnClickListener {
-                    dialog.dismiss()
-                    when (position) {
-                        0 -> viewModel.setViewMode(false)
-                        else -> {
-                            viewModel.setViewMode(true)
-                            viewModel.setGridColumns(position + 1)
-                        }
-                    }
-                }
-            }
-
-            override fun getItemCount() = labels.size
         }
 
         dialog.show()
@@ -1265,14 +1263,17 @@ class MainActivity : AppCompatActivity() {
         actions += { openDetails(book) }
         labels += if (book.isFavorite) getString(R.string.option_favorite_remove) else getString(R.string.option_favorite_add)
         actions += { viewModel.toggleFavorite(book) }
-        if (viewModel.view.value is ShelfView.Reading) {
+        if (book.isCurrentlyReading || viewModel.view.value is ShelfView.Reading) {
             labels += getString(R.string.option_remove_reading)
-            actions += { viewModel.clearCurrentlyReading(book.id) }
+            actions += {
+                viewModel.clearCurrentlyReading(book.id)
+                CurrentlyReadingUndoSnackbar.show(this@MainActivity, binding.root, book.id)
+            }
         }
         labels += getString(R.string.option_remove)
         actions += { confirmDeleteBook(book) }
 
-        val dialogView = layoutInflater.inflate(R.layout.dialog_book_options, null, false)
+        val dialogView = layoutInflater.inflate(R.layout.dialog_general_options, null, false)
         val headerTv = dialogView.findViewById<TextView>(R.id.header)
         headerTv.text = book.title
         val recycler = dialogView.findViewById<RecyclerView>(R.id.recycler)
@@ -1309,17 +1310,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun confirmDeleteBook(book: BookEntity) {
-        AlertDialog
-            .Builder(this)
-            .setTitle(R.string.option_remove)
-            .setMessage(getString(R.string.option_remove) + ": " + book.title)
-            .setPositiveButton(R.string.ok) { _, _ ->
-                lifecycleScope.launch(Dispatchers.IO) {
-                    importer.deleteImported(book)
-                    BookRepository(applicationContext).deleteBook(book)
-                }
-            }.setNegativeButton(R.string.cancel, null)
-            .show()
+        com.epubreader.app.util.CustomConfirmationDialog.show(
+            context = this,
+            title = getString(R.string.option_remove_confirmation_title),
+            message = getString(R.string.option_remove_confirmation_message, book.title),
+            positiveText = getString(R.string.delete),
+            negativeText = getString(R.string.cancel)
+        ) {
+            com.epubreader.app.util.BookDeleteUndoSnackbar.show(this, binding.root, book)
+        }
     }
 
     // ---------------------------------------------------------------- FAB + folder
@@ -1341,7 +1340,7 @@ class MainActivity : AppCompatActivity() {
             getString(R.string.folder_remove)
         )
 
-        val dialogView = layoutInflater.inflate(R.layout.dialog_book_options, null, false)
+        val dialogView = layoutInflater.inflate(R.layout.dialog_general_options, null, false)
         val headerTv = dialogView.findViewById<TextView>(R.id.header)
         headerTv.text = getString(R.string.folder_options)
         val recycler = dialogView.findViewById<RecyclerView>(R.id.recycler)
@@ -1631,7 +1630,7 @@ class MainActivity : AppCompatActivity() {
             }
             withContext(Dispatchers.Main) {
                 viewModel.setScanning(false)
-                showScanResult(newIds)
+                showScanResult(newIds, R.string.nav_add_folder)
             }
         }
     }
@@ -1639,7 +1638,7 @@ class MainActivity : AppCompatActivity() {
     // Patch 16 (Issue #3): now takes the actual ids of the newly imported books
     // (previously just a count) so the "Show" action can open the Recently
     // Added temp screen scoped to exactly those books.
-    private fun showScanResult(newIds: List<Long>) {
+    private fun showScanResult(newIds: List<Long>, sourceResId: Int = R.string.nav_scan_now) {
         val newCount = newIds.size
         val text = if (newCount > 0)
             getString(R.string.scan_complete_new, newCount)
@@ -1648,7 +1647,11 @@ class MainActivity : AppCompatActivity() {
         val snackbar = Snackbar.make(refresh, text, Snackbar.LENGTH_LONG)
         if (newCount > 0) {
             snackbar.setAction(R.string.scan_show) {
-                startActivity(Intent(this@MainActivity, RecentlyAddedActivity::class.java))
+                val intent = Intent(this@MainActivity, RecentlyAddedActivity::class.java).apply {
+                    putExtra("recently_added_ids", newIds.toLongArray())
+                    putExtra("recently_added_source_res", sourceResId)
+                }
+                startActivity(intent)
             }
         }
         snackbar.show()

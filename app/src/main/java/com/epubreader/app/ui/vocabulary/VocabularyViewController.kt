@@ -383,16 +383,19 @@ class VocabularyViewController(private val activity: MainActivity) {
     }
 
     private fun confirmClearVocab(vocabRoot: View) {
-        AlertDialog.Builder(activity)
-            .setTitle(R.string.vocabulary_clear_confirm)
-            .setPositiveButton(R.string.delete) { _, _ ->
-                activity.lifecycleScope.launch(Dispatchers.IO) {
-                    AppDatabase.get(activity.applicationContext).dictionaryHistoryDao().clear()
-                }
-                Snackbar.make(vocabRoot, R.string.vocabulary_cleared, Snackbar.LENGTH_SHORT).show()
+        val count = vocabFullList.size
+        com.epubreader.app.util.CustomConfirmationDialog.show(
+            context = activity,
+            title = activity.getString(R.string.vocabulary_clear_confirm),
+            message = activity.getString(R.string.vocabulary_clear_confirm_message, count),
+            positiveText = activity.getString(R.string.delete),
+            negativeText = activity.getString(R.string.cancel)
+        ) {
+            activity.lifecycleScope.launch(Dispatchers.IO) {
+                AppDatabase.get(activity.applicationContext).dictionaryHistoryDao().clear()
             }
-            .setNegativeButton(R.string.cancel, null)
-            .show()
+            Snackbar.make(vocabRoot, R.string.vocabulary_cleared, Snackbar.LENGTH_SHORT).show()
+        }
     }
 
     private fun exportVocab(format: Int, vocabRoot: View) {

@@ -1,8 +1,8 @@
 package com.epubreader.app.ui
 
 import android.os.Bundle
-import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import com.epubreader.app.R
 import com.epubreader.app.databinding.ViewRecentlyAddedBinding
 import com.epubreader.app.util.SystemBarController
 
@@ -17,12 +17,9 @@ class RecentlyAddedActivity : AppCompatActivity() {
         setContentView(binding.root)
         SystemBarController.apply(this)
 
-        binding.toolbar.visibility = View.VISIBLE
-        setSupportActionBar(binding.toolbar)
-        binding.toolbar.setNavigationOnClickListener {
-            finish()
-        }
+        val ids = intent.getLongArrayExtra("recently_added_ids")?.toList() ?: emptyList()
+        val sourceResId = intent.getIntExtra("recently_added_source_res", R.string.nav_home)
 
-        viewController = RecentlyAddedViewController(this, binding.root)
+        viewController = RecentlyAddedViewController(this, binding.root, ids, sourceResId)
     }
 }

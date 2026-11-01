@@ -7,15 +7,10 @@
     android:background="@color/palette_eggplant"
     android:fitsSystemWindows="true">
 
-    <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/searchToolbar"
+    <FrameLayout
+        android:id="@+id/headerContainer"
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="@color/palette_plum"
-        app:navigationIcon="@drawable/ic_arrow_back"
-        app:navigationIconTint="@color/palette_mint"
-        app:title="@string/search_results"
-        app:titleTextColor="@color/palette_mint" />
+        android:layout_height="wrap_content" />
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
