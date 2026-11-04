@@ -178,22 +178,29 @@ class ShelfDialogsHelper(
     fun showBookOptions(book: BookEntity): Boolean {
         val labels = mutableListOf<String>()
         val actions = mutableListOf<() -> Unit>()
-        labels += activity.getString(R.string.option_open)
-        actions += { onOpenBook(book) }
-        labels += activity.getString(R.string.option_details)
-        actions += { onOpenDetails(book) }
-        labels += if (book.isFavorite) activity.getString(R.string.option_favorite_remove) else activity.getString(R.string.option_favorite_add)
-        actions += { viewModel.toggleFavorite(book) }
-        if (book.isCurrentlyReading || viewModel.view.value is ShelfView.Reading) {
-            labels += activity.getString(R.string.option_remove_reading)
-            actions += {
-                viewModel.clearCurrentlyReading(book.id)
-                val anchor = activity.findViewById<View>(android.R.id.content) ?: activity.window.decorView
-                com.epubreader.app.util.CurrentlyReadingUndoSnackbar.show(activity, anchor, book.id)
+        if (viewModel.view.value is ShelfView.Trash) {
+            labels += activity.getString(R.string.trash_restore_book)
+            actions += { viewModel.restoreFromTrash(book.id) }
+            labels += activity.getString(R.string.option_details)
+            actions += { onOpenDetails(book) }
+        } else {
+            labels += activity.getString(R.string.option_open)
+            actions += { onOpenBook(book) }
+            labels += activity.getString(R.string.option_details)
+            actions += { onOpenDetails(book) }
+            labels += if (book.isFavorite) activity.getString(R.string.option_favorite_remove) else activity.getString(R.string.option_favorite_add)
+            actions += { viewModel.toggleFavorite(book) }
+            if (book.isCurrentlyReading || viewModel.view.value is ShelfView.Reading) {
+                labels += activity.getString(R.string.option_remove_reading)
+                actions += {
+                    viewModel.clearCurrentlyReading(book.id)
+                    val anchor = activity.findViewById<View>(android.R.id.content) ?: activity.window.decorView
+                    com.epubreader.app.util.CurrentlyReadingUndoSnackbar.show(activity, anchor, book.id)
+                }
             }
+            labels += activity.getString(R.string.option_remove)
+            actions += { confirmDeleteBook(book) }
         }
-        labels += activity.getString(R.string.option_remove)
-        actions += { confirmDeleteBook(book) }
 
         val dialogView = activity.layoutInflater.inflate(R.layout.dialog_general_options, null, false)
         val headerTv = dialogView.findViewById<TextView>(R.id.header)

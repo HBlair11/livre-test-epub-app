@@ -12,6 +12,9 @@ interface HighlightDao {
     @Query("SELECT * FROM highlights WHERE book_id = :bookId ORDER BY created_at DESC")
     fun observeForBook(bookId: Long): Flow<List<HighlightEntity>>
 
+    @Query("SELECT * FROM highlights WHERE book_id = :bookId ORDER BY created_at DESC")
+    suspend fun getForBook(bookId: Long): List<HighlightEntity>
+
     @Query("SELECT * FROM highlights WHERE book_id = :bookId AND spine_href = :spineHref ORDER BY normalized_start, created_at")
     suspend fun getForChapter(bookId: Long, spineHref: String): List<HighlightEntity>
 

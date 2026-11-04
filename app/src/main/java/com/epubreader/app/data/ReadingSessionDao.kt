@@ -10,6 +10,9 @@ interface ReadingSessionDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(session: ReadingSessionEntity): Long
 
+    @Query("SELECT * FROM reading_sessions WHERE book_id = :bookId ORDER BY started_at DESC")
+    suspend fun getForBook(bookId: Long): List<ReadingSessionEntity>
+
     @Query("SELECT COALESCE(SUM(active_seconds), 0) FROM reading_sessions WHERE started_at >= :since")
     suspend fun activeSecondsSince(since: Long): Int
 

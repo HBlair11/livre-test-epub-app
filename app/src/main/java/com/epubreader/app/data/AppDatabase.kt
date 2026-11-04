@@ -8,9 +8,9 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
 @Database(
-    entities = [BookEntity::class, BookmarkEntity::class, HighlightEntity::class, CollectionEntity::class, BookCollectionRef::class, ReadingSessionEntity::class, DictionaryHistoryEntity::class, TtsSettingsEntity::class],
-    version = 17,
-    exportSchema = true,
+    entities = [BookEntity::class, BookmarkEntity::class, HighlightEntity::class, CollectionEntity::class, BookCollectionRef::class, ReadingSessionEntity::class, DictionaryHistoryEntity::class, TtsSettingsEntity::class, ReadingJournalEntity::class, ReadingStampEntity::class],
+    version = 19,
+    exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun bookDao(): BookDao
@@ -26,6 +26,10 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun dictionaryHistoryDao(): DictionaryHistoryDao
 
     abstract fun ttsSettingsDao(): TtsSettingsDao
+
+    abstract fun readingJournalDao(): ReadingJournalDao
+
+    abstract fun readingStampDao(): ReadingStampDao
 
     companion object {
         @Volatile
@@ -222,6 +226,53 @@ abstract class AppDatabase : RoomDatabase() {
                 }
             }
 
+        internal val MIGRATION_17_18 =
+            object : Migration(17, 18) {
+                override fun migrate(database: SupportSQLiteDatabase) {
+                    val cursor = database.query("PRAGMA table_info(books)")
+                    var hasInTrash = false
+                    val nameIndex = cursor.getColumnIndex("name")
+                    while (cursor.moveToNext()) {
+                        if (nameIndex != -1 && cursor.getString(nameIndex) == "in_trash") {
+                            hasInTrash = true
+                            break
+                        }
+                    }
+                    cursor.close()
+                    if (!hasInTrash) {
+                        database.execSQL("ALTER TABLE books ADD COLUMN in_trash INTEGER NOT NULL DEFAULT 0")
+                    }
+                }
+            }
+
+        internal val MIGRATION_18_19 =
+            object : Migration(18, 19) {
+                override fun migrate(database: SupportSQLiteDatabase) {
+                    database.execSQL("""
+                        CREATE TABLE IF NOT EXISTS reading_journal_entries (
+                            id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                            book_id INTEGER NOT NULL,
+                            title TEXT NOT NULL,
+                            content TEXT NOT NULL,
+                            created_at INTEGER NOT NULL,
+                            FOREIGN KEY(book_id) REFERENCES books(id) ON UPDATE NO ACTION ON DELETE CASCADE
+                        )
+                    """.trimIndent())
+                    database.execSQL("CREATE INDEX IF NOT EXISTS index_reading_journal_entries_book_id ON reading_journal_entries(book_id)")
+                    database.execSQL("""
+                        CREATE TABLE IF NOT EXISTS reading_stamps (
+                            id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                            book_id INTEGER NOT NULL,
+                            stamp_type TEXT NOT NULL,
+                            note TEXT,
+                            created_at INTEGER NOT NULL,
+                            FOREIGN KEY(book_id) REFERENCES books(id) ON UPDATE NO ACTION ON DELETE CASCADE
+                        )
+                    """.trimIndent())
+                    database.execSQL("CREATE INDEX IF NOT EXISTS index_reading_stamps_book_id ON reading_stamps(book_id)")
+                }
+            }
+
         fun get(context: Context): AppDatabase =
             INSTANCE ?: synchronized(this) {
                 INSTANCE ?: Room
@@ -229,7 +280,9 @@ abstract class AppDatabase : RoomDatabase() {
                         context.applicationContext,
                         AppDatabase::class.java,
                         "epub.db",
-                    ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16, MIGRATION_16_17)
+                    ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19)
+                    .fallbackToDestructiveMigration()
+                    .fallbackToDestructiveMigrationOnDowngrade()
                     .build()
                     .also { INSTANCE = it }
             }

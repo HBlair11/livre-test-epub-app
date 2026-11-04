@@ -72,6 +72,14 @@ class BookRepository(
 
     suspend fun deleteBook(book: BookEntity) = bookDao.delete(book)
 
+    fun observeTrash(): Flow<List<BookEntity>> = bookDao.observeTrash()
+
+    suspend fun markInTrash(id: Long) = bookDao.markInTrash(id)
+
+    suspend fun restoreFromTrash(id: Long) = bookDao.restoreFromTrash(id)
+
+    suspend fun restoreAllTrash() = bookDao.restoreAllTrash()
+
     // ---- Bookmarks ----
     fun observeBookmarks(bookId: Long): Flow<List<BookmarkEntity>> = bookmarkDao.observeForBook(bookId)
 

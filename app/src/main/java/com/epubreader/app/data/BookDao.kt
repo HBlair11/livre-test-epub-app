@@ -12,14 +12,14 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface BookDao {
 
-    @Query("SELECT * FROM books ORDER BY title")
+    @Query("SELECT * FROM books WHERE in_trash = 0 ORDER BY title")
     fun observeAll(): Flow<List<BookEntity>>
 
     /** Home shelf: the latest library insertions by file mtime, newest first. */
-    @Query("SELECT * FROM books ORDER BY source_last_modified DESC, id DESC LIMIT 6")
+    @Query("SELECT * FROM books WHERE in_trash = 0 ORDER BY source_last_modified DESC, id DESC LIMIT 6")
     fun observeHomeRecentlyAdded(): Flow<List<BookEntity>>
 
-    @Query("SELECT * FROM books ORDER BY source_last_modified DESC, id DESC LIMIT 50")
+    @Query("SELECT * FROM books WHERE in_trash = 0 ORDER BY source_last_modified DESC, id DESC LIMIT 50")
     fun observeHomeRecentlyAddedTop50(): Flow<List<BookEntity>>
 
     @Query("SELECT * FROM books WHERE id = :id")
@@ -172,19 +172,19 @@ interface BookDao {
         sortAuthor: String,
     )
 
-    @Query("SELECT author AS name, COUNT(*) AS count FROM books WHERE author != '' GROUP BY author ORDER BY author COLLATE NOCASE")
+    @Query("SELECT author AS name, COUNT(*) AS count FROM books WHERE in_trash = 0 AND author != '' GROUP BY author ORDER BY author COLLATE NOCASE")
     fun observeAuthors(): Flow<List<GroupedRow>>
 
-    @Query("SELECT series AS name, COUNT(*) AS count FROM books WHERE series IS NOT NULL AND series != '' GROUP BY series ORDER BY series COLLATE NOCASE")
+    @Query("SELECT series AS name, COUNT(*) AS count FROM books WHERE in_trash = 0 AND series IS NOT NULL AND series != '' GROUP BY series ORDER BY series COLLATE NOCASE")
     fun observeSeries(): Flow<List<GroupedRow>>
 
-    @Query("SELECT * FROM books WHERE author = :author ORDER BY series_index IS NULL, series_index, sort_title COLLATE NOCASE")
+    @Query("SELECT * FROM books WHERE in_trash = 0 AND author = :author ORDER BY series_index IS NULL, series_index, sort_title COLLATE NOCASE")
     fun observeByAuthor(author: String): Flow<List<BookEntity>>
 
-    @Query("SELECT * FROM books WHERE series = :series ORDER BY series_index IS NULL, series_index, sort_title COLLATE NOCASE")
+    @Query("SELECT * FROM books WHERE in_trash = 0 AND series = :series ORDER BY series_index IS NULL, series_index, sort_title COLLATE NOCASE")
     fun observeBySeries(series: String): Flow<List<BookEntity>>
 
-    @Query("SELECT * FROM books WHERE is_currently_reading = 1 ORDER BY last_opened_date DESC, id DESC")
+    @Query("SELECT * FROM books WHERE in_trash = 0 AND is_currently_reading = 1 ORDER BY last_opened_date DESC, id DESC")
     fun observeCurrentlyReading(): Flow<List<BookEntity>>
 
     @Query("UPDATE books SET is_currently_reading = 1 WHERE id = :id")
@@ -196,19 +196,19 @@ interface BookDao {
     @Query("UPDATE books SET is_favorite = :fav WHERE id = :id")
     suspend fun setFavorite(id: Long, fav: Boolean)
 
-    @Query("SELECT * FROM books WHERE last_opened_date IS NOT NULL ORDER BY last_opened_date DESC LIMIT 1")
+    @Query("SELECT * FROM books WHERE in_trash = 0 AND last_opened_date IS NOT NULL ORDER BY last_opened_date DESC LIMIT 1")
     fun observeLastOpened(): Flow<BookEntity?>
 
-    @Query("SELECT * FROM books WHERE is_favorite = 1 ORDER BY title COLLATE NOCASE")
+    @Query("SELECT * FROM books WHERE in_trash = 0 AND is_favorite = 1 ORDER BY title COLLATE NOCASE")
     fun observeFavorites(): Flow<List<BookEntity>>
 
-    @Query("SELECT * FROM books WHERE progress >= 0.90 ORDER BY last_opened_date DESC")
+    @Query("SELECT * FROM books WHERE in_trash = 0 AND progress >= 0.90 ORDER BY last_opened_date DESC")
     fun observeFinished(): Flow<List<BookEntity>>
 
-    @Query("SELECT COUNT(*) FROM books WHERE progress >= 0.90")
+    @Query("SELECT COUNT(*) FROM books WHERE in_trash = 0 AND progress >= 0.90")
     suspend fun getFinishedCount(): Int
 
-    @Query("SELECT * FROM books WHERE last_opened_date IS NULL ORDER BY added_date DESC")
+    @Query("SELECT * FROM books WHERE in_trash = 0 AND last_opened_date IS NULL ORDER BY added_date DESC")
     fun observeToBeRead(): Flow<List<BookEntity>>
 
     // Patch 16 (Issue #3): books matching an explicit id set, ordered by added
@@ -218,6 +218,18 @@ interface BookDao {
     @Query("SELECT * FROM books WHERE id IN (:ids) ORDER BY added_date DESC, sort_title COLLATE NOCASE")
     fun observeByIds(ids: List<Long>): Flow<List<BookEntity>>
 
-    @Query("SELECT * FROM books WHERE title LIKE '%' || :q || '%' OR author LIKE '%' || :q || '%' OR series LIKE '%' || :q || '%' ORDER BY sort_title COLLATE NOCASE")
+    @Query("SELECT * FROM books WHERE in_trash = 0 AND (title LIKE '%' || :q || '%' OR author LIKE '%' || :q || '%' OR series LIKE '%' || :q || '%') ORDER BY sort_title COLLATE NOCASE")
     fun search(q: String): Flow<List<BookEntity>>
+
+    @Query("SELECT * FROM books WHERE in_trash = 1 ORDER BY modified_date DESC, id DESC")
+    fun observeTrash(): Flow<List<BookEntity>>
+
+    @Query("UPDATE books SET in_trash = 1 WHERE id = :id")
+    suspend fun markInTrash(id: Long)
+
+    @Query("UPDATE books SET in_trash = 0 WHERE id = :id")
+    suspend fun restoreFromTrash(id: Long)
+
+    @Query("UPDATE books SET in_trash = 0 WHERE in_trash = 1")
+    suspend fun restoreAllTrash()
 }

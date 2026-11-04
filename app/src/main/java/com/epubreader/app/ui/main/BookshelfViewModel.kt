@@ -38,6 +38,7 @@ sealed class ShelfView {
     object Settings : ShelfView()
     object Stats : ShelfView()
     object Vocabulary : ShelfView()
+    object Trash : ShelfView()
 
     // Patch 16 (Issue #3): a transient, non-persisted view that shows only the
     // books imported in the most recent scan. It is entered by tapping "Show" on
@@ -140,6 +141,9 @@ class BookshelfViewModel(
 
         is ShelfView.ToBeRead ->
             repo.observeToBeRead().map { applySort(it, sort, asc).map { DisplayItem.Book(it) } }
+
+        is ShelfView.Trash ->
+            repo.observeTrash().map { applySort(it, sort, asc).map { DisplayItem.Book(it) } }
 
         is ShelfView.RecentlyAdded ->
             if (view.ids.isNotEmpty()) {
@@ -273,6 +277,18 @@ class BookshelfViewModel(
 
     fun toggleFavorite(book: BookEntity) {
         viewModelScope.launch { repo.setFavorite(book.id, !book.isFavorite) }
+    }
+
+    fun markInTrash(bookId: Long) {
+        viewModelScope.launch { repo.markInTrash(bookId) }
+    }
+
+    fun restoreFromTrash(bookId: Long) {
+        viewModelScope.launch { repo.restoreFromTrash(bookId) }
+    }
+
+    fun restoreAllTrash() {
+        viewModelScope.launch { repo.restoreAllTrash() }
     }
 
     fun setScanning(v: Boolean) {

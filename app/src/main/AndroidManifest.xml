@@ -66,6 +66,13 @@
             android:theme="@style/Theme.EpubReader" />
 
         <activity
+            android:name=".ui.readingnook.ReadingNookActivity"
+            android:exported="false"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:windowSoftInputMode="adjustResize"
+            android:theme="@style/Theme.EpubReader" />
+
+        <activity
             android:name=".ui.BookDetailsActivity"
             android:exported="false"
             android:configChanges="orientation|screenSize|keyboardHidden"

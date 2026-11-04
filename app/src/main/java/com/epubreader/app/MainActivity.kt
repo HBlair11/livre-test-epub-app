@@ -413,10 +413,8 @@ class MainActivity : AppCompatActivity() {
         if (pendingRestoreKey != null) {
             recycler?.post { tryRestoreScroll() }
         }
-        binding.root.post {
-            CurrentlyReadingUndoSnackbar.showPending(this, binding.root)
-            com.epubreader.app.util.BookDeleteUndoSnackbar.showPending(this, binding.root)
-        }
+        CurrentlyReadingUndoSnackbar.showPending(this, binding.root)
+        com.epubreader.app.util.BookDeleteUndoSnackbar.showPending(this, binding.root)
     }
 
     override fun onPause() {
@@ -450,8 +448,8 @@ class MainActivity : AppCompatActivity() {
     private fun drawerItems(): List<DrawerItem> =
         listOf(
             DrawerItem(getString(R.string.nav_home), R.drawable.ic_home, view = ShelfView.Home),
-            DrawerItem(getString(R.string.nav_currently_reading), R.drawable.ic_book, view = ShelfView.Reading),
             DrawerItem(getString(R.string.nav_library), R.drawable.ic_bookshelf, view = ShelfView.Library),
+            DrawerItem(getString(R.string.nav_currently_reading), R.drawable.ic_book, view = ShelfView.Reading),
             DrawerItem(getString(R.string.nav_favorites), R.drawable.ic_favorite_border, view = ShelfView.Favorites),
             DrawerItem(getString(R.string.nav_authors), R.drawable.ic_person, view = ShelfView.AuthorsList),
             DrawerItem(getString(R.string.nav_series), R.drawable.ic_series, view = ShelfView.SeriesList),
@@ -469,6 +467,7 @@ class MainActivity : AppCompatActivity() {
             DrawerItem(getString(R.string.nav_reading_stats), R.drawable.ic_stats, view = ShelfView.Stats),
             DrawerItem(getString(R.string.nav_vocabulary), R.drawable.ic_vocabulary, view = ShelfView.Vocabulary),
             DrawerItem(getString(R.string.nav_folders), R.drawable.ic_folder, view = ShelfView.Folders),
+            DrawerItem(getString(R.string.nav_trash), R.drawable.ic_delete, view = ShelfView.Trash),
             DrawerItem(
                 getString(R.string.nav_settings), R.drawable.ic_settings, view = ShelfView.Settings
             ),
@@ -497,6 +496,7 @@ class MainActivity : AppCompatActivity() {
             is ShelfView.Settings -> getString(R.string.nav_settings)
             is ShelfView.Stats -> getString(R.string.nav_reading_stats)
             is ShelfView.Vocabulary -> getString(R.string.nav_vocabulary)
+            is ShelfView.Trash -> getString(R.string.trash_screen_title)
             null -> getString(R.string.app_name)
         }
 
@@ -606,7 +606,9 @@ class MainActivity : AppCompatActivity() {
 
     private fun applyView(view: ShelfView) {
         val isStatsOrVocab = view is ShelfView.Stats || view is ShelfView.Vocabulary
+        val isTrash = view is ShelfView.Trash
         val headerLayoutRes = when {
+            isTrash -> R.layout.header_category_trash
             isStatsOrVocab || isFoldersView(view) || view is ShelfView.Settings -> R.layout.header_category_1
             view is ShelfView.Home || view is ShelfView.AuthorsList || view is ShelfView.SeriesList || view is ShelfView.Collections -> R.layout.header_category_2
             view is ShelfView.Reading -> R.layout.header_category_4
@@ -646,6 +648,9 @@ class MainActivity : AppCompatActivity() {
             }
             inflatedHeader.findViewById<View>(R.id.libBtnSort)?.setOnClickListener {
                 showSortDialog()
+            }
+            inflatedHeader.findViewById<View>(R.id.btnRestoreAll)?.setOnClickListener {
+                viewModel.restoreAllTrash()
             }
         }
 
@@ -693,6 +698,7 @@ class MainActivity : AppCompatActivity() {
         if (showShelf) {
             shelfContainer?.visibility = View.VISIBLE
             val shelfLayoutRes = when (view) {
+                is ShelfView.Trash -> R.layout.view_main_trash
                 is ShelfView.Reading -> R.layout.view_currently_reading
                 is ShelfView.RecentlyAdded -> R.layout.view_recently_added
                 is ShelfView.Favorites -> R.layout.view_favorites
@@ -719,6 +725,13 @@ class MainActivity : AppCompatActivity() {
 
             val itemCount = bookAdapter?.itemCount ?: 0
             when (view) {
+                is ShelfView.Trash -> {
+                    val countTv = shelfContainer?.findViewById<TextView>(R.id.headerCountText)
+                    if (countTv != null) {
+                        countTv.visibility = View.VISIBLE
+                        countTv.text = "$itemCount ${if (itemCount == 1) "book" else "books"}"
+                    }
+                }
                 is ShelfView.RecentlyAdded -> recentlyAddedViewController.setupHeader(shelfContainer, itemCount)
                 is ShelfView.AuthorDetail -> authorsViewController.setupHeader(shelfContainer, true, view.name, itemCount)
                 is ShelfView.AuthorsList -> authorsViewController.setupHeader(shelfContainer, false, null, itemCount)
@@ -1257,21 +1270,28 @@ class MainActivity : AppCompatActivity() {
     private fun showBookOptions(book: BookEntity): Boolean {
         val labels = mutableListOf<String>()
         val actions = mutableListOf<() -> Unit>()
-        labels += getString(R.string.option_open)
-        actions += { openBook(book) }
-        labels += getString(R.string.option_details)
-        actions += { openDetails(book) }
-        labels += if (book.isFavorite) getString(R.string.option_favorite_remove) else getString(R.string.option_favorite_add)
-        actions += { viewModel.toggleFavorite(book) }
-        if (book.isCurrentlyReading || viewModel.view.value is ShelfView.Reading) {
-            labels += getString(R.string.option_remove_reading)
-            actions += {
-                viewModel.clearCurrentlyReading(book.id)
-                CurrentlyReadingUndoSnackbar.show(this@MainActivity, binding.root, book.id)
+        if (viewModel.view.value is ShelfView.Trash) {
+            labels += getString(R.string.trash_restore_book)
+            actions += { viewModel.restoreFromTrash(book.id) }
+            labels += getString(R.string.option_details)
+            actions += { openDetails(book) }
+        } else {
+            labels += getString(R.string.option_open)
+            actions += { openBook(book) }
+            labels += getString(R.string.option_details)
+            actions += { openDetails(book) }
+            labels += if (book.isFavorite) getString(R.string.option_favorite_remove) else getString(R.string.option_favorite_add)
+            actions += { viewModel.toggleFavorite(book) }
+            if (book.isCurrentlyReading || viewModel.view.value is ShelfView.Reading) {
+                labels += getString(R.string.option_remove_reading)
+                actions += {
+                    viewModel.clearCurrentlyReading(book.id)
+                    CurrentlyReadingUndoSnackbar.show(this@MainActivity, binding.root, book.id)
+                }
             }
+            labels += getString(R.string.option_remove)
+            actions += { confirmDeleteBook(book) }
         }
-        labels += getString(R.string.option_remove)
-        actions += { confirmDeleteBook(book) }
 
         val dialogView = layoutInflater.inflate(R.layout.dialog_general_options, null, false)
         val headerTv = dialogView.findViewById<TextView>(R.id.header)

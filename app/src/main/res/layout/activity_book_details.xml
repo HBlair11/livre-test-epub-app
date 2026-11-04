@@ -212,9 +212,9 @@
                         android:layout_height="wrap_content"
                         app:cardCornerRadius="12dp"
                         app:cardElevation="0dp"
-                        app:strokeColor="@color/palette_purple"
+                        app:strokeColor="@color/palette_plum"
                         app:strokeWidth="1dp"
-                        app:cardBackgroundColor="@color/palette_plum">
+                        app:cardBackgroundColor="@color/palette_eggplant">
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -254,7 +254,7 @@
                                 android:layout_height="8dp"
                                 android:layout_marginTop="@dimen/app_row_content_padding_h"
                                 android:layout_marginBottom="@dimen/app_row_content_padding_h"
-                                android:progressDrawable="@drawable/progress_line_rounded_book_list" />
+                                android:progressDrawable="@drawable/progress_line_rounded_book_details" />
 
                         </LinearLayout>
 
@@ -362,7 +362,6 @@
                         <com.google.android.material.card.MaterialCardView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="16dp"
                             app:cardBackgroundColor="@color/palette_eggplant"
                             app:cardCornerRadius="16dp"
                             app:cardElevation="0dp"

@@ -19,6 +19,7 @@ import com.epubreader.app.data.BookEntity
 import com.epubreader.app.data.BookRepository
 import com.epubreader.app.databinding.ActivityBookDetailsBinding
 import com.epubreader.app.epub.EpubImporter
+import com.epubreader.app.ui.readingnook.ReadingNookActivity
 import com.epubreader.app.util.CurrentlyReadingUndoSnackbar
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Dispatchers
@@ -239,6 +240,13 @@ class BookDetailsViewController(
             )
         }
 
+        binding.btnReadingNook.setOnClickListener {
+            val intent = Intent(activity, ReadingNookActivity::class.java).apply {
+                putExtra(ReadingNookActivity.EXTRA_BOOK_ID, bookId)
+            }
+            activity.startActivity(intent)
+        }
+
         var favoriteState = book.isFavorite
         fun updateFavoriteUI(isFav: Boolean) {
             binding.btnFavorite.setIconResource(if (isFav) R.drawable.ic_favorite else R.drawable.ic_favorite_border)
@@ -374,7 +382,7 @@ class BookDetailsViewController(
             positiveText = activity.getString(R.string.delete),
             negativeText = activity.getString(R.string.cancel)
         ) {
-            com.epubreader.app.util.BookDeleteUndoSnackbar.show(activity, activity.window.decorView, book)
+            com.epubreader.app.util.BookDeleteUndoSnackbar.show(activity, binding.root, book, showImmediately = false)
             activity.finish()
         }
     }

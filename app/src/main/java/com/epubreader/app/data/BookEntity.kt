@@ -61,4 +61,5 @@ data class BookEntity(
     /** Layout fingerprint for [screenPageMapCsv], so cached pages are reused only
      *  when the reader viewport/settings match the measurement. */
     @ColumnInfo(name = "screen_page_layout_key") val screenPageLayoutKey: String? = null,
+    @ColumnInfo(name = "in_trash", defaultValue = "0") val inTrash: Boolean = false,
 )

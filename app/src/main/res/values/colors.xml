@@ -52,4 +52,19 @@
       <color name="progress_fill">@color/palette_mint</color>
       ============================================================
     -->
+    <!-- Reading Stamps Theme Colors -->
+    <color name="stamp_started_bg">#FCE7F0</color>
+    <color name="stamp_started_text">#823666</color>
+    <color name="stamp_resumed_bg">#F3E8FF</color>
+    <color name="stamp_resumed_text">#6B21A8</color>
+    <color name="stamp_favorite_bg">#FEF3C7</color>
+    <color name="stamp_favorite_text">#B45309</color>
+    <color name="stamp_passage_bg">#D1FAE5</color>
+    <color name="stamp_passage_text">#047857</color>
+    <color name="stamp_revisited_bg">#E0F2FE</color>
+    <color name="stamp_revisited_text">#0369A1</color>
+    <color name="stamp_finished_bg">#FFE4E6</color>
+    <color name="stamp_finished_text">#BE123C</color>
+    <color name="stamp_reread_bg">#FDE68A</color>
+    <color name="stamp_reread_text">#78350F</color>
 </resources>
